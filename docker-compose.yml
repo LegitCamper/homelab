@@ -1,29 +1,103 @@
+# My homelab docker setup
 version: "3.9"
+
 services:
-  # Dashboards
+  # Dashboard
   dashy:
+    container_name: "dashy"
     image: "lissy93/dashy:latest"
     depends_on:
       - glances
+      - pihole
     ports:
-      - "8000:80"
+      - "80:80"
     volumes:
-      - dashy/config.yml:/app/public/conf.yml
+      - ./dashy/config.yml:/app/public/conf.yml
     restart: always
-  glances:
-    image: "nicolargo/glances:latest"
+
+  # Neworking 
+  pihole:
+    container_name: "pihole"
+    image: "pihole/pihole:latest"
     ports:
-      - "8001:80"
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "2001:80/tcp"
+      # - "67:67/udp" # Only required if you are using Pi-hole as your DHCP server
+    environment:
+      TZ: "America/Denver"
+      PIHOLE_DNS_: "127.0.0.1#53;9.9.9.9;149.112.112.112;8.8.8.8"
+      DNSSEC: true
+      WEB_PORT: "80"
+      WEB_BIND_ADDR: "0.0.0.0"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - "./pihole/etc-pihole:/etc/pihole"
+      - "./pihole/etc-dnsmasq.d:/etc/dnsmasq.d"
     restart: always
-  portainer:
-    image: "portainer/portainer-ce:latest"
+  # pialert:
+    # container_name: "pialert"
+    # image: "jokobsk/pi.alert:latest"      
+    # privileged: true
+    # network_mode: "host"  
+    # volumes:
+      # - ./pialert/config:/home/pi/pialert/config
+      # - ./pialert/db:/home/pi/pialert/db
+      # (optional) useful for debugging if you have issues setting up the container
+      # - local/path/logs:/home/pi/pialert/front/log
+    # environment:
+      # TZ: "America/Denver"
+      # HOST_USER_ID: "1000"
+      # HOST_USER_GID: "1000"
+      # PORT: "2002"
+    # restart: always
+  smokeping:
+    image: "lscr.io/linuxserver/smokeping:latest"
+    container_name: "smokeping"
     ports:
-      - "8000:8000"
-      - "9443:9443" 
+      - "2003:80"
+    environment:
+      PUID: "1000"
+      PGID: "1000"
+      TZ: "America/Denver"
     volumes:
-      - portainer_data:/data 
+      - "./smokeping/config:/config"
+      - "./smokeping/data:/data"
+    restart: always
+    
+  # Media
+  
+  # System maintance
+  watchtower:
+    container_name: "watchtower"
+    image: "containrrr/watchtower"
+    volumes: 
       - /var/run/docker.sock:/var/run/docker.sock
     restart: always
-  # Media
+  registry: # My own docker registry
+    container_name: "registry"
+    image: "registry:2"
+    ports:
+      - "5001:5000"
+    restart: always
+  glances:
+    container_name: "glances"
+    image: "nicolargo/glances:latest"
+    ports:
+      - "5002:61208"
+    pid: host
+    environment:
+      GLANCES_OPT: "-w --disable-webui --fahrenheit"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./glances/glances.conf:/glances/conf/glances.conf" 
+    restart: always
+  portainer:
+    container_name: "portainer"
+    image: "portainer/portainer-ce:latest"
+    ports:
+      - "5003:8000"
+      - "5004:9443" 
+    volumes:
+      - ./portainer:/data 
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: always
