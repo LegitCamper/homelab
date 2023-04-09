@@ -38,7 +38,7 @@ sections:
         description: DNS settings for ad & tracker blocking
         icon: hl-pihole
         id: 0_1318_pihole
-        url: http://127.0.0.1:2001/admin
+        url: "http://127.0.0.1:2001/admin"
         statusCheckUrl: http://pihole/admin
         statusCheckAllowInsecure: true
       - title: SmokePing
@@ -46,7 +46,7 @@ sections:
         icon: hl-smokeping
         id: 1_1318_smokeping
         url: ''
-        statusCheckUrl: http://smokeping
+        statusCheckUrl: "http://smokeping"
       - title: LibreSpeed
         description: Local network speed and latency test
         icon: hl-librespeed
@@ -57,12 +57,12 @@ sections:
       - type: pi-hole-stats
         options:
           hostname: http://pihole
-          apiKey: xxxxxxxxxxxxxxxxxxxxxxx
+          #apiKey: xxxxxxxxxxxxxxxxxx
         id: 1_1318_piholestats
       - type: pi-hole-traffic
         options:
           hostname: http://pihole
-          apiKey: xxxxxxxxxxxxxxxxxxxxxxx
+          #apiKey: xxxxxxxxxxxxxxxxxxxxxxx
         id: 2_1318_piholetraffic
     displayData:
       sortBy: most-used
@@ -76,6 +76,8 @@ sections:
         description: Docker container management
         icon: hl-portainer
         id: 0_2053_portainer
+        statusCheckUrl: "https://127.0.0.1:5004"
+        url: ""
       - title: Prometheus
         description: System Statistics Aggregation with PromQL
         icon: hl-prometheus
@@ -91,7 +93,7 @@ sections:
       cols: 1
       collapsed: false
       hideForGuests: false
-  - name: Media
+  - name: Media - 4000's
     items:
       - title: Plex
         description: Self-Hosted Media Streaming Service
@@ -115,6 +117,27 @@ sections:
       cols: 1
       collapsed: false
       hideForGuests: false
+  - name: External Apps
+    items:
+      - title: Digital Ocean
+        icon: hl-digital-ocean
+        url: "https://cloud.digitalocean.com/projects"
+      - title: Azure
+        icon: hl-azure
+        url: "https://portal.azure.com"
+      - title: Zero Tier
+        icon: hl-zerotier
+        url: "https://my.zerotier.com/network"
+      - title: Cloud Flare
+        icon: hl-cloudflare
+        url: "https://dash.cloudflare.com"
+        statusCheckUrl: "https://cloudflare.com"
+      - title: Go Daddy
+        icon: "https://img6.wsimg.com/ux/favicon/favicon-32x32.png"
+        url: "https://dcc.godaddy.com/control/portfolio"
+      - title: Github
+        icon: hl-github
+        url: "https://github.com/LegitCamper"
   - name: CVE's
     widgets:
       - type: cve-vulnerabilities
