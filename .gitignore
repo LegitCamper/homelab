@@ -1,6 +1,6 @@
 pialert/config/pialert.conf
 pialert/config/pialert.confe
-portainer/certs
+portainer/certs/*
 portainer/docker_config/config.json
 portainer/portainer.key
 portainer/portainer.pub
