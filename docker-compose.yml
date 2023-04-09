@@ -1,0 +1,29 @@
+version: "3.9"
+services:
+  # Dashboards
+  dashy:
+    image: "lissy93/dashy:latest"
+    depends_on:
+      - glances
+    ports:
+      - "8000:80"
+    volumes:
+      - dashy/config.yml:/app/public/conf.yml
+    restart: always
+  glances:
+    image: "nicolargo/glances:latest"
+    ports:
+      - "8001:80"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: always
+  portainer:
+    image: "portainer/portainer-ce:latest"
+    ports:
+      - "8000:8000"
+      - "9443:9443" 
+    volumes:
+      - portainer_data:/data 
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: always
+  # Media
