@@ -1,0 +1,69 @@
+---
+pageInfo:
+  title: Sawyer's Homelab!
+  description: Welcome to your new dashboard!
+  navLinks:
+  - title: Homelab settings
+    path: https://github.com/LegitCamper/homelab/dashy
+
+appConfig:
+  theme: Dracula
+
+sections:
+- name: Productivity
+  displayData:
+    collapsed: false
+    cols: 2
+  items:
+  - title: NextCloud
+    description: Cloud office suit and collaboration platform
+    icon: productivity/nextcloud.png
+  - title: VS Code Web
+    description: Cloud based VS Code development environment
+    icon: productivity/vs-code.png
+
+- name: Networks
+  items:
+  - title: Pi-Hole
+    description: DNS settings for ad & tracker blocking
+    icon: networking/pihole.png
+  - title: PiAlert
+    description: Presence monitoring and ARP scanning
+    icon: networking/pialert.png
+  - title: SmokePing
+    description: Network latency monitoring
+    icon: networking/smokeping.png
+  - title: StatPing
+    description: Up-time monitoring for local service
+    icon: networking/statping.png
+  - title: LibreSpeed
+    description: Local network speed and latency test
+    icon: networking/librespeed.png
+  - title: Grafana
+    description: Data visualised on dashboards
+    icon: networking/grafana.png
+
+- name: System Maintence
+  items:
+  - title: Portainer
+    description: Docker container management
+  - title: Prometheus
+    description: System Statistics Aggregation with PromQL
+    icon: networking/prometheus.png
+  - title: Cockpit
+    description: web-based graphical interface for servers
+
+- name: Media
+  items:
+  - title: Plex
+    description: Self-Hosted Media Streaming Service
+    icon: media/plex.png
+  - title: Tautulli
+    description: Monitoring and statistics for Plex
+    icon: media/tautulli.png
+  - title: qBittorrent
+    description: managing torrents 
+    icon: media/qbittorrent.png
+  - title: Couch Potato
+    description: Automatic Movie Downloading via NZBs & Torrents
+    icon: media/couch-potato.png
