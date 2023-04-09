@@ -1,69 +1,148 @@
----
 pageInfo:
   title: Sawyer's Homelab!
   description: Welcome to your new dashboard!
+  footerText: Hello from the other side
   navLinks:
-  - title: Homelab settings
-    path: https://github.com/LegitCamper/homelab/dashy
-
+    - title: Homelab settings
+      path: https://github.com/LegitCamper/homelab/dashy
 appConfig:
-  theme: Dracula
+  theme: dracula
+  layout: vertical
+  iconSize: large
+  language: en
+  statusCheck: true
+  webSearch:
+    searchEngine: custom
+    customSearchEngine: https://search.sawyer.services?q=
+  disableConfiguration: true
 
 sections:
-- name: Productivity
-  displayData:
-    collapsed: false
-    cols: 2
-  items:
-  - title: NextCloud
-    description: Cloud office suit and collaboration platform
-    icon: productivity/nextcloud.png
-  - title: VS Code Web
-    description: Cloud based VS Code development environment
-    icon: productivity/vs-code.png
-
-- name: Networks
-  items:
-  - title: Pi-Hole
-    description: DNS settings for ad & tracker blocking
-    icon: networking/pihole.png
-  - title: PiAlert
-    description: Presence monitoring and ARP scanning
-    icon: networking/pialert.png
-  - title: SmokePing
-    description: Network latency monitoring
-    icon: networking/smokeping.png
-  - title: StatPing
-    description: Up-time monitoring for local service
-    icon: networking/statping.png
-  - title: LibreSpeed
-    description: Local network speed and latency test
-    icon: networking/librespeed.png
-  - title: Grafana
-    description: Data visualised on dashboards
-    icon: networking/grafana.png
-
-- name: System Maintence
-  items:
-  - title: Portainer
-    description: Docker container management
-  - title: Prometheus
-    description: System Statistics Aggregation with PromQL
-    icon: networking/prometheus.png
-  - title: Cockpit
-    description: web-based graphical interface for servers
-
-- name: Media
-  items:
-  - title: Plex
-    description: Self-Hosted Media Streaming Service
-    icon: media/plex.png
-  - title: Tautulli
-    description: Monitoring and statistics for Plex
-    icon: media/tautulli.png
-  - title: qBittorrent
-    description: managing torrents 
-    icon: media/qbittorrent.png
-  - title: Couch Potato
-    description: Automatic Movie Downloading via NZBs & Torrents
-    icon: media/couch-potato.png
+  - name: Productivity
+    displayData:
+      collapsed: false
+      cols: 2
+    items:
+      - title: NextCloud
+        description: Cloud office suit and collaboration platform
+        icon: hl-nextcloud
+        id: 0_1302_nextcloud
+      - title: VS Code Web
+        description: Cloud based VS Code development environment
+        icon: hl-vscode
+        id: 1_1302_vscodeweb
+  - name: Networks
+    items:
+      - title: Pi-Hole
+        description: DNS settings for ad & tracker blocking
+        icon: hl-pihole
+        id: 0_861_pihole
+      - title: PiAlert
+        description: Presence monitoring and ARP scanning
+        icon: hl-pi-alert-dark
+        id: 1_861_pialert
+      - title: SmokePing
+        description: Network latency monitoring
+        icon: hl-smokeping
+        id: 2_861_smokeping
+      - title: StatPing
+        description: Up-time monitoring for local service
+        icon: hl-statping
+        id: 3_861_statping
+      - title: LibreSpeed
+        description: Local network speed and latency test
+        icon: hl-librespeed
+        id: 4_861_librespeed
+      - title: Grafana
+        description: Data visualised on dashboards
+        icon: hl-grafana
+        id: 5_861_grafana
+    widgets:
+      - type: public-ip
+  - name: System Maintence
+    items:
+      - title: Portainer
+        description: Docker container management
+        icon: hl-portainer
+        id: 0_1593_portainer
+      - title: Prometheus
+        description: System Statistics Aggregation with PromQL
+        icon: hl-prometheus
+        url: ''
+        id: 1_1593_prometheus
+      - title: Cockpit
+        description: web-based graphical interface for servers
+        icon: hl-cockpit
+        id: 2_1593_cockpit
+  - name: Media
+    items:
+      - title: Plex
+        description: Self-Hosted Media Streaming Service
+        icon: hl-plex
+        id: 0_480_plex
+      - title: Tautulli
+        description: Monitoring and statistics for Plex
+        icon: hl-tautulli
+        id: 1_480_tautulli
+      - title: qBittorrent
+        description: managing torrents
+        icon: hl-qbittorrent
+        id: 2_480_qbittorrent
+      - title: Couch Potato
+        description: Automatic Movie Downloading via NZBs & Torrents
+        icon: hl-couchpotato
+        id: 3_480_couchpotato
+  - name: CVE's
+    widgets:
+      - type: cve-vulnerabilities
+        options:
+        sortBy: publish-date
+        productId: 28125
+        hasExploit: false
+        minScore: 5
+        limit: 30k
+  - name: Comic of the Day
+    widgets:
+      - type: xkcd-comic
+        options:
+        comic: latest
+  - name: Astronomy Picture of the Day
+    widgets:
+      - type: apod
+  - name: GitHub Trending
+    widgets:
+    - type: github-trending-repos
+      options:
+        limit: 8
+        since: weekly
+  - name: Pi Hole Stats
+    widgets:
+    - type: pi-hole-stats
+      options:
+        hostname: http://192.168.130.1
+        apiKey: xxxxxxxxxxxxxxxxxxxxxxx
+    - type: pi-hole-traffic
+      options:
+        hostname: https://pi-hole.local
+        apiKey: xxxxxxxxxxxxxxxxxxxxxxx
+  - name: Server Stats
+    widgets: 
+    - type: gl-current-cpu
+      options:
+        hostname: http://192.168.130.2:61208
+    - type: gl-cpu-history
+      options:
+        hostname: http://192.168.130.2:61208
+        limit: 60
+    - type: gl-network-traffic
+      options:
+        hostname: http://192.168.130.2:61208
+        limit: 500
+    - type: gl-network-interfaces
+      options:
+        hostname: http://192.168.130.2:61208
+    - type: gl-disk-space
+      options:
+        hostname: http://192.168.130.2:61208k
+    - type: gl-cpu-temp
+      options:
+        hostname: http://192.168.130.2:61208
