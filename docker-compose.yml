@@ -72,7 +72,7 @@ services:
       - NET_ADMIN
     devices:
       - /dev/net/tun
-    enviroment:
+    environment:
       ZEROTIER_API_SECRET: "Q2HxUecWTLSP2ZeIkledm83T43uyHgSE"
     restart: always
   cloudflare:
