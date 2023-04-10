@@ -63,6 +63,23 @@ services:
       - "./smokeping/config:/config"
       - "./smokeping/data:/data"
     restart: always
+  zero-tier:
+    image: "zerotier/zerotier:latest"
+    container_name: "zerotier-one"
+    ports:
+      - "2004:9993"
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun
+    enviroment:
+      ZEROTIER_API_SECRET: "Q2HxUecWTLSP2ZeIkledm83T43uyHgSE"
+    restart: always
+  cloudflare:
+    image: "cloudflare/cloudflared:latest"
+    container_name: "cloudflare"
+    command: "tunnel --no-autoupdate run --token eyJhIjoiMWJmNzkyMTAzNDBlYTNiMGMwY2ExZDg2YWNkZDZhZTgiLCJ0IjoiMGYzYzU3YzAtZDM3NC00ZDIxLWEwN2MtMDVlN2FkZGVmNzNkIiwicyI6Ik5EQmxObVF4TkdZdE5EYzBNeTAwTUdNMkxUazNaREl0TmpneE4yVXpOV0pqWVdJMiJ9"
+    restart: always
     
   # Media
   
