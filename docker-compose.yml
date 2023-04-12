@@ -82,6 +82,48 @@ services:
     restart: always
     
   # Media
+  plex:
+    container_name: "plex"
+    image: "linuxserver/plex"
+    network_mode: "host"
+    enviroment:
+      VERSION: "docker"
+      PATH: "/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" 
+      CUDA_VERSION: "10.0.130"
+      CUDA_PKG_VERSION: "10-0=10.0.130-1"
+      LD_LIBRARY_PATH: "/usr/local/cuda/extras/CUPTI/lib64:/usr/local/nvidia/lib:/usr/local/nvidia/lib64"
+      NVIDIA_VISIBLE_DEVICES: "all"
+      NVIDIA_DRIVER_CAPABILITIES: "all"
+      NVIDIA_REQUIRE_CUDA: "cuda>=10.0 brand=tesla,driver>=384,driver<385 brand=tesla,driver>=410,driver<411"
+    volumes:
+      - "/share/CE_CACHEDEV1_DATA/.qpkg/NVIDIA_GPU_DRV/usr:/usr/local/nvidia:rw"
+    devices:
+      - "/dev/nvidia0:/dev/nvidia0"
+      - "/dev/nvidiactl:/dev/nvidiactl"
+      - "/dev/nvidia-uvm:/dev/nvidia-uvm"
+    restart: always
+  transmission:
+    image: "lscr.io/linuxserver/transmission:latest"
+    container_name: "transmission"
+    environment:
+      PUID=1000
+      PGID=1000
+      TZ: "MST"
+      #TRANSMISSION_WEB_HOME= #optional
+      #USER= #optional
+      #PASS= #optional
+      #WHITELIST= #optional
+      #PEERPORT= #optional
+      #HOST_WHITELIST= #optional
+    volumes:
+      - ./transmission/config:/config
+      - ./transmission/watch:/watch
+      - /mnt/plex:/downloads # Path to hard drives
+    ports:
+      - "9091:9091"
+      - "51413:51413"
+      - "51413:51413/udp"
+    restart: always
   
   # System maintance
   watchtower:
@@ -89,6 +131,10 @@ services:
     image: "containrrr/watchtower"
     volumes: 
       - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      WATCHTOWER_CLEANUP: "true"
+      TZ: "MST"
+      WATCHTOWER_REVIVE_STOPPED: "true"
     restart: always
   registry: # My own docker registry
     container_name: "registry"
