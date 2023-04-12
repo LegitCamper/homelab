@@ -6,9 +6,6 @@ services:
   dashy:
     container_name: "dashy"
     image: "lissy93/dashy:latest"
-    depends_on:
-      - glances
-      - pihole
     ports:
       - "80:80"
     volumes:
@@ -86,18 +83,20 @@ services:
     container_name: "plex"
     image: "linuxserver/plex"
     network_mode: "host"
-    enviroment:
+    environment:
       VERSION: "docker"
       PATH: "/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" 
-      CUDA_VERSION: "10.0.130"
-      CUDA_PKG_VERSION: "10-0=10.0.130-1"
-      LD_LIBRARY_PATH: "/usr/local/cuda/extras/CUPTI/lib64:/usr/local/nvidia/lib:/usr/local/nvidia/lib64"
+      #CUDA_VERSION: "10.0.130"
+      #CUDA_PKG_VERSION: "10-0=10.0.130-1"
+      #LD_LIBRARY_PATH: "/usr/local/cuda/extras/CUPTI/lib64:/usr/local/nvidia/lib:/usr/local/nvidia/lib64"
       NVIDIA_VISIBLE_DEVICES: "all"
       NVIDIA_DRIVER_CAPABILITIES: "all"
-      NVIDIA_REQUIRE_CUDA: "cuda>=10.0 brand=tesla,driver>=384,driver<385 brand=tesla,driver>=410,driver<411"
+      #NVIDIA_REQUIRE_CUDA: "cuda>=10.0 brand=tesla,driver>=384,driver<385 brand=tesla,driver>=410,driver<411"
+      TZ: "US/MST"
     volumes:
       - "/share/CE_CACHEDEV1_DATA/.qpkg/NVIDIA_GPU_DRV/usr:/usr/local/nvidia:rw"
-      - "/mnt/plex:/plex_media"
+      - "/dev/shm:/transcode" # RAM transcoding?!
+      - "/mnt/plex:/media"
     devices:
       - "/dev/nvidia0:/dev/nvidia0"
       - "/dev/nvidiactl:/dev/nvidiactl"
@@ -107,8 +106,8 @@ services:
     image: "lscr.io/linuxserver/transmission:latest"
     container_name: "transmission"
     environment:
-      PUID=1000
-      PGID=1000
+      PUID: "1000"
+      PGID: "1000"
       TZ: "US/MST"
       #TRANSMISSION_WEB_HOME= #optional
       #USER= #optional
@@ -135,7 +134,7 @@ services:
       PGID: "1000"
       TZ: "US/MST"
     ports:
-      - "2001:8181"
+      - "4001:8181"
     restart: always
   radarr:
     image: lscr.io/linuxserver/radarr:latest
@@ -148,7 +147,7 @@ services:
       - ./radarr/config:/config
       - /mnt/plex:/movies #optional
     ports:
-      - "2002:7878"
+      - "4002:7878"
     restart: always
   
   # System maintance
@@ -190,22 +189,16 @@ services:
       - ./portainer:/data 
       - /var/run/docker.sock:/var/run/docker.sock
     restart: always
-
-  
-
+    
   # Searxng
-  version: '3.7'
-
-services:
-
   searx_caddy:
     container_name: searxng_caddy
     image: caddy:2-alpine
     network_mode: host
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy-data:/data:rw
-      - caddy-config:/config:rw
+      - ./searxng/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./searxng/caddy/caddy-data:/data:rw
+      - ./searxng/caddy/caddy-config:/config:rw
     environment:
       - SEARXNG_HOSTNAME=${SEARXNG_HOSTNAME:-http://localhost:80}
       - SEARXNG_TLS=${LETSENCRYPT_EMAIL:-internal}
@@ -238,10 +231,10 @@ services:
     ports:
      - "8080:8080"
     volumes:
-      - ./searxng:/etc/searxng:rw
-      - ./searx-extras-by-me/searxng.png:/usr/local/searxng/searx/static/themes/simple/img/searxng.png
-      - ./searx-extras-by-me/searxng.svg:/usr/local/searxng/searx/static/themes/simple/img/searxng.svg
-      # - ./searx-extras-by-me/searx/engines/chatgpt.py:/usr/local/searxng/searx/engines/chatgpt.py
+      - ./searxng/searxng:/etc/searxng:rw
+      #- ./searx-extras-by-me/searxng.png:/usr/local/searxng/searx/static/themes/simple/img/searxng.png
+      #- ./searx-extras-by-me/searxng.svg:/usr/local/searxng/searx/static/themes/simple/img/searxng.svg
+      #- ./searx-extras-by-me/searx/engines/chatgpt.py:/usr/local/searxng/searx/engines/chatgpt.py
     environment:
       - SEARXNG_BASE_URL=https://${SEARXNG_HOSTNAME:-localhost}/
     cap_drop:

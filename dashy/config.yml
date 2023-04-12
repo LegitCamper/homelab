@@ -32,6 +32,12 @@ sections:
         description: Cloud based VS Code development environment
         icon: hl-vscode
         id: 1_1302_vscodeweb
+      - title: SearxNG
+        description: Safe and private search engine
+        icon: hl-searxng
+        url: "https://search.sawyer.services"
+        statusCheckUrl: "http://searxng"
+        statusCheckAllowInsecure: true
   - name: Networks - 2000's
     items:
       - title: Pi-Hole
@@ -77,16 +83,16 @@ sections:
         icon: hl-portainer
         id: 0_2053_portainer
         statusCheckUrl: "https://127.0.0.1:5004"
-        url: ""
-      - title: Prometheus
-        description: System Statistics Aggregation with PromQL
-        icon: hl-prometheus
-        url: ''
-        id: 1_2053_prometheus
-      - title: Cockpit
-        description: web-based graphical interface for servers
-        icon: hl-cockpit
-        id: 2_2053_cockpit
+        url: "https://portainer.sawyer.services"
+      # - title: Prometheus
+        # description: System Statistics Aggregation with PromQL
+        # icon: hl-prometheus
+        # url: ''
+        # id: 1_2053_prometheus
+      # - title: Cockpit
+        # description: web-based graphical interface for servers
+        # icon: hl-cockpit
+        # id: 2_2053_cockpit
     displayData:
       sortBy: most-used
       rows: 1
@@ -94,31 +100,36 @@ sections:
       collapsed: false
       hideForGuests: false
   - name: Media - 4000's
+    statusCheckAcceptCodes: "401, 503"
     items:
       - title: Plex
         description: Self-Hosted Media Streaming Service
         icon: hl-plex
         id: 0_480_plex
-        url: "plex.sawyer.services"
-        statusCheckUrl: "127.0.0.1:32400"
+        url: "https://plex.sawyer.services/web"
+        statusCheckUrl: "http://127.0.0.1:32400/web"
+        statusCheckAllowInsecure: true
       - title: Tautulli
         description: Monitoring and statistics for Plex
         icon: hl-tautulli
         id: 1_480_tautulli
-        url: "tautulli.sawyer.services"
-        statusCheckUrl: "127.0.0.1:2001"
+        url: "https://tautulli.sawyer.services"
+        statusCheckUrl: "http://http://127.0.0.1:4001"
+        statusCheckAllowInsecure: true
       - title: Transmission
         description: managing torrents
         icon: hl-transmission
         id: 2_480_transmission
-        url: "transmission.sawyer.services"
-        statusCheckUrl: "127.0.0.1:9091"
+        url: "https://transmission.sawyer.services"
+        statusCheckUrl: "http://transmission"
+        statusCheckAllowInsecure: true
       - title: Radarr
         description: Automatic Movie Downloading via NZBs & Torrents
         icon: hl-radarr
         id: 3_480_radarr
-        url: "radarr.sawyer.services"
-        statusCheckUrl: "127.0.0.1:2002"
+        url: "https://radarr.sawyer.services"
+        statusCheckUrl: "http://127.0.0.1:4002"
+        statusCheckAllowInsecure: true
     displayData:
       sortBy: most-used
       rows: 1
@@ -146,22 +157,22 @@ sections:
       - title: Github
         icon: hl-github
         url: "https://github.com/LegitCamper"
-  - name: CVE's
-    widgets:
-      - type: cve-vulnerabilities
-        options: null
-        sortBy: publish-date
-        productId: 28125
-        hasExploit: false
-        minScore: 5
-        limit: 30k
-        id: 0_376_cvevulnerabilities
-    displayData:
-      sortBy: most-used
-      rows: 1
-      cols: 1
-      collapsed: false
-      hideForGuests: false
+  #- name: CVE's
+    # widgets:
+      # - type: cve-vulnerabilities
+        # options: null
+        # sortBy: publish-date
+        # productId: 28125
+        # hasExploit: false
+        # minScore: 5
+        # limit: 30k
+        # id: 0_376_cvevulnerabilities
+    # displayData:
+      # sortBy: most-used
+      # rows: 1
+      # cols: 1
+      # collapsed: false
+      # hideForGuests: false
   - name: Daily
     widgets:
       - type: apod
@@ -170,19 +181,19 @@ sections:
         options: null
         comic: latest
         id: 0_1407_xkcdcomic
-  - name: GitHub Trending
-    widgets:
-      - type: github-trending-repos
-        options:
-          limit: 8
-          since: weekly
-        id: 0_1438_githubtrendingrepos
-    displayData:
-      sortBy: most-used
-      rows: 1
-      cols: 1
-      collapsed: false
-      hideForGuests: false
+  # - name: GitHub Trending
+  #   widgets:
+  #     - type: github-trending-repos
+  #       options:
+  #         limit: 8
+  #         since: weekly
+  #       id: 0_1438_githubtrendingrepos
+  #   displayData:
+  #     sortBy: most-used
+  #     rows: 1
+  #     cols: 1
+  #     collapsed: false
+  #     hideForGuests: false
   - name: Server Stats
     displayData:
       collapsed: false
