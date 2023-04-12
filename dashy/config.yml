@@ -99,18 +99,26 @@ sections:
         description: Self-Hosted Media Streaming Service
         icon: hl-plex
         id: 0_480_plex
+        url: "plex.sawyer.services"
+        statusCheckUrl: "127.0.0.1:32400"
       - title: Tautulli
         description: Monitoring and statistics for Plex
         icon: hl-tautulli
         id: 1_480_tautulli
-      - title: qBittorrent
+        url: "tautulli.sawyer.services"
+        statusCheckUrl: "127.0.0.1:2001"
+      - title: Transmission
         description: managing torrents
-        icon: hl-qbittorrent
-        id: 2_480_qbittorrent
-      - title: Couch Potato
+        icon: hl-transmission
+        id: 2_480_transmission
+        url: "transmission.sawyer.services"
+        statusCheckUrl: "127.0.0.1:9091"
+      - title: Radarr
         description: Automatic Movie Downloading via NZBs & Torrents
-        icon: hl-couchpotato
-        id: 3_480_couchpotato
+        icon: hl-radarr
+        id: 3_480_radarr
+        url: "radarr.sawyer.services"
+        statusCheckUrl: "127.0.0.1:2002"
     displayData:
       sortBy: most-used
       rows: 1

@@ -97,6 +97,7 @@ services:
       NVIDIA_REQUIRE_CUDA: "cuda>=10.0 brand=tesla,driver>=384,driver<385 brand=tesla,driver>=410,driver<411"
     volumes:
       - "/share/CE_CACHEDEV1_DATA/.qpkg/NVIDIA_GPU_DRV/usr:/usr/local/nvidia:rw"
+      - "/mnt/plex:/plex_media"
     devices:
       - "/dev/nvidia0:/dev/nvidia0"
       - "/dev/nvidiactl:/dev/nvidiactl"
@@ -108,7 +109,7 @@ services:
     environment:
       PUID=1000
       PGID=1000
-      TZ: "MST"
+      TZ: "US/MST"
       #TRANSMISSION_WEB_HOME= #optional
       #USER= #optional
       #PASS= #optional
@@ -124,6 +125,31 @@ services:
       - "51413:51413"
       - "51413:51413/udp"
     restart: always
+  tautulli:
+    image: "ghcr.io/tautulli/tautulli"
+    container_name: "tautulli"
+    volumes:
+      - "./tautulli/config:/config"
+    environment:
+      PUID: "1000"
+      PGID: "1000"
+      TZ: "US/MST"
+    ports:
+      - "2001:8181"
+    restart: always
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    environment:
+      PUID: "1000"
+      PGID: "1000"
+      TZ: "US/MST"
+    volumes:
+      - ./radarr/config:/config
+      - /mnt/plex:/movies #optional
+    ports:
+      - "2002:7878"
+    restart: always
   
   # System maintance
   watchtower:
@@ -133,7 +159,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       WATCHTOWER_CLEANUP: "true"
-      TZ: "MST"
+      TZ: "US/MST"
       WATCHTOWER_REVIVE_STOPPED: "true"
     restart: always
   registry: # My own docker registry
