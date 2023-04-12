@@ -118,3 +118,78 @@ services:
       - ./portainer:/data 
       - /var/run/docker.sock:/var/run/docker.sock
     restart: always
+
+  
+
+  # Searxng
+  version: '3.7'
+
+services:
+
+  searx_caddy:
+    container_name: searxng_caddy
+    image: caddy:2-alpine
+    network_mode: host
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data:rw
+      - caddy-config:/config:rw
+    environment:
+      - SEARXNG_HOSTNAME=${SEARXNG_HOSTNAME:-http://localhost:80}
+      - SEARXNG_TLS=${LETSENCRYPT_EMAIL:-internal}
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+      - DAC_OVERRIDE
+
+  searxng_redis:
+    container_name: searxng_redis
+    image: "redis:alpine"
+    command: redis-server --save "" --appendonly "no"
+    networks:
+      - searxng
+    tmpfs:
+      - /var/lib/redis
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+
+  searxng:
+    container_name: searxng
+    image: searxng/searxng:latest
+    networks:
+      - searxng
+    ports:
+     - "8080:8080"
+    volumes:
+      - ./searxng:/etc/searxng:rw
+      - ./searx-extras-by-me/searxng.png:/usr/local/searxng/searx/static/themes/simple/img/searxng.png
+      - ./searx-extras-by-me/searxng.svg:/usr/local/searxng/searx/static/themes/simple/img/searxng.svg
+      # - ./searx-extras-by-me/searx/engines/chatgpt.py:/usr/local/searxng/searx/engines/chatgpt.py
+    environment:
+      - SEARXNG_BASE_URL=https://${SEARXNG_HOSTNAME:-localhost}/
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "1"
+
+networks:
+  searxng:
+    ipam:
+      driver: default
+
+volumes:
+  caddy-data:
+  caddy-config:
