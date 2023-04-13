@@ -165,9 +165,6 @@ services:
       # File unzipped before from Mullvad, it's location. Make sure to keep the ":/data/vpn" part at the end
     ports:
       - "5665:5665"                         # Opening port for to access hypothetical Transmission container that would be routing through this VPN
-      - "9091:9091"
-      - "51413:51413"
-      - "51413:51413/udp"
       #- "1500:1500"                         # Opening port for other application routing through VPN
     restart: always
   
