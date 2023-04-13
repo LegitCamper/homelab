@@ -24,7 +24,7 @@ services:
     environment:
       TZ: "America/Denver"
       PIHOLE_DNS_: "127.0.0.1#53;9.9.9.9;149.112.112.112;8.8.8.8"
-      DNSSEC: true
+      DNSSEC: "true"
       WEB_PORT: "80"
       WEB_BIND_ADDR: "0.0.0.0"
     volumes:
@@ -149,6 +149,24 @@ services:
     ports:
       - "4002:7878"
     restart: always
+  mullvad:
+    image: "yacht7/openvpn-client"
+    container_name: "openvpn-client"
+    cap_add:
+        - NET_ADMIN
+    environment: 
+      KILL_SWITCH: "on"                         # Turns off internet access if the VPN connection drops
+      FORWARDED_PORTS: "51820"                   # NUMBER TO REMEMBER FROM BEFORE, READ STEP 7 under STEP 1 (THIS IS CONFUSING AS IM TYPING IT, BUT READ IT)
+      SUBNETS: "192.168.0.0/24,192.168.1.0/24"  # Allows for the service to be accessed through LAN
+    devices:
+      - "/dev/net/tun"                      
+    volumes:
+      - ./mullvad:/data/vpn   
+      # File unzipped before from Mullvad, it's location. Make sure to keep the ":/data/vpn" part at the end
+    ports:
+      - "5665:5665"                         # Opening port for to access hypothetical Transmission container that would be routing through this VPN
+      #- "1500:1500"                         # Opening port for other application routing through VPN
+    restart: always
   
   # System maintance
   watchtower:
@@ -189,7 +207,7 @@ services:
       - ./portainer:/data 
       - /var/run/docker.sock:/var/run/docker.sock
     restart: always
-    
+
   # Searxng
   searx_caddy:
     container_name: searxng_caddy
