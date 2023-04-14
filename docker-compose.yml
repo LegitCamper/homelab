@@ -197,17 +197,17 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "./glances/glances.conf:/glances/conf/glances.conf" 
     restart: always
-  portainer:
-    container_name: "portainer"
-    image: "portainer/portainer-ce:latest"
-    ports:
-      - "5003:8000"
-      - "5004:9443" 
-    volumes:
-      - ./portainer:/data 
-      - /var/run/docker.sock:/var/run/docker.sock
-    restart: always
-
+  # portainer:
+  #   container_name: "portainer"
+  #   image: "portainer/portainer-ce:latest"
+  #   ports:
+  #     - "5003:8000"
+  #     - "5004:9443" 
+  #   volumes:
+  #     - ./portainer:/data 
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #   restart: always
+    
   # Searxng
   searx_caddy:
     container_name: searxng_caddy
@@ -275,4 +275,3 @@ networks:
 
 volumes:
   caddy-data:
-  caddy-config:
