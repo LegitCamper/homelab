@@ -97,10 +97,10 @@ services:
       - "/share/CE_CACHEDEV1_DATA/.qpkg/NVIDIA_GPU_DRV/usr:/usr/local/nvidia:rw"
       - "/dev/shm:/transcode" # RAM transcoding?!
       - "/mnt/plex:/media"
-    devices:
-      - "/dev/nvidia0:/dev/nvidia0"
-      - "/dev/nvidiactl:/dev/nvidiactl"
-      - "/dev/nvidia-uvm:/dev/nvidia-uvm"
+    # devices:
+      # - "/dev/nvidia0:/dev/nvidia0"
+      # - "/dev/nvidiactl:/dev/nvidiactl"
+      # - "/dev/nvidia-uvm:/dev/nvidia-uvm"
     restart: always
   transmission:
     image: "lscr.io/linuxserver/transmission:latest"
