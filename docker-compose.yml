@@ -214,7 +214,7 @@ services:
     image: caddy:2-alpine
     network_mode: host
     volumes:
-      - ./searxng/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      # - ./searxng/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - ./searxng/caddy/caddy-data:/data:rw
       - ./searxng/caddy/caddy-config:/config:rw
     environment:
