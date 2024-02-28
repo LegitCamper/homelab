@@ -1,0 +1,13 @@
+version: 0.1
+delete:
+  enabled: true
+compatibility:
+  schema1:
+    enabled: true
+storage:
+  filesystem:
+    rootdirectory: /var/lib/registry
+http:
+  addr: localhost:5000
+  prefix: /
+auth:

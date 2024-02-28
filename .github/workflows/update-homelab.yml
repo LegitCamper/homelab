@@ -1,0 +1,45 @@
+name: Update Homelab Files
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: "self-hosted"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4  
+        with:
+          repository: LegitCamper/homelab-secrets
+          path: 'secrets'
+          sparse-checkout: |
+            homelab.env
+          sparse-checkout-cone-mode: false
+          token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Run a multi-line script
+        run: ls $GITHUB_WORKSPACE && ls -la ~ && pwd
+
+      - name: Copy folder content recursively to remote
+        uses: garygrossgarten/github-action-scp@v0.8.0
+        with:
+          local: ${{ github.workspace }}
+          remote: /home/${{ secrets.SSH_USER }}/stacks/homelab/
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.PASSWORD }}
+
+      - name: multiple command
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.PASSWORD }}
+          script: |
+            cd ~/stacks/homelab/
+            docker compose --env-file ./secrets/homelab.env -f network.yml -f media.yml -f utilities.yml up -d --remove-orphans

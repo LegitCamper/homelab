@@ -1,0 +1,21 @@
+use_default_settings: true
+
+server:
+  limiter: false 
+
+ui:
+  query_in_title: false
+  infinite_scroll: true
+  center_alignment: true
+  default_theme: simple
+  theme_args:
+    simple_style: dark
+  results_on_new_tab: true
+
+general:
+  debug: false
+  instance_name:  "Sawyer Search"
+  privacypolicy_url: false
+  contact_url: false
+  enable_metrics: false
+  donation_url: false

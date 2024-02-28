@@ -1,0 +1,161 @@
+# My homelab utilities file
+version: "3.9"
+
+networks:
+  web:
+    external: true
+  internal:
+    external: false
+
+services:
+  registry: # My own docker registry
+    container_name: registry
+    image: registry
+    restart: always
+    networks:
+      - web
+    ports:
+      - 5000:5000
+    env_file:
+      - ./secrets/homelab.env
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web"
+      - "traefik.http.routers.registry.entrypoints=http"
+      - "traefik.http.routers.registry.rule=Host(`registry.${DOMAIN}`)"
+      - "traefik.http.middlewares.registry-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.routers.registry.middlewares=registry-https-redirect"
+      - "traefik.http.routers.registry-secure.entrypoints=https"
+      - "traefik.http.routers.registry-secure.rule=Host(`registry.${DOMAIN}`)"
+      - "traefik.http.routers.registry-secure.tls=true"
+      - "traefik.http.routers.registry-secure.tls.certresolver=${DNS}"
+
+  searxng:
+    image: searxng/searxng
+    container_name: searxng
+    restart: always
+    networks:
+      - web
+    ports:
+     - 9001:8080
+    volumes:
+      - ./searxng:/etc/searxng:rw
+    env_file:
+      - ./secrets/homelab.env
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web"
+      - "traefik.http.routers.searxng.entrypoints=http"
+      - "traefik.http.routers.searxng.rule=Host(`searxng.${DOMAIN}`) || Host(`searx.${DOMAIN}`) || Host(`search.${DOMAIN}`)"
+      - "traefik.http.middlewares.searxng-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.routers.searxng.middlewares=searxng-https-redirect"
+      - "traefik.http.routers.searxng-secure.entrypoints=https"
+      - "traefik.http.routers.searxng-secure.rule=Host(`searxng.${DOMAIN}`) || Host(`searx.${DOMAIN}`) || Host(`search.${DOMAIN}`)"
+      - "traefik.http.routers.searxng-secure.tls=true"
+      - "traefik.http.routers.searxng-secure.tls.certresolver=${DNS}"
+
+  filebrowser:
+    image: filebrowser/filebrowser
+    container_name: filebrowser
+    restart: always
+    command: "--noauth"
+    networks:
+      - web
+    env_file:
+      - ./secrets/homelab.env
+    volumes:
+      - ${DRIVE}/media/shows:/srv/shows
+      - ${DRIVE}/media/movies:/srv/movies
+      - ${DRIVE}/media/music:/srv/music
+      - ${DRIVE}/media/complete:/srv/complete
+      - ${DRIVE}/media/else:/srv/else
+      - ${DRIVE}/incomplete:/srv/incomplete 
+    ports:
+      - 9003:80 
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web"
+      - "traefik.http.routers.files.entrypoints=http"
+      - "traefik.http.routers.files.rule=Host(`files.${DOMAIN}`) || Host(`filebrowser.${DOMAIN}`) "
+      - "traefik.http.middlewares.files-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.routers.files.middlewares=files-https-redirect"
+      - "traefik.http.routers.files-secure.entrypoints=https"
+      - "traefik.http.routers.files-secure.rule=Host(`files.${DOMAIN}`) || Host(`filebrowser.${DOMAIN}`) "
+      - "traefik.http.routers.files-secure.tls=true"
+      - "traefik.http.routers.files-secure.tls.certresolver=${DNS}"
+
+  smokeping:
+    image: lscr.io/linuxserver/smokeping
+    container_name: smokeping
+    restart: always 
+    networks:
+      - web
+    ports:
+      - 2003:80
+    env_file:
+      - ./secrets/homelab.env
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web"
+      - "traefik.http.routers.ping.entrypoints=http"
+      - "traefik.http.routers.ping.rule=Host(`ping.${DOMAIN}`) || Host(`smokeping.${DOMAIN}`) "
+      - "traefik.http.middlewares.ping-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.routers.ping.middlewares=ping-https-redirect"
+      - "traefik.http.routers.ping-secure.entrypoints=https"
+      - "traefik.http.routers.ping-secure.rule=Host(`ping.${DOMAIN}`) || Host(`smokeping.${DOMAIN}`) "
+      - "traefik.http.routers.ping-secure.tls=true"
+      - "traefik.http.routers.ping-secure.tls.certresolver=${DNS}"
+     
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    networks:
+      - internal
+    volumes: 
+      - /var/run/docker.sock:/var/run/docker.sock
+    env_file:
+      - ./secrets/homelab.env
+    environment:
+      WATCHTOWER_CLEANUP: true
+      WATCHTOWER_REVIVE_STOPPED: true
+    restart: always
+    labels:
+      - "traefik.enable=false"
+
+  # prometheus:
+  #   image: prom/prometheus
+  #   container_name: prometheus
+  #   ports:
+  #     - 9004:9090
+  #   command:
+  #     - --config.file=/etc/prometheus/prometheus.yml
+  #   volumes:
+  #     - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+  #     - ${DRIVE}/prometheus-data:/prometheus
+  #   depends_on:
+  #     - cadvisor
+  #   restart: always
+
+  # cadvisor:
+  #   image: gcr.io/cadvisor/cadvisor
+  #   container_name: cadvisor
+  #   ports:
+  #     - 9005:8080
+  #   volumes:
+  #     - /:/rootfs:ro
+  #     - /var/run:/var/run:rw
+  #     - /sys:/sys:ro
+  #     - /var/lib/docker/:/var/lib/docker:ro
+  #   restart: always
+
+  # grafana:
+  #   image: grafana/grafana
+  #   container_name: grafana
+  #   ports:
+  #    - 9006:3000
+  #   restart: always
+

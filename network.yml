@@ -1,0 +1,114 @@
+# My homelab network file
+version: "3.9"
+
+networks:
+  web:
+    external: true
+  internal:
+    external: false
+
+services:
+  tailscale:
+    image: tailscale/tailscale
+    container_name: tailscale
+    restart: always
+    env_file:
+      - ./secrets/homelab.env
+    environment:
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_USERSPACE=0
+    volumes:
+      - ${DRIVE}/tailscale_state:/var/lib/tailscale
+      - /dev/net/tun:/dev/net/tun
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    labels:      
+      - "traefik.enable=false"
+
+  traefik:
+    image: traefik
+    container_name: traefik
+    restart: always
+    command: | 
+      traefik 
+      --log=true --log.level=INFO
+      --api.dashboard=true --api.insecure=true
+      --entrypoints.http --entrypoints.http.address=:80
+      --entrypoints.https --entrypoints.https.address=:443
+      --entrypoints.dnsovertls --entrypoints.dnsovertls.address=:853
+      --serverstransport.insecureskipverify=true 
+      --entrypoints.http.http.redirections.entrypoint.to=https
+      --entrypoints.http.http.redirections.entrypoint.scheme=https
+      --providers.docker=true --providers.docker.exposedbydefault=false
+      --certificatesresolvers.${DNS}.acme.email=${CF_API_EMAIL}
+      --certificatesresolvers.${DNS}.acme.storage=acme.json
+      --certificatesresolvers.${DNS}.acme.dnschallenge
+      --certificatesresolvers.${DNS}.acme.dnschallenge.disablepropagationcheck=false
+      --certificatesresolvers.${DNS}.acme.dnschallenge.provider=${DNS}
+      --certificatesresolvers.${DNS}.acme.dnschallenge.resolvers=1.1.1.1:53,8.8.8.8:53
+      --certificatesresolvers.${DNS}.acme.httpchallenge.entrypoint=http
+    env_file:
+      - ./secrets/homelab.env
+    volumes:
+      - /etc/localtime:/etc/localtime:ro      
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - "${DRIVE}/acme/acme.json:/acme.json" 
+    networks:
+      - web
+    ports:
+      - "80:80"
+      - "443:443"
+      - "853:853"
+      - "8080:8080"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web"
+      - "traefik.http.routers.traefik.entrypoints=http"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN}`)"
+      - "traefik.http.middlewares.traefik-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.routers.traefik.middlewares=traefik-https-redirect"
+      - "traefik.http.routers.traefik-secure.entrypoints=https"
+      - "traefik.http.routers.traefik-secure.rule=Host(`traefik.${DOMAIN}`)"
+      - "traefik.http.routers.traefik-secure.tls=true"
+      - "traefik.http.routers.traefik-secure.tls.certresolver=${DNS}"
+      - "traefik.http.routers.traefik-secure.service=api@internal"
+
+  adguardhome:
+    image: adguard/adguardhome
+    container_name: adguardhome
+    restart: always
+    env_file:
+      - ./secrets/homelab.env
+    networks:
+      - web
+    volumes:
+      - ${DRIVE}/adguardhome/work:/opt/adguardhome/work
+      - ${DRIVE}/adguardhome/conf:/opt/adguardhome/conf
+      - ${DRIVE}/certbot/certificates/:/opt/adguardhome/certs/    
+    ports:
+      - 3000:3000/tcp
+      - "53:53/tcp"
+      - "53:53/udp"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web"
+      - "traefik.http.routers.adguard.entrypoints=http"
+      - "traefik.http.routers.adguardng.rule=Host(`adguard.${DOMAIN}`) || Host(`adguardhome.${DOMAIN}`)"
+      - "traefik.http.middlewares.adguard-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.routers.adguard.middlewares=adguard-https-redirect"
+      - "traefik.http.routers.adguard-secure.entrypoints=https"
+      - "traefik.http.services.adguard-secure.loadbalancer.server.port=3000"
+      - "traefik.http.routers.adguard-secure.rule=Host(`adguard.${DOMAIN}`) || Host(`adguardhome.${DOMAIN}`)"
+      - "traefik.http.routers.adguard-secure.tls=true"
+      - "traefik.http.routers.adguard-secure.tls.certresolver=${DNS}"
+
+      # DNS-over-TLS
+      - traefik.tcp.routers.adguard-dot.rule=HostSNI(`dns.${DOMAIN}`) 
+      - traefik.tcp.routers.adguard-dot.entrypoints=dnsovertls
+      - traefik.tcp.routers.adguard-dot.tls=true
+      - traefik.tcp.routers.adguard-dot.service=adguard
+      - traefik.tcp.services.adguard.loadbalancer.server.port=53
