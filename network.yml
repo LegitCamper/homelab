@@ -111,4 +111,5 @@ services:
       - traefik.tcp.routers.adguard-dot.entrypoints=dnsovertls
       - traefik.tcp.routers.adguard-dot.tls=true
       - traefik.tcp.routers.adguard-dot.service=adguard
+      - traefik.tcp.routers.adguard-dot.tls.certresolver=${DNS}
       - traefik.tcp.services.adguard.loadbalancer.server.port=53
