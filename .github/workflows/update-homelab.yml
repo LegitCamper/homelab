@@ -22,9 +22,6 @@ jobs:
           sparse-checkout-cone-mode: false
           token: ${{ secrets.ACCESS_TOKEN }}
 
-      - name: Run a multi-line script
-        run: ls $GITHUB_WORKSPACE && ls -la ~ && pwd
-
       - name: Copy folder content recursively to remote
         uses: garygrossgarten/github-action-scp@v0.8.0
         with:
