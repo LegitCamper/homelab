@@ -86,6 +86,7 @@ services:
       - "traefik.http.routers.files-secure.rule=Host(`files.${DOMAIN}`) || Host(`filebrowser.${DOMAIN}`) "
       - "traefik.http.routers.files-secure.tls=true"
       - "traefik.http.routers.files-secure.tls.certresolver=${DNS}"
+      - "traefik.http.routers.files-secure.middlewares=forward-auth"
 
   smokeping:
     image: lscr.io/linuxserver/smokeping
@@ -109,6 +110,7 @@ services:
       - "traefik.http.routers.ping-secure.rule=Host(`ping.${DOMAIN}`) || Host(`smokeping.${DOMAIN}`) "
       - "traefik.http.routers.ping-secure.tls=true"
       - "traefik.http.routers.ping-secure.tls.certresolver=${DNS}"
+      - "traefik.http.routers.ping-secure.middlewares=forward-auth"
      
   watchtower:
     image: containrrr/watchtower

@@ -71,3 +71,4 @@ services:
       - "traefik.http.routers.transmission-secure.tls=true"
       - "traefik.http.routers.transmission-secure.tls.certresolver=${DNS}"
       - "traefik.http.services.transmission-secure.loadbalancer.server.port=9091"
+      - "traefik.http.routers.transmission-secure.middlewares=forward-auth"

@@ -75,6 +75,28 @@ services:
       - "traefik.http.routers.traefik-secure.tls=true"
       - "traefik.http.routers.traefik-secure.tls.certresolver=${DNS}"
       - "traefik.http.routers.traefik-secure.service=api@internal"
+      - "traefik.http.routers.treafik-secure.middlewares=forward-auth"
+
+  traefik-forward-auth:
+    image: thomseddon/traefik-forward-auth:2.1.0
+    container_name: traefik-auth
+    env_file: 
+      - ./secrets/homelab.env
+    networks:
+      - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web"
+      - "traefik.http.routers.auth.rule=Host(`auth.${DOMAIN}`)"
+      - "traefik.http.routers.auth.entrypoints=https"
+      - "traefik.http.routers.auth.tls=true"
+      - "traefik.http.routers.auth.tls.certresolver=${DNS}"
+      - "traefik.http.routers.auth.service=auth@docker"
+      - "traefik.http.services.auth.loadbalancer.server.port=4181"
+      - "traefik.http.middlewares.forward-auth.forwardauth.address=http://traefik-forward-auth:4181"
+      - "traefik.http.middlewares.forward-auth.forwardauth.trustForwardHeader=true"
+      - "traefik.http.middlewares.forward-auth.forwardauth.authResponseHeaders=X-Forwarded-User"
+      - "traefik.http.routers.auth.middlewares=forward-auth"
 
   adguardhome:
     image: adguard/adguardhome
@@ -105,6 +127,7 @@ services:
       - "traefik.http.routers.adguard-secure.rule=Host(`adguard.${DOMAIN}`) || Host(`adguardhome.${DOMAIN}`)"
       - "traefik.http.routers.adguard-secure.tls=true"
       - "traefik.http.routers.adguard-secure.tls.certresolver=${DNS}"
+      - "traefik.http.routers.adguard-secure.middlewares=forward-auth"
 
       # DNS-over-TLS
       - traefik.tcp.routers.adguard-dot.rule=HostSNI(`dns.${DOMAIN}`) 
