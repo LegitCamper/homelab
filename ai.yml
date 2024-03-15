@@ -61,7 +61,7 @@ services:
     env_file:
       - ./secrets/homelab.env
     volumes:
-      - ollama_data:ollama:/root/.ollama
+      - ollama_data:/root/.ollama
     labels:
       - "traefik.enable=false"
     deploy:
