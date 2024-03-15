@@ -24,14 +24,14 @@ services:
     cap_add:
       - NET_ADMIN
       - NET_RAW
-    labels:      
+    labels:
       - "traefik.enable=false"
 
   traefik:
     image: traefik
     container_name: traefik
     restart: always
-    command: | 
+    command: |
       traefik 
       --log=true --log.level=INFO
       --api.dashboard=true --api.insecure=true
@@ -52,9 +52,9 @@ services:
     env_file:
       - ./secrets/homelab.env
     volumes:
-      - /etc/localtime:/etc/localtime:ro      
+      - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - "${DRIVE}/acme/acme.json:/acme.json" 
+      - "${DRIVE}/acme/acme.json:/acme.json"
     networks:
       - web
     ports:
@@ -80,7 +80,7 @@ services:
   traefik-forward-auth:
     image: thomseddon/traefik-forward-auth:2.1.0
     container_name: traefik-auth
-    env_file: 
+    env_file:
       - ./secrets/homelab.env
     networks:
       - web
@@ -109,7 +109,7 @@ services:
     volumes:
       - ${DRIVE}/adguardhome/work:/opt/adguardhome/work
       - ${DRIVE}/adguardhome/conf:/opt/adguardhome/conf
-      - ${DRIVE}/certbot/certificates/:/opt/adguardhome/certs/    
+      - ${DRIVE}/certbot/certificates/:/opt/adguardhome/certs/
     ports:
       - 3000:3000/tcp
       - "53:53/tcp"
@@ -130,7 +130,7 @@ services:
       - "traefik.http.routers.adguard-secure.middlewares=forward-auth"
 
       # DNS-over-TLS
-      - traefik.tcp.routers.adguard-dot.rule=HostSNI(`dns.${DOMAIN}`) 
+      - traefik.tcp.routers.adguard-dot.rule=HostSNI(`dns.${DOMAIN}`)
       - traefik.tcp.routers.adguard-dot.entrypoints=dnsovertls
       - traefik.tcp.routers.adguard-dot.tls=true
       - traefik.tcp.routers.adguard-dot.service=adguard

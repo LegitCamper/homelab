@@ -9,20 +9,44 @@ networks:
 
 volumes:
   portainer_data:
+    driver: local
 
 services:
-  portainer:
-    container_name: portainer
-    image: portainer/portainer-ee:latest
+  dashy:
+    container_name: dashy
+    image: lissy93/dashy
     restart: always
     networks:
       - web
-    ports:
-      - 9443:9443
-      - 9000:9000
+    expose:
+      - 80
     volumes:
-        - portainer_data:/data
-        - /var/run/docker.sock:/var/run/docker.sock
+      - ./dashy/conf.yml:/app/public/conf.yml
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web"
+      - "traefik.http.routers.dashy.entrypoints=http"
+      - "traefik.http.routers.dashy.rule=Host(`dashy.${DOMAIN}`) || Host(`${DOMAIN}`)"
+      - "traefik.http.middlewares.dashy-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.routers.dashy.middlewares=dashy-https-redirect"
+      - "traefik.http.routers.dashy-secure.entrypoints=https"
+      - "traefik.http.routers.dashy-secure.rule=Host(`dashy.${DOMAIN}`)"
+      - "traefik.http.routers.dashy-secure.tls=true"
+      - "traefik.http.routers.dashy-secure.tls.certresolver=${DNS}"
+      - "traefik.http.routers.dashy-secure.middlewares=forward-auth"
+
+  portainer:
+    container_name: portainer
+    image: portainer/portainer-ee
+    restart: always
+    networks:
+      - web
+    expose:
+      - 9000
+    volumes:
+      - portainer_data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=web"
@@ -32,11 +56,12 @@ services:
       - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
       - "traefik.http.routers.portainer.middlewares=portainer-https-redirect"
       - "traefik.http.routers.portainer-secure.entrypoints=https"
-      - "traefik.http.services.auth.loadbalancer.server.port=9000"
       - "traefik.http.routers.portainer-secure.rule=Host(`portainer.${DOMAIN}`)"
       - "traefik.http.routers.portainer-secure.tls=true"
       - "traefik.http.routers.portainer-secure.tls.certresolver=${DNS}"
       - "traefik.http.routers.portainer-secure.middlewares=forward-auth"
+      - "traefik.http.middlewares.remove-path.stripprefix.prefixes=/portainer"
+      - "traefik.http.routers.portainer.middlewares=remove-path@docker"
 
   registry: # My own docker registry
     container_name: registry
@@ -44,8 +69,8 @@ services:
     restart: always
     networks:
       - web
-    ports:
-      - 5000:5000
+    expose:
+      - 5000
     env_file:
       - ./secrets/homelab.env
     labels:
@@ -67,8 +92,8 @@ services:
     restart: always
     networks:
       - web
-    ports:
-     - 9001:8080
+    expose:
+      - 8080
     volumes:
       - ./searxng:/etc/searxng:rw
     env_file:
@@ -101,9 +126,9 @@ services:
       - ${DRIVE}/media/music:/srv/music
       - ${DRIVE}/media/complete:/srv/complete
       - ${DRIVE}/media/else:/srv/else
-      - ${DRIVE}/incomplete:/srv/incomplete 
-    ports:
-      - 9003:80 
+      - ${DRIVE}/incomplete:/srv/incomplete
+    expose:
+      - 80
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=web"
@@ -121,11 +146,11 @@ services:
   smokeping:
     image: lscr.io/linuxserver/smokeping
     container_name: smokeping
-    restart: always 
+    restart: always
     networks:
       - web
-    ports:
-      - 2003:80
+    expose:
+      - 80
     env_file:
       - ./secrets/homelab.env
     labels:
@@ -141,53 +166,18 @@ services:
       - "traefik.http.routers.ping-secure.tls=true"
       - "traefik.http.routers.ping-secure.tls.certresolver=${DNS}"
       - "traefik.http.routers.ping-secure.middlewares=forward-auth"
-     
+
   watchtower:
     image: containrrr/watchtower
     container_name: watchtower
-    networks:
-      - internal
-    volumes: 
+    volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     env_file:
       - ./secrets/homelab.env
     environment:
       WATCHTOWER_CLEANUP: true
       WATCHTOWER_REVIVE_STOPPED: true
+    command: --cleanup
     restart: always
     labels:
       - "traefik.enable=false"
-
-  # prometheus:
-  #   image: prom/prometheus
-  #   container_name: prometheus
-  #   ports:
-  #     - 9004:9090
-  #   command:
-  #     - --config.file=/etc/prometheus/prometheus.yml
-  #   volumes:
-  #     - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-  #     - ${DRIVE}/prometheus-data:/prometheus
-  #   depends_on:
-  #     - cadvisor
-  #   restart: always
-
-  # cadvisor:
-  #   image: gcr.io/cadvisor/cadvisor
-  #   container_name: cadvisor
-  #   ports:
-  #     - 9005:8080
-  #   volumes:
-  #     - /:/rootfs:ro
-  #     - /var/run:/var/run:rw
-  #     - /sys:/sys:ro
-  #     - /var/lib/docker/:/var/lib/docker:ro
-  #   restart: always
-
-  # grafana:
-  #   image: grafana/grafana
-  #   container_name: grafana
-  #   ports:
-  #    - 9006:3000
-  #   restart: always
-
