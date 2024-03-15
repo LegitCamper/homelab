@@ -6,6 +6,10 @@ on:
       - main
   workflow_dispatch:
 
+env:
+  DOCKER_FILES: -f ai.yml -f monitor.yml -f network.yml -f media.yml -f utilities.yml
+  DOCKER_ENV: --env-file ./secrets/homelab.env
+
 jobs:
   deploy:
     runs-on: "self-hosted"
@@ -13,14 +17,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/checkout@v4  
+      - uses: actions/checkout@v4
         with:
           repository: LegitCamper/homelab-secrets
-          path: 'secrets'
+          path: "secrets"
           sparse-checkout: |
             homelab.env
           sparse-checkout-cone-mode: false
           token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: install docker compose for tests
+        uses: KengoTODA/actions-setup-docker-compose@v1
+        with:
+          version: "2.14.2"
+
+      - name: docker compose dry run
+        run: |
+          docker compose --dry-run ${{ env.DOCKER_ENV }} ${{ env.DOCKER_FILES }} up -d --remove-orphans
+          exit $?
 
       - name: Copy folder content recursively to remote
         uses: garygrossgarten/github-action-scp@v0.8.0
@@ -39,4 +53,4 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           script: |
             cd ~/stacks/homelab/
-            docker compose --env-file ./secrets/homelab.env -f network.yml -f media.yml -f utilities.yml up -d --remove-orphans
+            docker compose ${{ env.DOCKER_ENV }} ${{ env.DOCKER_FILES }} -d --remove-orphans
