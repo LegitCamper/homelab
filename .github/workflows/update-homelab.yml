@@ -9,6 +9,7 @@ on:
 env:
   DOCKER_FILES: -f ai.yml -f monitor.yml -f network.yml -f media.yml -f utilities.yml
   DOCKER_ENV: --env-file ./secrets/homelab.env
+  DOCKER_FLAGS: -d --remove-orphans
 
 jobs:
   deploy:
@@ -33,7 +34,7 @@ jobs:
 
       - name: docker compose dry run
         run: |
-          docker compose --dry-run ${{ env.DOCKER_ENV }} ${{ env.DOCKER_FILES }} up -d --remove-orphans
+          docker compose --dry-run ${{ env.DOCKER_ENV }} ${{ env.DOCKER_FILES }} up ${{ env.DOCKER_FLAGS }} 
           exit $?
 
       - name: Copy folder content recursively to remote
@@ -53,4 +54,4 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           script: |
             cd ~/stacks/homelab/
-            docker compose ${{ env.DOCKER_ENV }} ${{ env.DOCKER_FILES }} -d --remove-orphans
+            docker compose ${{ env.DOCKER_ENV }} ${{ env.DOCKER_FILES }} up ${{ env.DOCKER_FLAGS }}
