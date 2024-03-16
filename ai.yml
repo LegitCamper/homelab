@@ -31,6 +31,10 @@ services:
     environment:
       - VENV_PATH=/workspace/venvs/fooocus
     labels:
+      # define regex middleware
+      - "traefik.http.middlewares.fooocus-redirectregex.redirectregex.regex=^/*.*/log.html"
+      - "traefik.http.middlewares.fooocus-redirectregex.redirectregex.replacement=/"
+
       - "traefik.enable=true"
       - "traefik.docker.network=web"
       - "traefik.http.routers.fooocus.entrypoints=http"
@@ -43,8 +47,7 @@ services:
       - "traefik.http.routers.fooocus-secure.tls=true"
       - "traefik.http.routers.fooocus-secure.tls.certresolver=${DNS}"
       - "traefik.http.routers.fooocus-secure.middlewares=forward-auth"
-      - "traefik.http.middlewares.fooocus-redirectregex.redirectregex.regex=^/*.*/log.html"
-      - "traefik.http.middlewares.fooocus-redirectregex.redirectregex.replacement=/"
+      - "traefik.http.routers.fooocus-secure.middlewares=fooocus-redirectregex"
     deploy:
       resources:
         reservations:
