@@ -27,6 +27,11 @@ jobs:
           sparse-checkout-cone-mode: false
           token: ${{ secrets.ACCESS_TOKEN }}
 
+      - name: replace domain in configs
+        run: |
+          # add any other files that need domain substituion here - for flexablity
+          sed -i -e 's/$DOMAIN/{{ var.DOMAIN }}/g' ./dashy/conf.yml
+
       - name: install docker compose for tests
         uses: KengoTODA/actions-setup-docker-compose@v1
         with:

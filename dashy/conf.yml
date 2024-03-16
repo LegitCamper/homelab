@@ -6,15 +6,15 @@ sections:
     items:
       - title: Jellyfin
         icon: hl-jellyfin
-        url: https://jellyfin.sawyer.services
+        url: https://jellyfin.$DOMAIN
         target: newtab
       - title: Transmission
         icon: hl-transmission
-        url: https://transmission.sawyer.services
+        url: https://transmission.$DOMAIN
         target: newtab
       - title: Bitmagnet
         icon: https://avatars.githubusercontent.com/u/146768397
-        url: https://bitmagnet.sawyer.services
+        url: https://bitmagnet.$DOMAIN
         target: newtab
     displayData:
       sortBy: default
@@ -24,25 +24,25 @@ sections:
       hideForGuests: false
   - name: Utilities
     items:
-      - title: portainer
+      - title: Portainer
         icon: hl-portainer
-        url: https://portainer.sawyer.services
+        url: https://portainer.$DOMAIN
         target: newtab
       - title: Docker Registry
         icon: hl-docker
-        url: https://registry.sawyer.services
+        url: https://registry.$DOMAIN
         target: clipboard
       - title: Searxng
         icon: hl-searxng
-        url: https://search.sawyer.services
+        url: https://search.$DOMAIN
         target: newtab
       - title: File Browser
         icon: hl-filebrowser
-        url: https://files.sawyer.services
+        url: https://files.$DOMAIN
         target: newtab
       - title: Smoke Ping
         icon: hl-smokeping
-        url: https://ping.sawyer.services
+        url: https://ping.$DOMAIN
         target: newtab
     icon: fa fa-wrench
     displayData:
@@ -62,15 +62,15 @@ sections:
     items:
       - title: AdGuard Home
         icon: hl-adguardhome
-        url: https://adguard.sawyer.services
+        url: https://adguard.$DOMAIN
         target: newtab
       - title: DNS
         icon: fa fa-server
-        url: tls://dns.sawyer.services:853
+        url: tls://dns.$DOMAIN:853
         target: clipboard
       - title: Traefik
         icon: hl-traefik
-        url: https://traefik.sawyer.services
+        url: https://traefik.$DOMAIN
         target: newtab
   - name: Tools
     icon: fa fa-server
@@ -110,11 +110,11 @@ sections:
       hideForGuests: false
     items:
       - title: Fooocus
-        url: https://fooocus.sawyer.services
+        url: https://fooocus.$DOMAIN
         target: newtab
       - title: Ollama
         icon: https://ollama.com/public/ollama.png
-        url: https://ollama.sawyer.services
+        url: https://ollama.$DOMAIN
         target: newtab
   - name: Gaming
     displayData:
@@ -126,7 +126,7 @@ sections:
     items:
       - title: Minecraft
         icon: hl-minecraft
-        url: mc.sawyer.services
+        url: mc.$DOMAIN
         target: clipboard
 appConfig:
   language: en
