@@ -22,6 +22,8 @@ services:
       - 80
     volumes:
       - ./dashy/conf.yml:/app/public/conf.yml
+    environment:
+      - NODE_ENV=production
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=web"
@@ -31,10 +33,9 @@ services:
       - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
       - "traefik.http.routers.dashy.middlewares=dashy-https-redirect"
       - "traefik.http.routers.dashy-secure.entrypoints=https"
-      - "traefik.http.routers.dashy-secure.rule=Host(`dashy.${DOMAIN}`)"
+      - "traefik.http.routers.dashy-secure.rule=Host(`dashy.${DOMAIN}`) || Host(`${DOMAIN}`)"
       - "traefik.http.routers.dashy-secure.tls=true"
       - "traefik.http.routers.dashy-secure.tls.certresolver=${DNS}"
-      - "traefik.http.routers.dashy-secure.middlewares=forward-auth"
 
   portainer:
     container_name: portainer
@@ -62,6 +63,7 @@ services:
       - "traefik.http.routers.portainer-secure.middlewares=forward-auth"
       - "traefik.http.middlewares.remove-path.stripprefix.prefixes=/portainer"
       - "traefik.http.routers.portainer.middlewares=remove-path@docker"
+      - "traefik.http.routers.files-secure.middlewares=forward-auth"
 
   registry: # My own docker registry
     container_name: registry
