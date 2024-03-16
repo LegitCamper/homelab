@@ -41,6 +41,7 @@ services:
     container_name: portainer
     image: portainer/portainer-ee
     restart: always
+    command: --tlsskipverify
     networks:
       - web
     expose:
@@ -61,6 +62,7 @@ services:
       - "traefik.http.routers.portainer-secure.tls=true"
       - "traefik.http.routers.portainer-secure.tls.certresolver=${DNS}"
       - "traefik.http.routers.portainer-secure.middlewares=forward-auth"
+      - "traefik.http.services.portainer-secure.loadbalancer.server.port=9000"
       - "traefik.http.middlewares.remove-path.stripprefix.prefixes=/portainer"
       - "traefik.http.routers.portainer.middlewares=remove-path@docker"
 
