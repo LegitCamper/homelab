@@ -14,7 +14,7 @@ sections:
         target: newtab
       - title: Bitmagnet
         icon: https://avatars.githubusercontent.com/u/146768397
-        url: bitmagnet.sawyer.services
+        url: https://bitmagnet.sawyer.services
         target: newtab
     displayData:
       sortBy: default

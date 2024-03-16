@@ -68,11 +68,10 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=web"
-      # transmission
       - "traefik.http.routers.transmission.entrypoints=http"
       - "traefik.http.routers.transmission.rule=Host(`transmission.${DOMAIN}`) || Host(`torrent.${DOMAIN}`)"
-      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
       - "traefik.http.middlewares.transmission-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
       - "traefik.http.routers.transmission.middlewares=transmission-https-redirect"
       - "traefik.http.routers.transmission-secure.entrypoints=https"
       - "traefik.http.routers.transmission-secure.rule=Host(`transmission.${DOMAIN}`) || Host(`torrent.${DOMAIN}`)"
