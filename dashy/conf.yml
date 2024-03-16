@@ -8,12 +8,14 @@ sections:
         icon: hl-jellyfin
         url: https://jellyfin.sawyer.services
         target: newtab
-        id: 0_480_jellyfin
       - title: Transmission
         icon: hl-transmission
         url: https://transmission.sawyer.services
         target: newtab
-        id: 1_480_transmission
+      - title: Bitmagnet
+        icon: https://avatars.githubusercontent.com/u/146768397
+        url: bitmagnet.sawyer.services
+        target: newtab
     displayData:
       sortBy: default
       rows: 1
@@ -26,27 +28,22 @@ sections:
         icon: hl-portainer
         url: https://portainer.sawyer.services
         target: newtab
-        id: 0_956_portainer
       - title: Docker Registry
         icon: hl-docker
         url: https://registry.sawyer.services
         target: clipboard
-        id: 1_956_dockerregistry
       - title: Searxng
         icon: hl-searxng
         url: https://search.sawyer.services
         target: newtab
-        id: 2_956_searxng
       - title: File Browser
         icon: hl-filebrowser
         url: https://files.sawyer.services
         target: newtab
-        id: 3_956_filebrowser
       - title: Smoke Ping
         icon: hl-smokeping
         url: https://ping.sawyer.services
         target: newtab
-        id: 4_956_smokeping
     icon: fa fa-wrench
     displayData:
       sortBy: default
@@ -67,17 +64,14 @@ sections:
         icon: hl-adguardhome
         url: https://adguard.sawyer.services
         target: newtab
-        id: 0_746_adguardhome
       - title: DNS
         icon: fa fa-server
         url: tls://dns.sawyer.services:853
         target: clipboard
-        id: 1_746_dns
       - title: Traefik
         icon: hl-traefik
         url: https://traefik.sawyer.services
         target: newtab
-        id: 2_746_traefik
   - name: Tools
     icon: fa fa-server
     displayData:
@@ -91,27 +85,22 @@ sections:
         icon: hl-digital-ocean
         url: https://cloud.digitalocean.com/projects
         target: newtab
-        id: 0_529_digitalocean
       - title: Tailscale
         icon: hl-tailscale
         url: https://login.tailscale.com/admin/machines
         target: newtab
-        id: 1_529_tailscale
       - title: Homelab Github
         icon: hl-github
         url: https://github.com/LegitCamper/homelab
         target: newtab
-        id: 2_529_homelabgithub
       - title: Gateway Github
         icon: hl-github
         url: https://github.com/LegitCamper/homelab-gateway
         target: newtab
-        id: 3_529_gatewaygithub
       - title: Cloudfare
         icon: hl-cloudflare
         url: https://dash.cloudflare.com
         target: newtab
-        id: 4_529_cloudfare
   - name: AI
     displayData:
       sortBy: default
@@ -123,12 +112,10 @@ sections:
       - title: Fooocus
         url: https://fooocus.sawyer.services
         target: newtab
-        id: 0_138_fooocus
       - title: Ollama
         icon: https://ollama.com/public/ollama.png
         url: https://ollama.sawyer.services
         target: newtab
-        id: 1_138_ollama
   - name: Gaming
     displayData:
       sortBy: default
@@ -141,7 +128,6 @@ sections:
         icon: hl-minecraft
         url: mc.sawyer.services
         target: clipboard
-        id: 0_595_minecraft
 appConfig:
   language: en
   layout: auto
