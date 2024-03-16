@@ -43,6 +43,8 @@ services:
       - "traefik.http.routers.fooocus-secure.tls=true"
       - "traefik.http.routers.fooocus-secure.tls.certresolver=${DNS}"
       - "traefik.http.routers.fooocus-secure.middlewares=forward-auth"
+      - "traefik.http.middlewares.fooocus-redirectregex.redirectregex.regex=^/*.*/log.html"
+      - "traefik.http.middlewares.fooocus-redirectregex.redirectregex.replacement=/"
     deploy:
       resources:
         reservations:
