@@ -60,7 +60,7 @@ services:
     container_name: ollama
     restart: always
     networks:
-      - internal
+      - web
     expose:
       - 11434
     env_file:
@@ -68,7 +68,17 @@ services:
     volumes:
       - ollama_data:/root/.ollama
     labels:
-      - "traefik.enable=false"
+      - "traefik.enable=true"
+      - "traefik.docker.network=web"
+      - "traefik.http.routers.ollama-api.entrypoints=http"
+      - "traefik.http.routers.ollama-api.rule=Host(`ollama-api.${DOMAIN}`)"
+      - "traefik.http.middlewares.ollama-api-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.routers.ollama-api.middlewares=ollama-api-https-redirect"
+      - "traefik.http.routers.ollama-api-secure.entrypoints=https"
+      - "traefik.http.routers.ollama-api-secure.rule=Host(`ollama-api.${DOMAIN}`)"
+      - "traefik.http.routers.ollama-api-secure.tls=true"
+      - "traefik.http.routers.ollama-api-secure.tls.certresolver=${DNS}"
     deploy:
       resources:
         reservations:

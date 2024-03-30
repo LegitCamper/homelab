@@ -116,6 +116,10 @@ sections:
         icon: https://ollama.com/public/ollama.png
         url: https://ollama.$DOMAIN
         target: newtab
+      - title: Ollama API
+        icon: https://ollama.com/public/ollama.png
+        url: https://ollama-api.$DOMAIN
+        target: clipboard
   - name: Gaming
     displayData:
       sortBy: default
