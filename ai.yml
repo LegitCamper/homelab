@@ -14,6 +14,8 @@ volumes:
     driver: local
   ollama-ui_data:
     driver: local
+  audiocraft_data:
+    driver: local
 
 services:
   fooocus:
@@ -48,6 +50,40 @@ services:
       - "traefik.http.routers.fooocus-secure.tls.certresolver=${DNS}"
       - "traefik.http.routers.fooocus-secure.middlewares=forward-auth"
       - "traefik.http.routers.fooocus-secure.middlewares=fooocus-redirectregex"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+
+  audiocraft:
+    image: ashleykza/audiocraft
+    container_name: audiocraft
+    restart: always
+    networks:
+      - web
+    expose:
+      - 3001
+    env_file:
+      - ./secrets/homelab.env
+    volumes:
+      - audiocraft_data:/workspace
+    environment:
+      - VENV_PATH=/workspace/venvs/audiocraft_plus
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web"
+      - "traefik.http.routers.audiocraft.entrypoints=http"
+      - "traefik.http.routers.audiocraft.rule=Host(`audiocraft.${DOMAIN}`)"
+      - "traefik.http.middlewares.audiocraft-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.routers.audiocraft.middlewares=audiocraft-https-redirect"
+      - "traefik.http.routers.audiocraft-secure.entrypoints=https"
+      - "traefik.http.routers.audiocraft-secure.rule=Host(`audiocraft.${DOMAIN}`)"
+      - "traefik.http.routers.audiocraft-secure.tls=true"
+      - "traefik.http.routers.audiocraft-secure.tls.certresolver=${DNS}"
+      - "traefik.http.routers.audiocraft-secure.middlewares=forward-auth"
     deploy:
       resources:
         reservations:
