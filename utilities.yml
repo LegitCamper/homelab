@@ -10,7 +10,9 @@ networks:
 volumes:
   portainer_data:
     driver: local
-  languagetool:
+  languagetool_ngrams:
+    driver: local
+  languagetool_fasttext:
     driver: local
 
 services:
@@ -195,8 +197,8 @@ services:
       langtool_languageModel: /ngrams
       langtool_fasttextModel: /fasttext/lid.176.bin
     volumes:
-      - languagetool/ngrams:/ngrams
-      - languagetool/fasttext:/fasttext
+      - languagetool_ngrams:/ngrams
+      - languagetool_fasttext:/fasttext
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=web"
