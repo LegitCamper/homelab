@@ -10,6 +10,8 @@ networks:
 volumes:
   portainer_data:
     driver: local
+  languagetool:
+    driver: local
 
 services:
   dashy:
@@ -156,6 +158,45 @@ services:
       - 80
     env_file:
       - ./secrets/homelab.env
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web"
+      - "traefik.http.routers.ping.entrypoints=http"
+      - "traefik.http.routers.ping.rule=Host(`ping.${DOMAIN}`) || Host(`smokeping.${DOMAIN}`) "
+      - "traefik.http.middlewares.ping-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.routers.ping.middlewares=ping-https-redirect"
+      - "traefik.http.routers.ping-secure.entrypoints=https"
+      - "traefik.http.routers.ping-secure.rule=Host(`ping.${DOMAIN}`) || Host(`smokeping.${DOMAIN}`) "
+      - "traefik.http.routers.ping-secure.tls=true"
+      - "traefik.http.routers.ping-secure.tls.certresolver=${DNS}"
+      - "traefik.http.routers.ping-secure.middlewares=forward-auth"
+
+  languagetool:
+    image: meyay/languagetool
+    container_name: languagetool
+    restart: always
+    networks:
+      - web
+    env_file:
+      - ./secrets/homelab.env
+    cap_drop:
+      - ALL
+    cap_add:
+      - CAP_SETUID
+      - CAP_SETGID
+      - CAP_CHOWN
+    security_opt:
+      - no-new-privileges
+    ports:
+      - 8010:8010
+    environment:
+      download_ngrams_for_langs: en
+      langtool_languageModel: /ngrams
+      langtool_fasttextModel: /fasttext/lid.176.bin
+    volumes:
+      - languagetool/ngrams:/ngrams
+      - languagetool/fasttext:/fasttext
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=web"
