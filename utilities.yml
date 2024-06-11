@@ -202,16 +202,16 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=web"
-      - "traefik.http.routers.ping.entrypoints=http"
-      - "traefik.http.routers.ping.rule=Host(`ping.${DOMAIN}`) || Host(`smokeping.${DOMAIN}`) "
-      - "traefik.http.middlewares.ping-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.languagetool.entrypoints=http"
+      - "traefik.http.routers.languagetool.rule=Host(`languagetool.${DOMAIN}`) || Host(`smokelanguagetool.${DOMAIN}`) "
+      - "traefik.http.middlewares.languagetool-https-redirect.redirectscheme.scheme=https"
       - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
-      - "traefik.http.routers.ping.middlewares=ping-https-redirect"
-      - "traefik.http.routers.ping-secure.entrypoints=https"
-      - "traefik.http.routers.ping-secure.rule=Host(`ping.${DOMAIN}`) || Host(`smokeping.${DOMAIN}`) "
-      - "traefik.http.routers.ping-secure.tls=true"
-      - "traefik.http.routers.ping-secure.tls.certresolver=${DNS}"
-      - "traefik.http.routers.ping-secure.middlewares=forward-auth"
+      - "traefik.http.routers.languagetool.middlewares=languagetool-https-redirect"
+      - "traefik.http.routers.languagetool-secure.entrypoints=https"
+      - "traefik.http.routers.languagetool-secure.rule=Host(`languagetool.${DOMAIN}`) || Host(`smokelanguagetool.${DOMAIN}`) "
+      - "traefik.http.routers.languagetool-secure.tls=true"
+      - "traefik.http.routers.languagetool-secure.tls.certresolver=${DNS}"
+      - "traefik.http.routers.languagetool-secure.middlewares=forward-auth"
 
   watchtower:
     image: containrrr/watchtower
