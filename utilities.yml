@@ -211,7 +211,6 @@ services:
       - "traefik.http.routers.languagetool-secure.rule=Host(`languagetool.${DOMAIN}`) || Host(`smokelanguagetool.${DOMAIN}`) "
       - "traefik.http.routers.languagetool-secure.tls=true"
       - "traefik.http.routers.languagetool-secure.tls.certresolver=${DNS}"
-      - "traefik.http.routers.languagetool-secure.middlewares=forward-auth"
 
   watchtower:
     image: containrrr/watchtower
