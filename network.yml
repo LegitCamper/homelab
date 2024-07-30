@@ -1,5 +1,4 @@
 # My homelab network file
-version: "3.9"
 
 networks:
   web:
@@ -78,7 +77,7 @@ services:
       - "traefik.http.routers.treafik-secure.middlewares=forward-auth"
 
   traefik-forward-auth:
-    image: thomseddon/traefik-forward-auth:2.3.0
+    image: thomseddon/traefik-forward-auth:2
     container_name: traefik-auth
     env_file:
       - ./secrets/homelab.env
