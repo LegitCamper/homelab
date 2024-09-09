@@ -1,0 +1,69 @@
+---
+- name: Configure homeserver (Debian)
+  hosts: "*"
+  become: true
+  remote_user: root #sawyer
+
+  vars: 
+    nvidia_driver_skip_reboot: "yes"
+
+  roles:
+    - nvidia.nvidia_driver
+    - nvidia_toolbox
+    
+  pre_tasks: 
+    - name: install docker
+      ansible.builtin.include_tasks:
+        file: tasks/install-docker.yml   
+    
+    - name: Add specified repository into sources list using specified filename
+      when: ansible_distribution == "Debian"
+      ansible.builtin.apt_repository:
+        repo: deb http://deb.debian.org/debian/ {{ ansible_distribution_release | lower }} main contrib non-free non-free-firmware
+        state: present
+
+    - name: update 
+      ansible.builtin.include_tasks:
+        file: tasks/apt.yml
+
+    - name: reboot if needed
+      ansible.builtin.include_tasks:
+        file: tasks/reboot.yml
+
+  tasks:
+    - name: Crate docker stack dir
+      ansible.builtin.file:
+        path: ~/compose-files/
+        state: directory
+
+    - name: Copy compose files
+      ansible.builtin.copy:
+        decrypt: false
+        src: docker
+        dest: ~/compose-files
+
+    - name: Copy secrets
+      ansible.builtin.copy:
+        decrypt: true
+        src: secrets.env
+        dest: ~/compose-files
+
+    - name: Create 'web' network
+      community.docker.docker_network:
+        name: web
+
+    - name: Create 'internal' network
+      community.docker.docker_network:
+        name: internal
+
+    - name: Disable local dns
+      ansible.builtin.systemd_service:
+        name: systemd-resolved
+        enabled: false
+        state: "stopped"
+        
+    - name: Setup containers
+      community.docker.docker_compose_v2:
+        env_files: ~/compose-files/secrets.env
+        project_src: ./
+        files: ~/compose-files/docker/compose.yml

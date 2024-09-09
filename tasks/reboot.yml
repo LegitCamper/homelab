@@ -1,0 +1,14 @@
+---
+  - name: Check that the reboot-required exists
+    stat:
+      path: /var/run/reboot-required
+    register: reboot_needed
+
+  - debug:
+      msg: "Reboot required"
+    when: reboot_needed.stat.exists
+
+  - name: Reboot a slow machine that might have lots of updates to apply
+    reboot:
+      reboot_timeout: 3600
+    when: reboot_needed.stat.exists

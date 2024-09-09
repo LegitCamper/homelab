@@ -1,0 +1,6 @@
+---
+roles:
+  - name: nvidia_toolbox
+    src: ssh://git@github.com/jedimt/ansible-role-nvidia-container-toolkit.git
+    version: master
+    scm: git

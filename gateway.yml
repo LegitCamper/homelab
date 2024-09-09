@@ -1,0 +1,30 @@
+---
+- name: Configure homelab gateway server (Debain)
+  hosts: "*"
+  remote_user: root
+  
+  pre_tasks: 
+    - name: update 
+      ansible.builtin.include_tasks:
+        file: tasks/apt.yml
+
+    - name: Install packages
+      apt:
+        pkg:
+          - docker.io
+
+  tasks:
+    - name: Copy rathole config
+      ansible.builtin.copy:
+        decrypt: true
+        src: docker/rathole/rathole.toml
+        dest: ~/
+
+    - name: Start Rathole container
+      docker_container:
+        name: "rathole"
+        recreate: yes
+        image: rapiz1/rathole
+        volumes: 
+          - /root/rathole.toml:/app/config.toml
+        command: --server /app/config.toml

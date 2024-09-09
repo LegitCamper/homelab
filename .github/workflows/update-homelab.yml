@@ -1,4 +1,4 @@
-name: Update Homelab Files
+name: Update Homelab Servers
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 env:
   DOCKER_FILES: -f ai.yml -f monitor.yml -f network.yml -f media.yml -f utilities.yml
-  DOCKER_ENV: --env-file ./secrets/homelab.env
+  DOCKER_ENV: --env-file ./secrets.env
   DOCKER_FLAGS: -d --remove-orphans
 
 jobs:
