@@ -504,6 +504,17 @@ services:
       - "traefik.http.routers.languagetool-secure.tls=true"
       - "traefik.http.routers.languagetool-secure.tls.certresolver=${DNS}"
 
+  # configures a gh action runner to redeploy this file
+  homelab-github-action-runner:
+    image: myoung34/github-runner:debian-bookworm
+    container_name: homelab-github-action-runner  
+    environment:
+      ORG_NAME: LegitCamper
+      REPO_URL: https://github.com/LegitCamper/homelab
+      ACCESS_TOKEN: ${SELF_HOSTED_RUNNER}
+    labels:
+      - "traefik.enable=true"
+
   watchtower:
     image: containrrr/watchtower
     container_name: watchtower
