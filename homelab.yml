@@ -4,12 +4,15 @@
   become: true
   remote_user: root #sawyer
 
-  vars: 
-    nvidia_driver_skip_reboot: "yes"
+  vars:
+    - nvidia_driver_skip_reboot: yes
+    - tailscale_tags: ['homelab']
 
   roles:
-    - nvidia.nvidia_driver
-    - nvidia_toolbox
+    # - nvidia.nvidia_driver # use fork with debain instead
+    - nvidia_drivers
+    - jedimt.nvidia_container_toolkit
+    - artis3n.tailscale
     
   pre_tasks: 
     - name: install docker
@@ -26,26 +29,48 @@
       ansible.builtin.include_tasks:
         file: tasks/apt.yml
 
-    - name: reboot if needed
-      ansible.builtin.include_tasks:
-        file: tasks/reboot.yml
-
-  tasks:
     - name: Crate docker stack dir
       ansible.builtin.file:
         path: ~/compose-files/
         state: directory
 
-    - name: Copy compose files
-      ansible.builtin.copy:
-        decrypt: false
-        src: docker
-        dest: ~/compose-files
-
     - name: Copy secrets
       ansible.builtin.copy:
         decrypt: true
         src: secrets.env
+        dest: ~/compose-files
+
+    - name: Get tailscale key
+      ansible.builtin.shell:
+        cat ~/compose-files/secrets.env | grep TS_AUTHKEY | sed 's/^.*TS_AUTHKEY=//'
+      register: ansible_key
+      ignore_errors: yes
+      changed_when: false
+
+    - name: Set tailscale_authkey
+      ansible.builtin.set_fact: 
+        tailscale_authkey: "{{ ansible_key.stdout }}"
+
+  tasks:  
+    - name: Copy resolved config
+      ansible.builtin.copy:
+        src: resolved.conf
+        dest: /etc/systemd/resolved.conf
+
+    - name: Delete linked file
+      ansible.builtin.file:
+        path: /etc/resolv.conf
+        state: absent
+
+    - name: Link resolved
+      ansible.builtin.file:
+        src: /etc/systemd/resolved.conf
+        dest: /etc/resolv.conf
+        state: link
+
+    - name: Copy compose files
+      ansible.builtin.copy:
+        src: docker
         dest: ~/compose-files
 
     - name: Create 'web' network
@@ -56,14 +81,18 @@
       community.docker.docker_network:
         name: internal
 
-    - name: Disable local dns
-      ansible.builtin.systemd_service:
-        name: systemd-resolved
-        enabled: false
-        state: "stopped"
-        
+    - name: reboot if needed
+      ansible.builtin.include_tasks:
+        file: tasks/reboot.yml
+
+    - name: install cif utils
+      apt:
+        name:
+          - cifs-utils
+       
     - name: Setup containers
       community.docker.docker_compose_v2:
+        project_name: homeserver
         env_files: ~/compose-files/secrets.env
         project_src: ./
         files: ~/compose-files/docker/compose.yml
