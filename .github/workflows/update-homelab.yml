@@ -14,6 +14,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: install ansible
+        run: sudo apt-get install -y ansible
+
       - name: Run gateway playbook
         uses: dawidd6/action-ansible-playbook@v2
         with:
