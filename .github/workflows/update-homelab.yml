@@ -4,12 +4,8 @@ on:
   push:
     branches:
       - main
+      - overhaul
   workflow_dispatch:
-
-env:
-  DOCKER_FILES: -f ai.yml -f monitor.yml -f network.yml -f media.yml -f utilities.yml
-  DOCKER_ENV: --env-file ~/compose-files/secrets.env
-  DOCKER_FLAGS: -d --remove-orphans
 
 jobs:
   deploy:
@@ -18,45 +14,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/checkout@v4
+      - name: Run gateway playbook
+        uses: dawidd6/action-ansible-playbook@v2
         with:
-          repository: LegitCamper/homelab-secrets
-          path: "secrets"
-          sparse-checkout: |
-            homelab.env
-          sparse-checkout-cone-mode: false
-          token: ${{ secrets.ACCESS_TOKEN }}
+          playbook: gateway.yml
+          directory: ./
+          vault_password: ${{secrets.VAULT_PASSWORD}}
+          requirements: requirements.yml
+          options: |
+            --inventory gateway
+            --verbose
 
-      - name: replace domain in configs
-        run: |
-          # add any other files that need domain substituion here - for flexablity
-          sed -i -e 's/$DOMAIN/${{ vars.DOMAIN }}/g' ./dashy/conf.yml
-
-      - name: install docker compose for tests
-        uses: KengoTODA/actions-setup-docker-compose@v1
+      - name: Run homeserver playbook
+        uses: dawidd6/action-ansible-playbook@v2
         with:
-          version: "2.14.2"
-
-      - name: docker compose dry run
-        run: |
-          docker compose --dry-run ${{ env.DOCKER_ENV }} ${{ env.DOCKER_FILES }} up ${{ env.DOCKER_FLAGS }} 
-          exit $?
-
-      - name: Copy folder content recursively to remote
-        uses: garygrossgarten/github-action-scp@v0.8.0
-        with:
-          local: ${{ github.workspace }}
-          remote: /home/${{ secrets.SSH_USER }}/stacks/homelab/
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.SSH_USER }}
-          password: ${{ secrets.PASSWORD }}
-
-      - name: multiple command
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.SSH_USER }}
-          password: ${{ secrets.PASSWORD }}
-          script: |
-            cd ~/stacks/homelab/
-            docker compose ${{ env.DOCKER_ENV }} ${{ env.DOCKER_FILES }} up ${{ env.DOCKER_FLAGS }}
+          playbook: homeserver.yml
+          directory: ./
+          vault_password: ${{secrets.VAULT_PASSWORD}}
+          requirements: requirements.yml
+          options: |
+            --inventory homeserver
+            --verbose
