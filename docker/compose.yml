@@ -508,6 +508,7 @@ services:
   homelab-github-runner:
     image: myoung34/github-runner:debian-bookworm
     container_name: homelab-github-runner  
+    network_mode: host # allows containers to use tailscale dns
     environment:
       ORG_NAME: LegitCamper
       REPO_URL: https://github.com/LegitCamper/homelab
