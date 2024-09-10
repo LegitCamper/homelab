@@ -54,7 +54,7 @@
   tasks:  
     - name: Copy resolved config
       ansible.builtin.copy:
-        src: resolved.conf
+        src: files/resolved.conf
         dest: /etc/systemd/resolved.conf
 
     - name: Delete linked file
