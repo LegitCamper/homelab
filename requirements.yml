@@ -6,6 +6,6 @@ roles:
   - name: jedimt.nvidia_container_toolkit
   - name: artis3n.tailscale
   - name: nvidia_drivers
-    src: ssh://git@github.com/ericomeehan/ansible-role-nvidia-driver.git
+    src: git+https://github.com/ericomeehan/ansible-role-nvidia-driver.git
     version: test
     scm: git
