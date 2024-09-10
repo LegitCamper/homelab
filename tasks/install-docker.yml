@@ -35,5 +35,5 @@
     become: true
 
   - name: test docker
-    command: docker info
+    shell: docker info
     become: true

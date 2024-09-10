@@ -24,11 +24,14 @@ jobs:
           directory: ./
           vault_password: ${{secrets.VAULT_PASSWORD}}
           requirements: requirements.yml
+          inventory: |
+            [all]
+            gateway
           configuration: |
             [ssh_connections]
             pipelining = true
           options: |
-            --inventory gateway
+            --inventory .hosts
             --verbose
 
       - name: Run homeserver playbook
@@ -38,9 +41,12 @@ jobs:
           directory: ./
           vault_password: ${{secrets.VAULT_PASSWORD}}
           requirements: requirements.yml
+          inventory: |
+            [all]
+            homeserver
           configuration: |
             [ssh_connections]
             pipelining = true
           options: |
-            --inventory homeserver
+            --inventory .hosts
             --verbose
