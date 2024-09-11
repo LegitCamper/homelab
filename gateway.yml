@@ -46,7 +46,7 @@
 
     - name: Replace rathole tokens with secret
       ansible.builtin.replace:
-        path: ~/compose-files/rathole/rathole.toml
+        path: ~/compose-files/docker/rathole/rathole.toml
         regexp: '/"token"/'
         replace: '"{{ rathole_token }}"'
 
@@ -55,8 +55,7 @@
         name: "rathole"
         recreate: yes
         image: rapiz1/rathole
-        exposed_ports: 
-          - 2333
+        network_mode: "host"
         volumes: 
-          - /root/compose-files/rathole/rathole.toml:/app/config.toml
+          - /root/compose-files/docker/rathole/rathole.toml:/app/config.toml
         command: --server /app/config.toml
