@@ -13,7 +13,23 @@
         pkg:
           - docker.io
 
+    - name: Crate docker stack dir
+      ansible.builtin.file:
+        path: ~/compose-files/
+        state: directory
+
+    - name: Copy secrets file
+      ansible.builtin.copy:
+        decrypt: true
+        src: secrets.env
+        dest: ~/compose-files
+
   tasks:
+    # allows ansible to easily connect back for updates
+    - name: install and configure tailscale
+      ansible.builtin.include_tasks:
+        file: tasks/tailscale.yml
+
     - name: Copy rathole config
       ansible.builtin.copy:
         decrypt: true

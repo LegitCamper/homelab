@@ -3,16 +3,6 @@
   hosts: "*"
   become: true
   remote_user: root #sawyer
-
-  vars:
-    - nvidia_driver_skip_reboot: yes
-    - tailscale_tags: ['homelab']
-
-  roles:
-    # - nvidia.nvidia_driver # use fork with debain instead
-    - nvidia_drivers
-    - jedimt.nvidia_container_toolkit
-    - artis3n.tailscale
     
   pre_tasks: 
     - name: install docker
@@ -34,24 +24,21 @@
         path: ~/compose-files/
         state: directory
 
-    - name: Copy secrets
+    - name: Copy secrets file
       ansible.builtin.copy:
         decrypt: true
         src: secrets.env
         dest: ~/compose-files
 
-    - name: Get tailscale key
-      ansible.builtin.shell:
-        cat ~/compose-files/secrets.env | grep TS_AUTHKEY | sed 's/^.*TS_AUTHKEY=//'
-      register: ansible_key
-      ignore_errors: yes
-      changed_when: false
-
-    - name: Set tailscale_authkey
-      ansible.builtin.set_fact: 
-        tailscale_authkey: "{{ ansible_key.stdout }}"
-
   tasks:  
+    - name: install and configure tailscale
+      ansible.builtin.include_tasks:
+        file: tasks/tailscale.yml
+
+    - name: install nvidia and nvidia container tools
+      ansible.builtin.include_tasks:
+        file: tasks/nvidia.yml
+
     - name: Copy resolved config
       ansible.builtin.copy:
         src: files/resolved.conf

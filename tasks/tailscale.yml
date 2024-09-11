@@ -1,0 +1,17 @@
+---
+  - name: Get tailscale key
+    ansible.builtin.shell:
+      cat ~/compose-files/secrets.env | grep TS_AUTHKEY | sed 's/^.*TS_AUTHKEY=//'
+    register: ansible_key
+    ignore_errors: true
+    changed_when: false
+
+  - name: Set tailscale_authkey
+    ansible.builtin.set_fact: 
+      tailscale_authkey: "{{ ansible_key.stdout }}"
+
+  - name: Run tailscale role
+    include_role:
+      name: artis3n.tailscale
+    vars:
+      tailscale_tags: ['homelab']

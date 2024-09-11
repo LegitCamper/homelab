@@ -33,7 +33,7 @@ jobs:
           requirements: requirements.yml
           inventory: |
             [all]
-            143.198.65.127
+            gateway
           configuration: |
             [defaults]
             host_key_checking = False

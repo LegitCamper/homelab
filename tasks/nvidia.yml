@@ -1,0 +1,11 @@
+---
+  - name: Install nvidia drivers
+    include_role:
+      # nvidia.nvidia_driver # use fork with debain support instead
+      name: nvidia_drivers
+    vars:
+      nvidia_driver_skip_reboot: yes
+
+  - name: Install nvidia container toolkit
+    include_role:
+      name: jedimt.nvidia_container_toolkit  
