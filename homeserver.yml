@@ -62,6 +62,19 @@
         src: docker
         dest: ~/compose-files
 
+    - name: Get rathole token
+      ansible.builtin.shell:
+        cat ~/compose-files/secrets.env | grep RATHOLE_TOKEN | sed 's/^.*RATHOLE_TOKEN=//'
+      register: rathole_token
+      ignore_errors: true
+      changed_when: false
+
+    - name: Replace rathole tokens with secret
+      ansible.builtin.replace:
+        path: ~/compose-files/rathole/rathole.toml
+        regexp: '/"token"/'
+        replace: '"{{ rathole_token }}"'
+
     - name: Create 'web' network
       community.docker.docker_network:
         name: web
