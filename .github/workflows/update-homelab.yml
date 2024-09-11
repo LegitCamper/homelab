@@ -17,6 +17,13 @@ jobs:
       - name: install ansible
         run: sudo apt-get install -y ansible
 
+      - name: Install SSH key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_KEY }}
+          name: id_rsa # optional
+          # known_hosts: ${{ secrets.KNOWN_HOSTS }}
+
       - name: Run gateway playbook
         uses: dawidd6/action-ansible-playbook@v2
         with:
@@ -26,8 +33,10 @@ jobs:
           requirements: requirements.yml
           inventory: |
             [all]
-            gateway
+            143.198.65.127
           configuration: |
+            [defaults]
+            host_key_checking = False
             [ssh_connections]
             pipelining = true
           options: |
@@ -45,6 +54,8 @@ jobs:
             [all]
             homeserver
           configuration: |
+            [defaults]
+            host_key_checking = False
             [ssh_connections]
             pipelining = true
           options: |
