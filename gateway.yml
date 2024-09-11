@@ -29,6 +29,8 @@
     - name: install and configure tailscale
       ansible.builtin.include_tasks:
         file: tasks/tailscale.yml
+      vars:
+        tailscale_hostname: gateway
 
     - name: Copy rathole config
       ansible.builtin.copy:
