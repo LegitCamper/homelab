@@ -92,8 +92,8 @@
     - name: Replace rathole tokens with secret
       ansible.builtin.replace:
         path: /home/sawyer/compose-files/docker/rathole/rathole.toml
-        regexp: '/"token"/'
-        replace: '"{{ rathole_token }}"'
+        regexp: '"token"'
+        replace: '"{{ rathole_token.stdout }}"'
 
     - name: Create 'web' network
       community.docker.docker_network:

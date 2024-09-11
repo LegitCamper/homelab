@@ -47,8 +47,8 @@
     - name: Replace rathole tokens with secret
       ansible.builtin.replace:
         path: ~/compose-files/docker/rathole/rathole.toml
-        regexp: '/"token"/'
-        replace: '"{{ rathole_token }}"'
+        regexp: '"token"'
+        replace: '"{{ rathole_token.stdout }}"'
 
     - name: Start Rathole container
       docker_container:
