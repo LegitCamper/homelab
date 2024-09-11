@@ -2,7 +2,7 @@
 - name: Configure homeserver (Debian)
   hosts: "*"
   become: true
-  remote_user: root #sawyer
+  remote_user: sawyer
     
   pre_tasks: 
     - name: install docker
@@ -21,14 +21,14 @@
 
     - name: Crate docker stack dir
       ansible.builtin.file:
-        path: ~/compose-files/
+        path: /home/sawyer/compose-files/
         state: directory
 
     - name: Copy secrets file
       ansible.builtin.copy:
         decrypt: true
         src: secrets.env
-        dest: ~/compose-files
+        dest: /home/sawyer/compose-files
 
   tasks:  
     - name: install and configure tailscale
@@ -40,6 +40,11 @@
     - name: install nvidia and nvidia container tools
       ansible.builtin.include_tasks:
         file: tasks/nvidia.yml
+
+    - name: ensure resolved is installed
+      ansible.builtin.apt:
+        name: systemd-resolved
+        state: present
 
     - name: Copy resolved config
       ansible.builtin.copy:
@@ -57,21 +62,36 @@
         dest: /etc/resolv.conf
         state: link
 
+    - name: link tailscale dns conf
+      ansible.builtin.shell: sudo ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
+
+    - name: Restart tailscale
+      ansible.builtin.systemd_service:
+        state: restarted
+        daemon_reload: true
+        name: tailscaled
+
+    - name: Restart tailscale
+      ansible.builtin.systemd_service:
+        state: restarted
+        daemon_reload: true
+        name: systemd-resolved
+
     - name: Copy compose files
       ansible.builtin.copy:
         src: docker
-        dest: ~/compose-files
+        dest: /home/sawyer/compose-files
 
     - name: Get rathole token
       ansible.builtin.shell:
-        cat ~/compose-files/secrets.env | grep RATHOLE_TOKEN | sed 's/^.*RATHOLE_TOKEN=//'
+        cat /home/sawyer/compose-files/secrets.env | grep RATHOLE_TOKEN | sed 's/^.*RATHOLE_TOKEN=//'
       register: rathole_token
       ignore_errors: true
       changed_when: false
 
     - name: Replace rathole tokens with secret
       ansible.builtin.replace:
-        path: ~/compose-files/rathole/rathole.toml
+        path: /home/sawyer/compose-files/docker/rathole/rathole.toml
         regexp: '/"token"/'
         replace: '"{{ rathole_token }}"'
 
@@ -91,10 +111,14 @@
       apt:
         name:
           - cifs-utils
+
+    - name: Pause for 10 seconds to let dns come up
+      ansible.builtin.pause:
+        seconds: 10
        
     - name: Setup containers
       community.docker.docker_compose_v2:
         project_name: homeserver
-        env_files: ~/compose-files/secrets.env
+        env_files: /home/sawyer/compose-files/secrets.env
         project_src: ./
-        files: ~/compose-files/docker/compose.yml
+        files: /home/sawyer/compose-files/docker/compose.yml

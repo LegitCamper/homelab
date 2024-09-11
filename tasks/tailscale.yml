@@ -1,5 +1,6 @@
 ---
   - name: Get tailscale key
+    become: false
     ansible.builtin.shell:
       cat ~/compose-files/secrets.env | grep TS_AUTHKEY | sed 's/^.*TS_AUTHKEY=//'
     register: ansible_key

@@ -49,6 +49,7 @@ jobs:
           configuration: |
             [defaults]
             host_key_checking = False
+            ask_sudo_pass = True
             [ssh_connections]
             pipelining = true
           options: |

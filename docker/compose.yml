@@ -81,7 +81,7 @@ services:
       - web
     ports:
       - 9120:9120
-    env_file: ~/compose-files/secrets.env
+    env_file: /home/sawyer/compose-files/secrets.env
     environment: 
       KOMODO_TITLE: Komodo 
       KOMODO_ENSURE_SERVER: http://komodo-periphery:8120 # Creates the "default" server.
@@ -110,7 +110,7 @@ services:
     networks:
       - internal
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/ru/home/sawyer/compose-files/docker.sock
       - komodo-repos:/etc/komodo/repos:rw 
       - komodo-stacks:/etc/komodo/stacks:rw 
     labels: 
@@ -130,7 +130,7 @@ services:
     volumes:
       - db-data:/data/db:rw
       - db-config:/data/configdb:rw
-    env_file: ~/compose-files/secrets.env
+    env_file: /home/sawyer/compose-files/secrets.env
     labels: 
       - "traefik.enable=false"
 
@@ -201,7 +201,7 @@ services:
     ports:
       - 8096:8096/tcp
       - 8920:8920
-    env_file: ~/compose-files/secrets.env
+    env_file: /home/sawyer/compose-files/secrets.env
     volumes:
       - media:/data/media/:ro
       - certbot-certs:/data/certs/:ro
@@ -234,7 +234,7 @@ services:
       - web
     volumes:
       - media:/data:rw
-    env_file: ~/compose-files/secrets.env
+    env_file: /home/sawyer/compose-files/secrets.env
     environment:
       - OPENVPN_OPTS=--pull-filter ignore ifconfig-ipv6
     devices:
@@ -264,8 +264,8 @@ services:
     container_name: rathole
     restart: always
     volumes:
-      - ./docker/rathole/rathole.toml:/app/config.toml:ro
-    command: rathole --server /app/config.toml
+      - /home/sawyer/compose-files/docker/rathole/rathole.toml:/app/config.toml:ro
+    command: --client /app/config.toml
     labels:
       - "traefik.enable=false"
 
@@ -273,7 +273,7 @@ services:
     image: traefik
     container_name: traefik
     restart: always
-    env_file: ~/compose-files/secrets.env
+    env_file: /home/sawyer/compose-files/secrets.env
     command: |
       traefik 
       --log=true --log.level=INFO
@@ -294,7 +294,7 @@ services:
       --certificatesresolvers.${DNS}.acme.httpchallenge.entrypoint=http
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/ru/home/sawyer/compose-files/docker.sock:/var/ru/home/sawyer/compose-files/docker.sock:ro
       - acme:/etc/traefik/acme:rw
     networks:
       - web
@@ -321,7 +321,7 @@ services:
   traefik-forward-auth:
     image: thomseddon/traefik-forward-auth:2
     container_name: traefik-auth
-    env_file: ~/compose-files/secrets.env
+    env_file: /home/sawyer/compose-files/secrets.env
     networks:
       - web
     labels:
@@ -384,7 +384,7 @@ services:
     expose:
       - 80
     volumes:
-      - ./docker/dashy/conf.yml:/app/public/conf.yml:ro
+      - /home/sawyer/compose-files/docker/dashy/conf.yml:/app/public/conf.yml:ro
     environment:
       - NODE_ENV=production
     labels:
@@ -425,13 +425,13 @@ services:
     image: searxng/searxng
     container_name: searxng
     restart: always
-    env_file: ~/compose-files/secrets.env
+    env_file: /home/sawyer/compose-files/secrets.env
     networks:
       - web
     expose:
       - 8080
     volumes:
-      - ./docker/searxng:/etc/searxng:rw
+      - /home/sawyer/compose-files/docker/searxng:/etc/searxng:rw
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=web"
@@ -519,7 +519,7 @@ services:
     image: containrrr/watchtower
     container_name: watchtower
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/ru/home/sawyer/compose-files/docker.sock:/var/ru/home/sawyer/compose-files/docker.sock
     environment:
       WATCHTOWER_CLEANUP: true
       WATCHTOWER_REVIVE_STOPPED: true
@@ -559,7 +559,7 @@ services:
   #   command:
   #     - --config.file=/etc/prometheus/prometheus.yml
   #   volumes:
-  #     - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+  #     - /home/sawyer/compose-files/docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
   #     - prometheus-data:/prometheus
   #   depends_on:
   #     - cadvisor
@@ -574,7 +574,7 @@ services:
   #     - /:/rootfs:ro
   #     - /var/run:/var/run:rw
   #     - /sys:/sys:ro
-  #     - /var/lib/docker/:/var/lib/docker:ro
+  #     - /var/li/home/sawyer/compose-files/docker/:/var/li/home/sawyer/compose-files/docker:ro
   #   restart: always
 
   # grafana:
