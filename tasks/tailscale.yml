@@ -15,3 +15,6 @@
       name: artis3n.tailscale
     vars:
       tailscale_tags: ['homelab']
+
+  - name: Setup ssh
+    shell: tailscale set --ssh

@@ -17,13 +17,6 @@ jobs:
       - name: install ansible
         run: sudo apt-get install -y ansible
 
-      - name: Install SSH key
-        uses: shimataro/ssh-key-action@v2
-        with:
-          key: ${{ secrets.SSH_KEY }}
-          name: id_rsa # optional
-          # known_hosts: ${{ secrets.KNOWN_HOSTS }}
-
       - name: Run gateway playbook
         uses: dawidd6/action-ansible-playbook@v2
         with:
