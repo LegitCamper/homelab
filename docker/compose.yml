@@ -163,12 +163,12 @@ services:
       - "traefik.http.routers.ollama-api-secure.rule=Host(`ollama-api.${DOMAIN}`)"
       - "traefik.http.routers.ollama-api-secure.tls=true"
       - "traefik.http.routers.ollama-api-secure.tls.certresolver=${DNS}"
+    runtime: nvidia
     deploy:
       resources:
         reservations:
           devices:
-            - driver: nvidia
-              capabilities: [gpu]
+            - capabilities: [gpu]
 
   ollama-ui:
     image: ghcr.io/open-webui/open-webui:main
@@ -200,7 +200,7 @@ services:
       - "traefik.http.routers.ollama-ui-secure.middlewares=forward-auth"
 
   jellyfin:
-    image: lscr.io/linuxserver/jellyfin
+    image: jellyfin/jellyfin
     container_name: jellyfin
     restart: always
     networks:
@@ -213,6 +213,9 @@ services:
       - certbot-certs:/data/certs/:ro
       - jellyfin-config:/config
       - jellyfin-cache:/cache
+    environment:
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - NVIDIA_VISIBLE_DEVICES=all
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=web"
@@ -226,12 +229,12 @@ services:
       - "traefik.http.routers.jellyfin-secure.tls=true"
       - "traefik.http.routers.jellyfin-secure.tls.certresolver=${DNS}"
       - "traefik.http.services.jellyfin-secure.loadbalancer.server.port=8096"
+    runtime: nvidia
     deploy:
       resources:
         reservations:
           devices:
-            - driver: nvidia
-              capabilities: [gpu]
+            - capabilities: [gpu]
 
   transmission-openvpn:
     image: haugene/transmission-openvpn
