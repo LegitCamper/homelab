@@ -76,13 +76,20 @@ services:
       - web
     expose:
       - 9120
-    env_file: /home/sawyer/compose-files/secrets.env
     environment: 
+      KOMODO_HOST: ${KOMODO_HOST}
       KOMODO_TITLE: Komodo 
       KOMODO_ENSURE_SERVER: http://komodo-periphery:8120 # Creates the "default" server.
       KOMODO_MONGO_ADDRESS: komodo-mongo:27017
-      KOMODO_LOCAL_AUTH: true 
-      KOMODO_GITHUB_OAUTH_ENABLED: true 
+      KOMODO_MONGO_USERNAME: ${KOMODO_DB_USERNAME}
+      KOMODO_MONGO_PASSWORD: ${KOMODO_DB_PASSWORD}
+      KOMODO_LOCAL_AUTH: false 
+      KOMODO_PASSKEY: ${KOMODO_PASSKEY}
+      KOMODO_WEBHOOK_SECRET: ${KOMODO_WEBHOOK_SECRET}
+      KOMODO_JWT_SECRET: ${KOMODO_JWT_SECRET}
+      KOMODO_GITHUB_OAUTH_ENABLED: true       
+      KOMODO_GITHUB_OAUTH_ID: ${KOMODO_GITHUB_OAUTH_ID}
+      KOMODO_GITHUB_OAUTH_SECRET: ${KOMODO_GITHUB_OAUTH_SECRET}
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=web"
@@ -129,7 +136,9 @@ services:
     volumes:
       - db-data:/data/db:rw
       - db-config:/data/configdb:rw
-    env_file: /home/sawyer/compose-files/secrets.env
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${KOMODO_DB_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${KOMODO_DB_PASSWORD}
     labels: 
       - "traefik.enable=false"
 
@@ -200,7 +209,6 @@ services:
     ports:
       - 8096:8096/tcp
       - 8920:8920
-    env_file: /home/sawyer/compose-files/secrets.env
     volumes:
       - media:/data/media/:ro
       - certbot-certs:/data/certs/:ro
@@ -233,9 +241,13 @@ services:
       - web
     volumes:
       - media:/data:rw
-    env_file: /home/sawyer/compose-files/secrets.env
     environment:
       - OPENVPN_OPTS=--pull-filter ignore ifconfig-ipv6
+      - OPENVPN_PROVIDER=${OPENVPN_PROVIDER}
+      - OPENVPN_CONFIG=${OPENVPN_CONFIG}
+      - OPENVPN_USERNAME=${OPENVPN_USERNAME}
+      - OPENVPN_PASSWORD=${OPENVPN_PASSWORD}
+
     devices:
       - /dev/net/tun:/dev/net/tun
     cap_add:
@@ -273,7 +285,10 @@ services:
     image: traefik
     container_name: traefik
     restart: always
-    env_file: /home/sawyer/compose-files/secrets.env
+    environment:
+      - CF_API_KEY=${CF_API_KEY}
+      - CF_API_EMAIL=${CF_API_EMAIL}
+      - DNS=${DNS}
     command: |
       traefik 
       --log=true --log.level=INFO
@@ -321,7 +336,13 @@ services:
   traefik-forward-auth:
     image: thomseddon/traefik-forward-auth:2
     container_name: traefik-auth
-    env_file: /home/sawyer/compose-files/secrets.env
+    environment:
+      - PROVIDERS_GOOGLE_CLIENT_ID=${PROVIDERS_GOOGLE_CLIENT_ID}
+      - PROVIDERS_GOOGLE_CLIENT_SECRET=${PROVIDERS_GOOGLE_CLIENT_SECRET}
+      - SECRET=${GOOGLE_OATH_SECRET}
+      - AUTH_HOST=auth.${DOMAIN}
+      - COOKIE_DOMAIN=${DOMAIN}
+      - WHITELIST=${WHITELIST}
     networks:
       - web
     labels:
@@ -425,7 +446,8 @@ services:
     image: searxng/searxng
     container_name: searxng
     restart: always
-    env_file: /home/sawyer/compose-files/secrets.env
+    environment:
+      - SEARXNG_SECRET=${SEARXNG_SECRET}
     networks:
       - web
     expose:
