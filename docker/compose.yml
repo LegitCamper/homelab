@@ -23,6 +23,10 @@ volumes:
     driver: local
   languagetool_fasttext:
     driver: local
+  jellyfin-config:
+    driver: local
+  jellyfin-cache:
+    driver: local
   adguard-work:
     driver: local
 
@@ -52,11 +56,6 @@ volumes:
       type: cifs
       o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
       device: "//${NETWORK_DRIVE}/homelab/certbot/certificates"
-  jellyfin:
-    driver_opts:
-      type: cifs
-      o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
-      device: "//${NETWORK_DRIVE}/homelab/jellyfin-conf"
   adgaurd-conf:
     driver_opts:
       type: cifs
@@ -204,6 +203,7 @@ services:
     image: lscr.io/linuxserver/jellyfin
     container_name: jellyfin
     restart: always
+    user: 1002:1002 # uid of user in smb share
     networks:
       - web
     ports:
@@ -212,7 +212,8 @@ services:
     volumes:
       - media:/data/media/:ro
       - certbot-certs:/data/certs/:ro
-      - jellyfin:/config/:rw
+      - jellyfin-config:/config
+      - jellyfin-cache:/cache
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=web"
