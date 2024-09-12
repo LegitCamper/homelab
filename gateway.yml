@@ -37,6 +37,10 @@
       vars:
         tailscale_hostname: gateway
 
+    - name: configure dns
+      ansible.builtin.include_tasks:
+        file: tasks/dns.yml
+
     - name: Get rathole token
       ansible.builtin.shell:
         cat ~/compose-files/secrets.env | grep RATHOLE_TOKEN | sed 's/^.*RATHOLE_TOKEN=//'
@@ -56,6 +60,7 @@
         recreate: yes
         image: rapiz1/rathole
         network_mode: "host"
+        user: root
         volumes: 
           - /root/compose-files/docker/rathole/rathole.toml:/app/config.toml
         command: --server /app/config.toml

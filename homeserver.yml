@@ -41,42 +41,6 @@
       ansible.builtin.include_tasks:
         file: tasks/nvidia.yml
 
-    - name: ensure resolved is installed
-      ansible.builtin.apt:
-        name: systemd-resolved
-        state: present
-
-    - name: Copy resolved config
-      ansible.builtin.copy:
-        src: files/resolved.conf
-        dest: /etc/systemd/resolved.conf
-
-    - name: Delete linked file
-      ansible.builtin.file:
-        path: /etc/resolv.conf
-        state: absent
-
-    - name: Link resolved
-      ansible.builtin.file:
-        src: /etc/systemd/resolved.conf
-        dest: /etc/resolv.conf
-        state: link
-
-    - name: link tailscale dns conf
-      ansible.builtin.shell: sudo ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
-
-    - name: Restart tailscale
-      ansible.builtin.systemd_service:
-        state: restarted
-        daemon_reload: true
-        name: tailscaled
-
-    - name: Restart tailscale
-      ansible.builtin.systemd_service:
-        state: restarted
-        daemon_reload: true
-        name: systemd-resolved
-
     - name: Copy compose files
       ansible.builtin.copy:
         src: docker
@@ -112,10 +76,16 @@
         name:
           - cifs-utils
 
-    - name: Pause for 10 seconds to let dns come up
-      ansible.builtin.pause:
-        seconds: 10
-       
+    - name: Create acme dir
+      ansible.builtin.file:
+        path: /home/sawyer/acme/
+        state: "directory"
+        mode: '0600'
+
+    - name: configure dns
+      ansible.builtin.include_tasks:
+        file: tasks/dns.yml
+
     - name: Setup containers
       community.docker.docker_compose_v2:
         project_name: homeserver

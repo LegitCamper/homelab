@@ -57,11 +57,6 @@ volumes:
       type: cifs
       o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
       device: "//${NETWORK_DRIVE}/homelab/jellyfin-conf"
-  acme:
-    driver_opts:
-      type: cifs
-      o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
-      device: "//${NETWORK_DRIVE}/homelab/acme"
   adgaurd-conf:
     driver_opts:
       type: cifs
@@ -79,8 +74,8 @@ services:
     networks:
       - internal
       - web
-    ports:
-      - 9120:9120
+    expose:
+      - 9120
     env_file: /home/sawyer/compose-files/secrets.env
     environment: 
       KOMODO_TITLE: Komodo 
@@ -100,17 +95,20 @@ services:
       - "traefik.http.routers.komodo-secure.rule=Host(`komodo.${DOMAIN}`)"
       - "traefik.http.routers.komodo-secure.tls=true"
       - "traefik.http.routers.komodo-secure.tls.certresolver=${DNS}"
-      - "traefik.http.routers.komodo-secure.middlewares=forward-auth"
+      - "traefik.http.services.komodo-secure.loadbalancer.server.port=9120"
 
   komodo-periphery:
     image: ghcr.io/mbecker20/periphery:latest
+    container_name: komodo-periphery
     restart: always
     logging:
       driver: local
+    expose:
+      - 8120
     networks:
       - internal
     volumes:
-      - /var/run/docker.sock:/var/ru/home/sawyer/compose-files/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock:ro
       - komodo-repos:/etc/komodo/repos:rw 
       - komodo-stacks:/etc/komodo/stacks:rw 
     labels: 
@@ -119,14 +117,15 @@ services:
 
   komodo-mongo:
     image: mongo
+    container_name: komodo-mongo
     command: --quiet # suppress mongo logs a bit
     restart: always
     logging:
       driver: local
     networks:
       - internal
-    ports:
-      - 27017:27017
+    expose:
+      - 27017
     volumes:
       - db-data:/data/db:rw
       - db-config:/data/configdb:rw
@@ -263,6 +262,7 @@ services:
     image: rapiz1/rathole
     container_name: rathole
     restart: always
+    network_mode: host
     volumes:
       - /home/sawyer/compose-files/docker/rathole/rathole.toml:/app/config.toml:ro
     command: --client /app/config.toml
@@ -294,8 +294,8 @@ services:
       --certificatesresolvers.${DNS}.acme.httpchallenge.entrypoint=http
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - /var/ru/home/sawyer/compose-files/docker.sock:/var/ru/home/sawyer/compose-files/docker.sock:ro
-      - acme:/etc/traefik/acme:rw
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /home/sawyer/acme/:/etc/traefik/acme:rw
     networks:
       - web
     ports:
@@ -473,16 +473,8 @@ services:
     restart: always
     networks:
       - web
-    cap_drop:
-      - ALL
-    cap_add:
-      - CAP_SETUID
-      - CAP_SETGID
-      - CAP_CHOWN
-    security_opt:
-      - no-new-privileges
-    ports:
-      - 8010:8010
+    expose:
+      - 8010
     environment:
       download_ngrams_for_langs: en
       langtool_languageModel: /ngrams
@@ -519,7 +511,7 @@ services:
     image: containrrr/watchtower
     container_name: watchtower
     volumes:
-      - /var/ru/home/sawyer/compose-files/docker.sock:/var/ru/home/sawyer/compose-files/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
       WATCHTOWER_CLEANUP: true
       WATCHTOWER_REVIVE_STOPPED: true
@@ -554,8 +546,8 @@ services:
   # prometheus:
   #   image: prom/prometheus
   #   container_name: prometheus
-  #   ports:
-  #     - 9004:9090
+  #   expose:
+  #     - 9090
   #   command:
   #     - --config.file=/etc/prometheus/prometheus.yml
   #   volumes:
@@ -568,8 +560,8 @@ services:
   # cadvisor:
   #   image: gcr.io/cadvisor/cadvisor
   #   container_name: cadvisor
-  #   ports:
-  #     - 9005:8080
+  #   expose:
+  #     - 8080
   #   volumes:
   #     - /:/rootfs:ro
   #     - /var/run:/var/run:rw
@@ -580,6 +572,6 @@ services:
   # grafana:
   #   image: grafana/grafana
   #   container_name: grafana
-  #   ports:
-  #    - 9006:3000
+  #   expose:
+  #    - :3000
   #   restart: always
