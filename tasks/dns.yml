@@ -35,6 +35,6 @@
       daemon_reload: true
       name: systemd-resolved
 
-  - name: Pause for 25 seconds to let dns come up
+  - name: Pause for 35 seconds to let dns come up
     ansible.builtin.pause:
-      seconds: 25
+      seconds: 35
