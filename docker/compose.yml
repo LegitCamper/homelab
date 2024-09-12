@@ -203,7 +203,6 @@ services:
     image: lscr.io/linuxserver/jellyfin
     container_name: jellyfin
     restart: always
-    user: 1002:1002 # uid of user in smb share
     networks:
       - web
     ports:
