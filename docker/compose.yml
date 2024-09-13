@@ -223,6 +223,12 @@ services:
     command: |
       traefik 
       --configFile=/etc/traefik/static.toml
+      --providers.file.directory=/etc/traefik/ 
+      --providers.file.filename=dynamic.toml
+      --providers.docker=true
+      --providers.docker.watch=false
+      --providers.docker.exposedByDefault=false
+      --providers.docker.network=web
       --certificatesresolvers.${DNS}.acme.email=${CF_API_EMAIL}
       --certificatesresolvers.${DNS}.acme.storage=/etc/traefik/acme/acme.json
       --certificatesresolvers.${DNS}.acme.dnschallenge

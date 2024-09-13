@@ -35,17 +35,3 @@ asDefault = true
 address = ":853"
 reusePort = true
 asDefault = false
-
-[providers]
-[providers.docker]
-exposedByDefault = false
-network = "web"
-useBindPortIP = false
-watch = true
-[providers.docker.tls]
-insecureSkipVerify = true
-[providers.file]
-directory = "/etc/traefik"
-watch = true
-filename = "dynamic.toml"
-debugLogGeneratedTemplate = true
