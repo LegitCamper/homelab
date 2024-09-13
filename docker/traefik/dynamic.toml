@@ -1,0 +1,164 @@
+[http.middlewares]
+[http.middlewares.auth.forwardAuth]
+address = "http://traefik-forward-auth:4181"
+trustForwardHeader = true
+authResponseHeaders = ["X-Forwarded-User"]
+[http.middlewares.auth.forwardAuth.tls]
+insecureSkipVerify = true
+caOptional = true
+
+[http.routers.traefik]
+middlewares = ["auth"]
+service = "api@internal"
+rule = "HostRegexp(`^traefik.+`)"
+[http.routers.traefik.tls]
+certResolver = "cloudflare"
+
+[http.routers.komodo]
+middlewares = ["auth"]
+service = "komodo"
+rule = "HostRegexp(`^komodo.+`)"
+[http.routers.komodo.tls]
+certResolver = "cloudflare"
+
+[http.services.komodo.loadBalancer]
+[[http.services.komodo.loadBalancer.servers]]
+url = "http://komodo-core:9120"
+
+[http.routers.ollama]
+middlewares = ["auth"]
+service = "ollama"
+rule = "HostRegexp(`^ollama.+`)"
+[http.routers.ollama.tls]
+certResolver = "cloudflare"
+
+[http.services.ollama.loadBalancer]
+[[http.services.ollama.loadBalancer.servers]]
+url = "http://ollama:8080"
+
+[http.routers.ollama-api]
+service = "ollama-api"
+rule = "HostRegexp(`^ollama-api.+`)"
+[http.routers.ollama-api.tls]
+certResolver = "cloudflare"
+
+[http.services.ollama-api.loadBalancer]
+[[http.services.ollama-api.loadBalancer.servers]]
+url = "http://ollama-api:11434"
+
+[http.routers.jellyfin]
+service = "jellyfin"
+rule = "HostRegexp(`^jellyfin.+`)"
+[http.routers.jellyfin.tls]
+certResolver = "cloudflare"
+
+[http.services.jellyfin.loadBalancer]
+[[http.services.jellyfin.loadBalancer.servers]]
+url = "http://jellyfin:8096"
+
+[http.routers.transmission]
+middlewares = ["auth"]
+service = "transmission"
+rule = "HostRegexp(`^transmission.+`) || HostRegexp(`^torrent.+`)"
+[http.routers.transmission.tls]
+certResolver = "cloudflare"
+
+[http.services.transmission.loadBalancer]
+[[http.services.transmission.loadBalancer.servers]]
+url = "http://transmission-openvpn:9091"
+
+[http.routers.dashy]
+middlewares = ["auth"]
+service = "dashy"
+rule = "HostRegexp(`^dashy.+`) || HostRegexp(`^.+`)"
+[http.routers.dashy.tls]
+certResolver = "cloudflare"
+
+[http.services.dashy.loadBalancer]
+[[http.services.dashy.loadBalancer.servers]]
+url = "http://dashy:80"
+
+[http.routers.registry]
+service = "registry"
+rule = "HostRegexp(`^registry.+`)"
+[http.routers.registry.tls]
+certResolver = "cloudflare"
+
+[http.services.registry.loadBalancer]
+[[http.services.registry.loadBalancer.servers]]
+url = "http://registry:5000"
+
+[http.routers.searxng]
+service = "searxng"
+rule = "HostRegexp(`^searxng.+`) || HostRegexp(`^search.+`)"
+[http.routers.searxng.tls]
+certResolver = "cloudflare"
+
+[http.services.searxng.loadBalancer]
+[[http.services.searxng.loadBalancer.servers]]
+url = "http://searxng:8080"
+
+[http.routers.smokeping]
+middlewares = ["auth"]
+service = "smokeping"
+rule = "HostRegexp(`^smokeping.+`)"
+[http.routers.smokeping.tls]
+certResolver = "cloudflare"
+
+[http.services.smokeping.loadBalancer]
+[[http.services.smokeping.loadBalancer.servers]]
+url = "http://smokeping:80"
+
+[http.routers.languagetool]
+service = "languagetool"
+rule = "HostRegexp(`^languagetool.+`)"
+[http.routers.languagetool.tls]
+certResolver = "cloudflare"
+
+[http.services.languagetool.loadBalancer]
+[[http.services.languagetool.loadBalancer.servers]]
+url = "http://languagetool:8010"
+
+[http.routers.uptime-kuma]
+middlewares = ["auth"]
+service = "uptime-kuma"
+rule = "HostRegexp(`^uptime-kuma.+`)"
+[http.routers.uptime-kuma.tls]
+certResolver = "cloudflare"
+
+[http.services.uptime-kuma.loadBalancer]
+[[http.services.uptime-kuma.loadBalancer.servers]]
+url = "http://uptime-kuma:3001"
+
+[http.routers.adguard]
+middlewares = ["auth"]
+service = "adguard"
+rule = "HostRegexp(`^adguard.+`) || HostRegexp(`^adguardhome.+`)"
+[http.routers.adguard.tls]
+certResolver = "cloudflare"
+
+[http.services.adguard.loadBalancer]
+[[http.services.adguard.loadBalancer.servers]]
+url = "http://adguardhome:80"
+
+[http.routers.doh]
+entryPoints = ["websecure"]
+service = "doh"
+rule = "HostRegexp(`^dns.+`)"
+[http.routers.doh.tls]
+certResolver = "cloudflare"
+
+[http.services.doh.loadBalancer]
+[[http.services.doh.loadBalancer.servers]]
+url = "http://adguard:443"
+
+[tcp.routers.dot]
+entryPoints = ["dot"]
+service = "dot"
+rule = "HostRegexp(`^dns.+`)"
+[tcp.routers.dot.tls]
+certResolver = "cloudflare"
+
+[tcp.services.dot.loadBalancer]
+[[tcp.services.dot.loadBalancer.servers]]
+url = "tcp://adguard:853"

@@ -1,0 +1,51 @@
+[global]
+checkNewVersion = true
+sendAnonymousUsage = false
+
+[log]
+level = "INFO"
+
+[api]
+insecure = true
+dashboard = true
+debug = true
+disableDashboardAd = true
+
+[serversTransport]
+insecureSkipVerify = true
+[tcpServersTransport]
+[tcpServersTransport.tls]
+insecureSkipVerify = true
+
+[entryPoints]
+[entryPoints.web]
+address = ":80"
+reusePort = true
+asDefault = false
+[entryPoints.web.http.redirections]
+[entryPoints.web.http.redirections.entryPoint]
+to = "websecure"
+scheme = "https"
+permanent = true
+[entryPoints.websecure]
+address = ":443"
+reusePort = true
+asDefault = true
+[entryPoints.dot]
+address = ":853"
+reusePort = true
+asDefault = false
+
+[providers]
+[providers.docker]
+exposedByDefault = false
+network = "web"
+useBindPortIP = false
+watch = true
+[providers.docker.tls]
+insecureSkipVerify = true
+[providers.file]
+directory = "/etc/traefik"
+watch = true
+filename = "dynamic.toml"
+debugLogGeneratedTemplate = true

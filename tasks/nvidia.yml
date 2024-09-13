@@ -4,7 +4,8 @@
       # nvidia.nvidia_driver # use fork with debain support instead
       name: nvidia_drivers
     vars:
-      nvidia_driver_skip_reboot: yes
+      nvidia_driver_branch: "550"
+      nvidia_driver_skip_reboot: no
 
   - name: Install nvidia container toolkit
     include_role:

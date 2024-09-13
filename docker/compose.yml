@@ -65,6 +65,7 @@ volumes:
 services:
   komodo-core:
     image: ghcr.io/mbecker20/komodo:latest
+    container_name: komodo-core
     restart: always
     depends_on:
       - komodo-mongo
@@ -89,19 +90,6 @@ services:
       KOMODO_GITHUB_OAUTH_ENABLED: true       
       KOMODO_GITHUB_OAUTH_ID: ${KOMODO_GITHUB_OAUTH_ID}
       KOMODO_GITHUB_OAUTH_SECRET: ${KOMODO_GITHUB_OAUTH_SECRET}
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=web"
-      - "traefik.http.routers.komodo.entrypoints=http"
-      - "traefik.http.routers.komodo.rule=Host(`komodo.${DOMAIN}`)"
-      - "traefik.http.middlewares.komodo-https-redirect.redirectscheme.scheme=https"
-      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
-      - "traefik.http.routers.komodo.middlewares=komodo-https-redirect"
-      - "traefik.http.routers.komodo-secure.entrypoints=https"
-      - "traefik.http.routers.komodo-secure.rule=Host(`komodo.${DOMAIN}`)"
-      - "traefik.http.routers.komodo-secure.tls=true"
-      - "traefik.http.routers.komodo-secure.tls.certresolver=${DNS}"
-      - "traefik.http.services.komodo-secure.loadbalancer.server.port=9120"
 
   komodo-periphery:
     image: ghcr.io/mbecker20/periphery:latest
@@ -117,9 +105,6 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - komodo-repos:/etc/komodo/repos:rw 
       - komodo-stacks:/etc/komodo/stacks:rw 
-    labels: 
-      - "traefik.enable=false"
-    
 
   komodo-mongo:
     image: mongo
@@ -138,8 +123,6 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${KOMODO_DB_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${KOMODO_DB_PASSWORD}
-    labels: 
-      - "traefik.enable=false"
 
   ollama:
     image: ollama/ollama
@@ -151,18 +134,6 @@ services:
       - 11434
     volumes:
       - ollama:/root/.ollama:rw
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=web"
-      - "traefik.http.routers.ollama-api.entrypoints=http"
-      - "traefik.http.routers.ollama-api.rule=Host(`ollama-api.${DOMAIN}`)"
-      - "traefik.http.middlewares.ollama-api-https-redirect.redirectscheme.scheme=https"
-      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
-      - "traefik.http.routers.ollama-api.middlewares=ollama-api-https-redirect"
-      - "traefik.http.routers.ollama-api-secure.entrypoints=https"
-      - "traefik.http.routers.ollama-api-secure.rule=Host(`ollama-api.${DOMAIN}`)"
-      - "traefik.http.routers.ollama-api-secure.tls=true"
-      - "traefik.http.routers.ollama-api-secure.tls.certresolver=${DNS}"
     runtime: nvidia
     deploy:
       resources:
@@ -185,19 +156,6 @@ services:
       - OLLAMA_BASE_URL=http://ollama:11434
     volumes:
       - ollama-ui_data:/app/backend/data:rw
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=web"
-      - "traefik.http.routers.ollama-ui.entrypoints=http"
-      - "traefik.http.routers.ollama-ui.rule=Host(`ollama.${DOMAIN}`)"
-      - "traefik.http.middlewares.ollama-ui-https-redirect.redirectscheme.scheme=https"
-      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
-      - "traefik.http.routers.ollama-ui.middlewares=ollama-ui-https-redirect"
-      - "traefik.http.routers.ollama-ui-secure.entrypoints=https"
-      - "traefik.http.routers.ollama-ui-secure.rule=Host(`ollama.${DOMAIN}`)"
-      - "traefik.http.routers.ollama-ui-secure.tls=true"
-      - "traefik.http.routers.ollama-ui-secure.tls.certresolver=${DNS}"
-      - "traefik.http.routers.ollama-ui-secure.middlewares=forward-auth"
 
   jellyfin:
     image: jellyfin/jellyfin
@@ -216,19 +174,6 @@ services:
     environment:
       - NVIDIA_DRIVER_CAPABILITIES=all
       - NVIDIA_VISIBLE_DEVICES=all
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=web"
-      - "traefik.http.routers.jellyfin.entrypoints=http"
-      - "traefik.http.routers.jellyfin.rule=Host(`jellyfin.${DOMAIN}`)"
-      - "traefik.http.middlewares.jellyfin-https-redirect.redirectscheme.scheme=https"
-      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
-      - "traefik.http.routers.jellyfin.middlewares=jellyfin-https-redirect"
-      - "traefik.http.routers.jellyfin-secure.entrypoints=https"
-      - "traefik.http.routers.jellyfin-secure.rule=Host(`jellyfin.${DOMAIN}`)"
-      - "traefik.http.routers.jellyfin-secure.tls=true"
-      - "traefik.http.routers.jellyfin-secure.tls.certresolver=${DNS}"
-      - "traefik.http.services.jellyfin-secure.loadbalancer.server.port=8096"
     runtime: nvidia
     deploy:
       resources:
@@ -250,28 +195,13 @@ services:
       - OPENVPN_CONFIG=${OPENVPN_CONFIG}
       - OPENVPN_USERNAME=${OPENVPN_USERNAME}
       - OPENVPN_PASSWORD=${OPENVPN_PASSWORD}
-
     devices:
       - /dev/net/tun:/dev/net/tun
     cap_add:
       - NET_ADMIN
     ports:
-      # any ports needed to expose services through traefik need to be defined here
+      # any services proxied through this container need to declare ports here
       - 9091:9091 # transmission
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=web"
-      - "traefik.http.routers.transmission.entrypoints=http"
-      - "traefik.http.routers.transmission.rule=Host(`transmission.${DOMAIN}`) || Host(`torrent.${DOMAIN}`)"
-      - "traefik.http.middlewares.transmission-https-redirect.redirectscheme.scheme=https"
-      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
-      - "traefik.http.routers.transmission.middlewares=transmission-https-redirect"
-      - "traefik.http.routers.transmission-secure.entrypoints=https"
-      - "traefik.http.routers.transmission-secure.rule=Host(`transmission.${DOMAIN}`) || Host(`torrent.${DOMAIN}`)"
-      - "traefik.http.routers.transmission-secure.tls=true"
-      - "traefik.http.routers.transmission-secure.tls.certresolver=${DNS}"
-      - "traefik.http.services.transmission-secure.loadbalancer.server.port=9091"
-      - "traefik.http.routers.transmission-secure.middlewares=forward-auth"
 
   rathole:
     image: rapiz1/rathole
@@ -281,8 +211,6 @@ services:
     volumes:
       - /home/sawyer/compose-files/docker/rathole/rathole.toml:/app/config.toml:ro
     command: --client /app/config.toml
-    labels:
-      - "traefik.enable=false"
 
   traefik:
     image: traefik
@@ -294,26 +222,20 @@ services:
       - DNS=${DNS}
     command: |
       traefik 
-      --log=true --log.level=INFO
-      --api.dashboard=true --api.insecure=true
-      --entrypoints.http --entrypoints.http.address=:80
-      --entrypoints.https --entrypoints.https.address=:443
-      --entrypoints.dnsovertls --entrypoints.dnsovertls.address=:853
-      --serverstransport.insecureskipverify=true 
-      --entrypoints.http.http.redirections.entrypoint.to=https
-      --entrypoints.http.http.redirections.entrypoint.scheme=https
-      --providers.docker=true --providers.docker.exposedbydefault=false
+      --configFile=/etc/traefik/static.toml
       --certificatesresolvers.${DNS}.acme.email=${CF_API_EMAIL}
       --certificatesresolvers.${DNS}.acme.storage=/etc/traefik/acme/acme.json
       --certificatesresolvers.${DNS}.acme.dnschallenge
       --certificatesresolvers.${DNS}.acme.dnschallenge.disablepropagationcheck=false
       --certificatesresolvers.${DNS}.acme.dnschallenge.provider=${DNS}
       --certificatesresolvers.${DNS}.acme.dnschallenge.resolvers=1.1.1.1:53,8.8.8.8:53
-      --certificatesresolvers.${DNS}.acme.httpchallenge.entrypoint=http
+      --certificatesresolvers.${DNS}.acme.httpchallenge.entrypoint=web
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /home/sawyer/acme/:/etc/traefik/acme:rw
+      - /home/sawyer/compose-files/docker/traefik/static.toml:/etc/traefik/static.toml:ro
+      - /home/sawyer/compose-files/docker/traefik/dynamic.toml:/etc/traefik/dynamic.toml:ro
     networks:
       - web
     ports:
@@ -321,20 +243,6 @@ services:
       - "443:443"
       - "853:853"
       - "8080:8080"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=web"
-      - "traefik.http.routers.traefik.entrypoints=http"
-      - "traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN}`)"
-      - "traefik.http.middlewares.traefik-https-redirect.redirectscheme.scheme=https"
-      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
-      - "traefik.http.routers.traefik.middlewares=traefik-https-redirect"
-      - "traefik.http.routers.traefik-secure.entrypoints=https"
-      - "traefik.http.routers.traefik-secure.rule=Host(`traefik.${DOMAIN}`)"
-      - "traefik.http.routers.traefik-secure.tls=true"
-      - "traefik.http.routers.traefik-secure.tls.certresolver=${DNS}"
-      - "traefik.http.routers.traefik-secure.service=api@internal"
-      - "traefik.http.routers.treafik-secure.middlewares=forward-auth"
 
   traefik-forward-auth:
     image: thomseddon/traefik-forward-auth:2
@@ -348,19 +256,8 @@ services:
       - WHITELIST=${WHITELIST}
     networks:
       - web
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=web"
-      - "traefik.http.routers.auth.rule=Host(`auth.${DOMAIN}`)"
-      - "traefik.http.routers.auth.entrypoints=https"
-      - "traefik.http.routers.auth.tls=true"
-      - "traefik.http.routers.auth.tls.certresolver=${DNS}"
-      - "traefik.http.routers.auth.service=auth@docker"
-      - "traefik.http.services.auth.loadbalancer.server.port=4181"
-      - "traefik.http.middlewares.forward-auth.forwardauth.address=http://traefik-forward-auth:4181"
-      - "traefik.http.middlewares.forward-auth.forwardauth.trustForwardHeader=true"
-      - "traefik.http.middlewares.forward-auth.forwardauth.authResponseHeaders=X-Forwarded-User"
-      - "traefik.http.routers.auth.middlewares=forward-auth"
+    expose: 
+      - 4181
 
   adguardhome:
     image: adguard/adguardhome
@@ -372,32 +269,10 @@ services:
       - adgaurd-conf:/opt/adguardhome/conf:rw
       - adguard-work:/opt/adguardhome/work:rw
       - certbot:/opt/adguardhome/certs/:rw
-    ports:
-      - 3000:3000/tcp
-      - "53:53/tcp"
-      - "53:53/udp"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=web"
-      - "traefik.http.routers.adguard.entrypoints=http"
-      - "traefik.http.routers.adguardng.rule=Host(`adguard.${DOMAIN}`) || Host(`adguardhome.${DOMAIN}`)"
-      - "traefik.http.middlewares.adguard-https-redirect.redirectscheme.scheme=https"
-      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
-      - "traefik.http.routers.adguard.middlewares=adguard-https-redirect"
-      - "traefik.http.routers.adguard-secure.entrypoints=https"
-      - "traefik.http.services.adguard-secure.loadbalancer.server.port=3000"
-      - "traefik.http.routers.adguard-secure.rule=Host(`adguard.${DOMAIN}`) || Host(`adguardhome.${DOMAIN}`)"
-      - "traefik.http.routers.adguard-secure.tls=true"
-      - "traefik.http.routers.adguard-secure.tls.certresolver=${DNS}"
-      - "traefik.http.routers.adguard-secure.middlewares=forward-auth"
-
-      # DNS-over-TLS
-      - traefik.tcp.routers.adguard-dot.rule=HostSNI(`dns.${DOMAIN}`)
-      - traefik.tcp.routers.adguard-dot.entrypoints=dnsovertls
-      - traefik.tcp.routers.adguard-dot.tls=true
-      - traefik.tcp.routers.adguard-dot.service=adguard
-      - traefik.tcp.routers.adguard-dot.tls.certresolver=${DNS}
-      - traefik.tcp.services.adguard.loadbalancer.server.port=53
+    expose:
+      - 80 # http
+      - 853 # dot
+      - 443 # doh
 
   dashy:
     container_name: dashy
@@ -411,18 +286,6 @@ services:
       - /home/sawyer/compose-files/docker/dashy/conf.yml:/app/public/conf.yml:ro
     environment:
       - NODE_ENV=production
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=web"
-      - "traefik.http.routers.dashy.entrypoints=http"
-      - "traefik.http.routers.dashy.rule=Host(`dashy.${DOMAIN}`) || Host(`${DOMAIN}`)"
-      - "traefik.http.middlewares.dashy-https-redirect.redirectscheme.scheme=https"
-      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
-      - "traefik.http.routers.dashy.middlewares=dashy-https-redirect"
-      - "traefik.http.routers.dashy-secure.entrypoints=https"
-      - "traefik.http.routers.dashy-secure.rule=Host(`dashy.${DOMAIN}`) || Host(`${DOMAIN}`)"
-      - "traefik.http.routers.dashy-secure.tls=true"
-      - "traefik.http.routers.dashy-secure.tls.certresolver=${DNS}"
 
   registry: # My own docker registry
     container_name: registry
@@ -432,18 +295,6 @@ services:
       - web
     expose:
       - 5000
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=web"
-      - "traefik.http.routers.registry.entrypoints=http"
-      - "traefik.http.routers.registry.rule=Host(`registry.${DOMAIN}`)"
-      - "traefik.http.middlewares.registry-https-redirect.redirectscheme.scheme=https"
-      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
-      - "traefik.http.routers.registry.middlewares=registry-https-redirect"
-      - "traefik.http.routers.registry-secure.entrypoints=https"
-      - "traefik.http.routers.registry-secure.rule=Host(`registry.${DOMAIN}`)"
-      - "traefik.http.routers.registry-secure.tls=true"
-      - "traefik.http.routers.registry-secure.tls.certresolver=${DNS}"
 
   searxng:
     image: searxng/searxng
@@ -457,18 +308,6 @@ services:
       - 8080
     volumes:
       - /home/sawyer/compose-files/docker/searxng:/etc/searxng:rw
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=web"
-      - "traefik.http.routers.searxng.entrypoints=http"
-      - "traefik.http.routers.searxng.rule=Host(`searxng.${DOMAIN}`) || Host(`searx.${DOMAIN}`) || Host(`search.${DOMAIN}`)"
-      - "traefik.http.middlewares.searxng-https-redirect.redirectscheme.scheme=https"
-      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
-      - "traefik.http.routers.searxng.middlewares=searxng-https-redirect"
-      - "traefik.http.routers.searxng-secure.entrypoints=https"
-      - "traefik.http.routers.searxng-secure.rule=Host(`searxng.${DOMAIN}`) || Host(`searx.${DOMAIN}`) || Host(`search.${DOMAIN}`)"
-      - "traefik.http.routers.searxng-secure.tls=true"
-      - "traefik.http.routers.searxng-secure.tls.certresolver=${DNS}"
 
   smokeping:
     image: lscr.io/linuxserver/smokeping
@@ -478,19 +317,6 @@ services:
       - web
     expose:
       - 80
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=web"
-      - "traefik.http.routers.ping.entrypoints=http"
-      - "traefik.http.routers.ping.rule=Host(`ping.${DOMAIN}`) || Host(`smokeping.${DOMAIN}`) "
-      - "traefik.http.middlewares.ping-https-redirect.redirectscheme.scheme=https"
-      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
-      - "traefik.http.routers.ping.middlewares=ping-https-redirect"
-      - "traefik.http.routers.ping-secure.entrypoints=https"
-      - "traefik.http.routers.ping-secure.rule=Host(`ping.${DOMAIN}`) || Host(`smokeping.${DOMAIN}`) "
-      - "traefik.http.routers.ping-secure.tls=true"
-      - "traefik.http.routers.ping-secure.tls.certresolver=${DNS}"
-      - "traefik.http.routers.ping-secure.middlewares=forward-auth"
 
   languagetool:
     image: meyay/languagetool
@@ -507,18 +333,6 @@ services:
     volumes:
       - languagetool_ngrams:/ngrams:rw
       - languagetool_fasttext:/fasttext:rw
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=web"
-      - "traefik.http.routers.languagetool.entrypoints=http"
-      - "traefik.http.routers.languagetool.rule=Host(`languagetool.${DOMAIN}`) || Host(`smokelanguagetool.${DOMAIN}`) "
-      - "traefik.http.middlewares.languagetool-https-redirect.redirectscheme.scheme=https"
-      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
-      - "traefik.http.routers.languagetool.middlewares=languagetool-https-redirect"
-      - "traefik.http.routers.languagetool-secure.entrypoints=https"
-      - "traefik.http.routers.languagetool-secure.rule=Host(`languagetool.${DOMAIN}`) || Host(`smokelanguagetool.${DOMAIN}`) "
-      - "traefik.http.routers.languagetool-secure.tls=true"
-      - "traefik.http.routers.languagetool-secure.tls.certresolver=${DNS}"
 
   # configures a gh action runner to redeploy this file
   homelab-github-runner:
@@ -529,8 +343,6 @@ services:
       ORG_NAME: LegitCamper
       REPO_URL: https://github.com/LegitCamper/homelab
       ACCESS_TOKEN: ${SELF_HOSTED_RUNNER}
-    labels:
-      - "traefik.enable=true"
 
   watchtower:
     image: containrrr/watchtower
@@ -543,8 +355,6 @@ services:
       WATCHTOWER_POLL_INTERVAL: 604800 # every 7 days
     command: --cleanup
     restart: always
-    labels:
-      - "traefik.enable=false"
 
   uptime-kuma:
     image: louislam/uptime-kuma:1
@@ -554,19 +364,6 @@ services:
       - uptime-kuma:/app/data:rw
     expose:
       - 3001
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=web"
-      - "traefik.http.routers.ping.entrypoints=http"
-      - "traefik.http.routers.ping.rule=Host(`uptime-kuma.${DOMAIN}`)"
-      - "traefik.http.middlewares.ping-https-redirect.redirectscheme.scheme=https"
-      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
-      - "traefik.http.routers.ping.middlewares=ping-https-redirect"
-      - "traefik.http.routers.ping-secure.entrypoints=https"
-      - "traefik.http.routers.ping-secure.rule=Host(`uptime-kuma.${DOMAIN}`)"
-      - "traefik.http.routers.ping-secure.tls=true"
-      - "traefik.http.routers.ping-secure.tls.certresolver=${DNS}"
-      - "traefik.http.routers.ping-secure.middlewares=forward-auth"
 
   # prometheus:
   #   image: prom/prometheus
