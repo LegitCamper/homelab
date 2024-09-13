@@ -163,9 +163,9 @@ services:
     restart: always
     networks:
       - web
-    ports:
-      - 8096:8096/tcp
-      - 8920:8920
+    expose:
+      - 8096 # http
+      - 8920 # https
     volumes:
       - media:/data/media/:ro
       - certbot-certs:/data/certs/:ro
