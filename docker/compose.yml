@@ -220,7 +220,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /home/sawyer/acme/:/etc/traefik/acme:rw
-      - /home/sawyer/compose-files/docker/traefik/static.toml:/etc/traefik/static.toml:ro
+      - /home/sawyer/compose-files/docker/traefik/static.toml:/etc/traefik/traefik.toml:ro
       - /home/sawyer/compose-files/docker/traefik/dynamic.toml:/etc/traefik/dynamic.toml:ro
     networks:
       - web

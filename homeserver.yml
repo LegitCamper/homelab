@@ -59,7 +59,6 @@
         regexp: '"token"'
         replace: '"{{ rathole_token.stdout }}"'
 
-   
     - name: Get cf email
       ansible.builtin.shell:
         cat /home/sawyer/compose-files/secrets.env | grep CF_API_EMAIL | sed 's/^.*CF_API_EMAIL=//'
