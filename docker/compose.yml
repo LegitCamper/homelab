@@ -216,26 +216,6 @@ services:
     image: traefik
     container_name: traefik
     restart: always
-    environment:
-      - CF_API_KEY=${CF_API_KEY}
-      - CF_API_EMAIL=${CF_API_EMAIL}
-      - DNS=${DNS}
-    command: |
-      traefik 
-      --configFile=/etc/traefik/static.toml
-      --providers.file.directory=/etc/traefik/ 
-      --providers.file.filename=dynamic.toml
-      --providers.docker=true
-      --providers.docker.watch=false
-      --providers.docker.exposedByDefault=false
-      --providers.docker.network=web
-      --certificatesresolvers.${DNS}.acme.email=${CF_API_EMAIL}
-      --certificatesresolvers.${DNS}.acme.storage=/etc/traefik/acme/acme.json
-      --certificatesresolvers.${DNS}.acme.dnschallenge
-      --certificatesresolvers.${DNS}.acme.dnschallenge.disablepropagationcheck=false
-      --certificatesresolvers.${DNS}.acme.dnschallenge.provider=${DNS}
-      --certificatesresolvers.${DNS}.acme.dnschallenge.resolvers=1.1.1.1:53,8.8.8.8:53
-      --certificatesresolvers.${DNS}.acme.httpchallenge.entrypoint=web
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro

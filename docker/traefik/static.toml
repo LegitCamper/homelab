@@ -22,16 +22,35 @@ insecureSkipVerify = true
 address = ":80"
 reusePort = true
 asDefault = false
-[entryPoints.web.http.redirections]
 [entryPoints.web.http.redirections.entryPoint]
 to = "websecure"
 scheme = "https"
 permanent = true
+
 [entryPoints.websecure]
 address = ":443"
 reusePort = true
 asDefault = true
+
 [entryPoints.dot]
 address = ":853"
 reusePort = true
 asDefault = false
+
+[providers.file]
+directory = "/etc/traefik/"
+watch = true
+filename = "dynamic.toml"
+debugLogGeneratedTemplate = true
+
+[certificatesResolvers]
+[certificatesResolvers.cloudflare]
+[certificatesResolvers.cloudflare.acme]
+email = "cf_email"
+storage = "/etc/traefik/acme/acme.json"
+[certificatesResolvers.cloudflare.acme.dnsChallenge]
+provider = "cloudflare"
+resolvers = ["1.1.1.1:53", "8.8.8.8:53"]
+disablePropagationCheck = false
+[certificatesResolvers.cloudflare.acme.httpChallenge]
+entryPoint = "web"

@@ -1,6 +1,6 @@
 [http.middlewares]
 [http.middlewares.auth.forwardAuth]
-address = "http://traefik-forward-auth:4181"
+address = "http://traefik-auth:4181"
 trustForwardHeader = true
 authResponseHeaders = ["X-Forwarded-User"]
 [http.middlewares.auth.forwardAuth.tls]
