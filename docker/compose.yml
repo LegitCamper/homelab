@@ -349,6 +349,7 @@ services:
       ORG_NAME: LegitCamper
       REPO_URL: https://github.com/LegitCamper/homelab
       ACCESS_TOKEN: ${SELF_HOSTED_RUNNER}
+    restart: always
 
   watchtower:
     image: containrrr/watchtower
