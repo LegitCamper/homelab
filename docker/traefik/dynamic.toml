@@ -1,3 +1,10 @@
+[http.routers.traefik]
+middlewares = ["auth"]
+service = "api@internal"
+rule = "Host(`traefik.sawyer.services`)"
+[http.routers.traefik.tls]
+certResolver = "cloudflare"
+
 [http.middlewares]
 [http.middlewares.auth.forwardAuth]
 address = "http://traefik-auth:4181"
@@ -6,12 +13,16 @@ authResponseHeaders = ["X-Forwarded-User"]
 [http.middlewares.auth.forwardAuth.tls]
 insecureSkipVerify = true
 
-[http.routers.traefik]
+[http.routers.auth]
 middlewares = ["auth"]
-service = "api@internal"
-rule = "Host(`traefik.sawyer.services`)"
-[http.routers.traefik.tls]
+service = "auth"
+rule = "Host(`auth.sawyer.services`)"
+[http.routers.auth.tls]
 certResolver = "cloudflare"
+
+[http.services.auth.loadBalancer]
+[[http.services.auth.loadBalancer.servers]]
+url = "http://traefik-auth:4181"
 
 [http.routers.komodo]
 middlewares = ["auth"]

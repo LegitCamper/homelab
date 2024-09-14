@@ -216,6 +216,10 @@ services:
     image: traefik
     container_name: traefik
     restart: always
+    environment:
+      - CF_API_KEY=${CF_API_KEY}
+      - CF_API_EMAIL=${CF_API_EMAIL}
+      - DNS=${DNS}
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
