@@ -51,16 +51,11 @@ volumes:
       type: cifs
       o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
       device: "//${NETWORK_DRIVE}/homelab/uptimekuma"
-  certbot:
+  letsencrypt:
     driver_opts:
       type: cifs
       o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
-      device: "//${NETWORK_DRIVE}/homelab/certbot"
-  certbot-certs:
-    driver_opts:
-      type: cifs
-      o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
-      device: "//${NETWORK_DRIVE}/homelab/certbot/certificates"
+      device: "//${NETWORK_DRIVE}/homelab/letsencrypt"
   adgaurd-conf:
     driver_opts:
       type: cifs
@@ -173,7 +168,6 @@ services:
       - 8920 # https
     volumes:
       - media:/data/media/:ro
-      - certbot-certs:/data/certs/:ro
       - jellyfin-config:/config
       - jellyfin-cache:/cache
     environment:
@@ -266,14 +260,27 @@ services:
     volumes:
       - adgaurd-conf:/opt/adguardhome/conf:rw
       - adguard-work:/opt/adguardhome/work:rw
-      - certbot:/opt/adguardhome/certs/:rw
+      - letsencrypt:/opt/adguardhome/certs/:ro
     expose:
-      - 80 # http
-      - 53 # dns
-      # these two are terminated by traefik and forwarded over 80 & 53
-      # and are uneeded
-      # - 853 # dot
+      - 80 # webui
+      - 53 # dns - not used
+      - 853 # dot
       - 443 # doh
+
+  lego:
+    image: goacme/lego
+    container_name: lego-certbot
+    restart: always
+    environment:
+      - CLOUDFLARE_EMAIL=${CF_API_EMAIL}
+      - CLOUDFLARE_API_KEY=${CF_API_KEY}
+    command:
+      --accept-tos
+      --email ${CF_API_EMAIL} --dns cloudflare 
+      --domains dns.${DOMAIN} --path /etc/letsencrypt/ 
+      run
+    volumes:
+      - letsencrypt:/etc/letsencrypt:rw
 
   dashy:
     container_name: dashy

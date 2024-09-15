@@ -152,7 +152,6 @@ certResolver = "cloudflare"
 url = "http://adguardhome:80"
 
 [http.routers.doh]
-entryPoints = ["websecure"]
 service = "doh"
 rule = "Host(`dns.sawyer.services`)"
 [http.routers.doh.tls]
@@ -160,15 +159,14 @@ certResolver = "cloudflare"
 
 [http.services.doh.loadBalancer]
 [[http.services.doh.loadBalancer.servers]]
-url = "http://adguard:80" # its already terminated
+url = "https://adguardhome:443"
 
+# not terminating tls and instead pass directly to adguard
 [tcp.routers.dot]
 entryPoints = ["dot"]
 service = "dot"
-rule = "HostSNI(`dns.sawyer.services`)"
-[tcp.routers.dot.tls]
-certResolver = "cloudflare"
+rule = "HostSNI(`*`)"
 
 [tcp.services.dot.loadBalancer]
 [[tcp.services.dot.loadBalancer.servers]]
-address = "172.55.0.10:53" # its already terminated
+address = "172.55.0.10:853"
