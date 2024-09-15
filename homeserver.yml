@@ -95,10 +95,6 @@
         state: "directory"
         mode: '0600'
 
-    - name: configure dns
-      ansible.builtin.include_tasks:
-        file: tasks/dns.yml
-
     - name: Setup containers
       community.docker.docker_compose_v2:
         project_name: homeserver

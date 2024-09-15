@@ -5,30 +5,15 @@ remote_addr = "rathole.sawyer.services:2333"
 
 [server.services.dns]
 token = "token"
-bind_addr = "0.0.0.0:80"
+bind_addr = "0.0.0.0:853"
+[client.services.dns]
+token = "token"
+local_addr = "127.0.0.1:853"
 [server.services.dns-udp]
 type = "udp"
 token = "token"
-bind_addr = "0.0.0.0:80"
-[client.services.dns]
-token = "token"
-local_addr = "127.0.0.1:80"
+bind_addr = "0.0.0.0:853"
 [client.services.dns-udp]
-type = "udp"
-token = "token"
-local_addr = "0.0.0.0:80"
-
-[server.services.dns-quic]
-token = "token"
-bind_addr = "0.0.0.0:853"
-[client.services.dns-quic]
-token = "token"
-local_addr = "127.0.0.1:853"
-[server.services.dns-quic-udp]
-type = "udp"
-token = "token"
-bind_addr = "0.0.0.0:853"
-[client.services.dns-quic-udp]
 type = "udp"
 token = "token"
 local_addr = "127.0.0.1:853"
