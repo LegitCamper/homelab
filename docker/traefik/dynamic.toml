@@ -160,7 +160,7 @@ certResolver = "cloudflare"
 
 [http.services.doh.loadBalancer]
 [[http.services.doh.loadBalancer.servers]]
-url = "http://adguard:443"
+url = "http://adguard:80" # its already terminated
 
 [tcp.routers.dot]
 entryPoints = ["dot"]
@@ -171,4 +171,4 @@ certResolver = "cloudflare"
 
 [tcp.services.dot.loadBalancer]
 [[tcp.services.dot.loadBalancer.servers]]
-address = "adguard:853"
+address = "172.55.0.10:53" # its already terminated

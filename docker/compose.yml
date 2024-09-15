@@ -3,6 +3,11 @@ networks:
     external: true
   internal:
     external: false
+  # This network exists just so adugard can have a static ip for tcp routing
+  dns:
+    ipam:
+      config:
+        - subnet: 172.55.0.0/24
 
 volumes:
   db-data:
@@ -228,10 +233,12 @@ services:
       - /home/sawyer/compose-files/docker/traefik/dynamic.toml:/etc/traefik/dynamic.toml:ro
     networks:
       - web
+      - dns
     ports:
       - "80:80"
       - "443:443"
       - "853:853"
+    expose:
       - "8080:8080"
 
   traefik-forward-auth:
@@ -254,14 +261,18 @@ services:
     container_name: adguardhome
     restart: always
     networks:
-      - web
+      dns: 
+        ipv4_address: 172.55.0.10 
     volumes:
       - adgaurd-conf:/opt/adguardhome/conf:rw
       - adguard-work:/opt/adguardhome/work:rw
       - certbot:/opt/adguardhome/certs/:rw
     expose:
       - 80 # http
-      - 853 # dot
+      - 53 # dns
+      # these two are terminated by traefik and forwarded over 80 & 53
+      # and are uneeded
+      # - 853 # dot
       - 443 # doh
 
   dashy:
