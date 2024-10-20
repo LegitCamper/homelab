@@ -152,7 +152,6 @@ certResolver = "cloudflare"
 url = "http://adguardhome:80"
 
 [http.routers.chhotot]
-middlewares = ["auth"]
 service = "chhotot"
 rule = "Host(`short.sawyer.services`)"
 [http.routers.chhotot.tls]
