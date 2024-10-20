@@ -1,0 +1,393 @@
+networks:
+  web:
+    external: true
+  internal:
+    external: false
+  # This network exists just so adugard can have a static ip for tcp routing
+  dns:
+    ipam:
+      config:
+        - subnet: 172.55.0.0/24
+
+volumes:
+  db-data:
+    driver: local
+  db-config:
+    driver: local
+  komodo-repos:
+    driver: local
+  komodo-stacks:
+    driver: local
+  fooocus_data:
+    driver: local
+  ollama-ui_data:
+    driver: local
+  audiocraft_data:
+    driver: local
+  languagetool_ngrams:
+    driver: local
+  languagetool_fasttext:
+    driver: local
+  jellyfin-config:
+    driver: local
+  jellyfin-cache:
+    driver: local
+  adguard-work:
+    driver: local
+  chhoto:
+    driver: local
+
+  media:
+    driver_opts:
+      type: cifs
+      o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
+      device: "//${NETWORK_DRIVE}/media"
+
+  ollama:
+    driver_opts:
+      type: cifs
+      o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
+      device: "//${NETWORK_DRIVE}/homelab/ollama"
+  uptime-kuma:
+    driver_opts:
+      type: cifs
+      o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
+      device: "//${NETWORK_DRIVE}/homelab/uptimekuma"
+  letsencrypt:
+    driver_opts:
+      type: cifs
+      o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
+      device: "//${NETWORK_DRIVE}/homelab/letsencrypt"
+  adgaurd-conf:
+    driver_opts:
+      type: cifs
+      o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
+      device: "//${NETWORK_DRIVE}/homelab/adgaurd"
+
+services:
+  komodo-core:
+    image: ghcr.io/mbecker20/komodo:latest
+    container_name: komodo-core
+    restart: always
+    depends_on:
+      - komodo-mongo
+    logging:
+      driver: local 
+    networks:
+      - internal
+      - web
+    expose:
+      - 9120
+    environment: 
+      KOMODO_HOST: ${KOMODO_HOST}
+      KOMODO_TITLE: Komodo 
+      KOMODO_ENSURE_SERVER: http://komodo-periphery:8120 # Creates the "default" server.
+      KOMODO_MONGO_ADDRESS: komodo-mongo:27017
+      KOMODO_MONGO_USERNAME: ${KOMODO_DB_USERNAME}
+      KOMODO_MONGO_PASSWORD: ${KOMODO_DB_PASSWORD}
+      KOMODO_LOCAL_AUTH: false 
+      KOMODO_PASSKEY: ${KOMODO_PASSKEY}
+      KOMODO_WEBHOOK_SECRET: ${KOMODO_WEBHOOK_SECRET}
+      KOMODO_JWT_SECRET: ${KOMODO_JWT_SECRET}
+      KOMODO_GITHUB_OAUTH_ENABLED: true       
+      KOMODO_GITHUB_OAUTH_ID: ${KOMODO_GITHUB_OAUTH_ID}
+      KOMODO_GITHUB_OAUTH_SECRET: ${KOMODO_GITHUB_OAUTH_SECRET}
+
+  komodo-periphery:
+    image: ghcr.io/mbecker20/periphery:latest
+    container_name: komodo-periphery
+    restart: always
+    logging:
+      driver: local
+    expose:
+      - 8120
+    networks:
+      - internal
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - komodo-repos:/etc/komodo/repos:rw 
+      - komodo-stacks:/etc/komodo/stacks:rw 
+
+  komodo-mongo:
+    image: mongo
+    container_name: komodo-mongo
+    command: --quiet # suppress mongo logs a bit
+    restart: always
+    logging:
+      driver: local
+    networks:
+      - internal
+    expose:
+      - 27017
+    volumes:
+      - db-data:/data/db:rw
+      - db-config:/data/configdb:rw
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${KOMODO_DB_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${KOMODO_DB_PASSWORD}
+
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    restart: always
+    networks:
+      - web
+    expose:
+      - 11434
+    volumes:
+      - ollama:/root/.ollama:rw
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+
+  ollama-ui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: ollama-ui
+    restart: always
+    depends_on:
+      - ollama
+    networks:
+      - web
+      - internal
+    expose:
+      - 8080
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+    volumes:
+      - ollama-ui_data:/app/backend/data:rw
+
+  jellyfin:
+    image: jellyfin/jellyfin
+    container_name: jellyfin
+    restart: always
+    networks:
+      - web
+    expose:
+      - 8096 # http
+      - 8920 # https
+    volumes:
+      - media:/data/media/:ro
+      - jellyfin-config:/config
+      - jellyfin-cache:/cache
+    environment:
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - NVIDIA_VISIBLE_DEVICES=all
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+
+  transmission-openvpn:
+    image: haugene/transmission-openvpn
+    container_name: transmission-openvpn
+    restart: always
+    networks:
+      - web
+    volumes:
+      - media:/data:rw
+    environment:
+      - OPENVPN_OPTS=--pull-filter ignore ifconfig-ipv6
+      - OPENVPN_PROVIDER=${OPENVPN_PROVIDER}
+      - OPENVPN_CONFIG=${OPENVPN_CONFIG}
+      - OPENVPN_USERNAME=${OPENVPN_USERNAME}
+      - OPENVPN_PASSWORD=${OPENVPN_PASSWORD}
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - NET_ADMIN
+    ports:
+      # any services proxied through this container need to declare ports here
+      - 9091:9091 # transmission
+
+  rathole:
+    image: rapiz1/rathole
+    container_name: rathole
+    restart: always
+    network_mode: host
+    volumes:
+      - /home/sawyer/compose-files/docker/rathole/rathole.toml:/app/config.toml:ro
+    command: --client /app/config.toml
+
+  traefik:
+    image: traefik
+    container_name: traefik
+    restart: always
+    environment:
+      - CF_API_KEY=${CF_API_KEY}
+      - CF_API_EMAIL=${CF_API_EMAIL}
+      - DNS=${DNS}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /home/sawyer/acme/:/etc/traefik/acme:rw
+      - /home/sawyer/compose-files/docker/traefik/static.toml:/etc/traefik/traefik.toml:ro
+      - /home/sawyer/compose-files/docker/traefik/dynamic.toml:/etc/traefik/dynamic.toml:ro
+    networks:
+      - web
+      - dns
+    ports:
+      - "80:80"
+      - "443:443"
+      - "853:853"
+    expose:
+      - "8080:8080"
+
+  traefik-forward-auth:
+    image: thomseddon/traefik-forward-auth:2
+    container_name: traefik-auth
+    environment:
+      - PROVIDERS_GOOGLE_CLIENT_ID=${PROVIDERS_GOOGLE_CLIENT_ID}
+      - PROVIDERS_GOOGLE_CLIENT_SECRET=${PROVIDERS_GOOGLE_CLIENT_SECRET}
+      - SECRET=${GOOGLE_OATH_SECRET}
+      - AUTH_HOST=auth.${DOMAIN}
+      - COOKIE_DOMAIN=${DOMAIN}
+      - WHITELIST=${WHITELIST}
+    networks:
+      - web
+    expose: 
+      - 4181
+
+  adguardhome:
+    image: adguard/adguardhome
+    container_name: adguardhome
+    restart: always
+    networks:
+      dns: 
+        ipv4_address: 172.55.0.10 
+    volumes:
+      - adgaurd-conf:/opt/adguardhome/conf:rw
+      - adguard-work:/opt/adguardhome/work:rw
+      - letsencrypt:/opt/adguardhome/certs/:ro
+    expose:
+      - 80 # webui
+      - 53 # dns - not used
+      - 853 # dot
+      - 443 # doh
+
+  lego:
+    image: goacme/lego
+    container_name: lego-certbot
+    restart: always
+    environment:
+      - CLOUDFLARE_EMAIL=${CF_API_EMAIL}
+      - CLOUDFLARE_API_KEY=${CF_API_KEY}
+    command:
+      --accept-tos
+      --email ${CF_API_EMAIL} --dns cloudflare 
+      --domains dns.${DOMAIN} --path /etc/letsencrypt/ 
+      run
+    volumes:
+      - letsencrypt:/etc/letsencrypt:rw
+
+  dashy:
+    container_name: dashy
+    image: lissy93/dashy
+    restart: always
+    networks:
+      - web
+    expose:
+      - 80
+    volumes:
+      - /home/sawyer/compose-files/docker/dashy/conf.yml:/app/public/conf.yml:ro
+    environment:
+      - NODE_ENV=production
+
+  registry: # My own docker registry
+    container_name: registry
+    image: registry
+    restart: always
+    networks:
+      - web
+    expose:
+      - 5000
+
+  searxng:
+    image: searxng/searxng
+    container_name: searxng
+    restart: always
+    environment:
+      - SEARXNG_SECRET=${SEARXNG_SECRET}
+    networks:
+      - web
+    expose:
+      - 8080
+    volumes:
+      - /home/sawyer/compose-files/docker/searxng:/etc/searxng:rw
+
+  smokeping:
+    image: lscr.io/linuxserver/smokeping
+    container_name: smokeping
+    restart: always
+    networks:
+      - web
+    expose:
+      - 80
+
+  languagetool:
+    image: meyay/languagetool
+    container_name: languagetool
+    restart: always
+    networks:
+      - web
+    expose:
+      - 8010
+    environment:
+      download_ngrams_for_langs: en
+      langtool_languageModel: /ngrams
+      langtool_fasttextModel: /fasttext/lid.176.bin
+    volumes:
+      - languagetool_ngrams:/ngrams:rw
+      - languagetool_fasttext:/fasttext:rw
+
+  # configures a gh action runner to redeploy this file
+  homelab-github-runner:
+    image: myoung34/github-runner:debian-bookworm
+    container_name: homelab-github-runner  
+    network_mode: host # allows containers to use tailscale dns
+    environment:
+      ORG_NAME: LegitCamper
+      REPO_URL: https://github.com/LegitCamper/homelab
+      ACCESS_TOKEN: ${SELF_HOSTED_RUNNER}
+    restart: always
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      WATCHTOWER_CLEANUP: true
+      WATCHTOWER_REVIVE_STOPPED: true
+      WATCHTOWER_POLL_INTERVAL: 604800 # every 7 days
+    command: --cleanup
+    restart: always
+
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: uptime-kuma
+    restart: always
+    volumes:
+      - uptime-kuma:/app/data:rw
+    expose:
+      - 3001
+
+  chhoto-url:
+        image: sintan1729/chhoto-url:latest
+        restart: unless-stopped
+        container_name: chhoto-url
+        networks:
+          - web
+        expose:
+            - 4567
+        environment:
+            - db_url=/db/urls.sqlite
+            - password=${CHHOTO_URL_PASSWORD}
+            - redirect_method=TEMPORARY
+            - public_mode=Disable           
+        volumes:
+            - chhoto:/db

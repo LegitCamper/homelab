@@ -1,0 +1,30 @@
+---
+  - name: check if tailscale up already
+    ansible.builtin.shell: tailscale status
+    register: ansible_up
+    ignore_errors: true
+    changed_when: false
+
+  - name: Get tailscale key
+    when: ansible_up.rc != 0
+    become: false
+    ansible.builtin.shell:
+      cat ~/compose-files/secrets.env | grep TS_AUTHKEY | sed 's/^.*TS_AUTHKEY=//'
+    register: ansible_key
+    ignore_errors: true
+    changed_when: false
+
+  - name: Set tailscale_authkey
+    when: ansible_up.rc != 0
+    ansible.builtin.set_fact: 
+      tailscale_authkey: "{{ ansible_key.stdout }}"
+
+  - name: Run tailscale role
+    when: ansible_up.rc != 0
+    include_role:
+      name: artis3n.tailscale
+    vars:
+      tailscale_oauth_preauthorized: true
+      tailscale_oauth_ephemeral: false
+      tailscale_tags: ['homelab']
+      tailscale_args: "--hostname={{ tailscale_hostname }} --ssh"

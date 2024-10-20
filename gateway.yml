@@ -1,0 +1,62 @@
+---
+- name: Configure homelab gateway server (Debain)
+  hosts: "*"
+  remote_user: root
+  
+  pre_tasks: 
+    - name: update 
+      ansible.builtin.include_tasks:
+        file: tasks/apt.yml
+
+    - name: Install packages
+      apt:
+        pkg:
+          - docker.io
+
+    - name: Crate docker stack dir
+      ansible.builtin.file:
+        path: ~/compose-files/
+        state: directory
+
+    - name: Copy compose files
+      ansible.builtin.copy:
+        src: docker
+        dest: ~/compose-files
+
+    - name: Copy secrets file
+      ansible.builtin.copy:
+        decrypt: true
+        src: secrets.env
+        dest: ~/compose-files
+
+  tasks:
+    # allows ansible to easily connect back for updates
+    - name: install and configure tailscale
+      ansible.builtin.include_tasks:
+        file: tasks/tailscale.yml
+      vars:
+        tailscale_hostname: gateway
+
+    - name: Get rathole token
+      ansible.builtin.shell:
+        cat ~/compose-files/secrets.env | grep RATHOLE_TOKEN | sed 's/^.*RATHOLE_TOKEN=//'
+      register: rathole_token
+      ignore_errors: true
+      changed_when: false
+
+    - name: Replace rathole tokens with secret
+      ansible.builtin.replace:
+        path: ~/compose-files/docker/rathole/rathole.toml
+        regexp: '"token"'
+        replace: '"{{ rathole_token.stdout }}"'
+
+    - name: Start Rathole container
+      docker_container:
+        name: "rathole"
+        recreate: yes
+        image: rapiz1/rathole
+        network_mode: "host"
+        user: root
+        volumes: 
+          - /root/compose-files/docker/rathole/rathole.toml:/app/config.toml
+        command: --server /app/config.toml

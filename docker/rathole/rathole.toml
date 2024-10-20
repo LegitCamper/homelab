@@ -1,0 +1,48 @@
+[server]
+bind_addr = "0.0.0.0:2333"
+[client]
+remote_addr = "rathole.sawyer.services:2333"
+
+[server.services.dns]
+token = "token"
+bind_addr = "0.0.0.0:853"
+[client.services.dns]
+token = "token"
+local_addr = "127.0.0.1:853"
+[server.services.dns-udp]
+type = "udp"
+token = "token"
+bind_addr = "0.0.0.0:853"
+[client.services.dns-udp]
+type = "udp"
+token = "token"
+local_addr = "127.0.0.1:853"
+
+[server.services.http]
+token = "token"
+bind_addr = "0.0.0.0:80"
+[client.services.http]
+token = "token"
+local_addr = "127.0.0.1:80"
+
+[server.services.https]
+token = "token"
+bind_addr = "0.0.0.0:443"
+[client.services.https]
+token = "token"
+local_addr = "127.0.0.1:443"
+
+[server.services.minecraft]
+token = "token"
+bind_addr = "0.0.0.0:25565"
+[client.services.minecraft]
+token = "token"
+local_addr = "127.0.0.1:25565"
+[server.services.minecraft-udp]
+type = "udp"
+token = "token"
+bind_addr = "0.0.0.0:25565"
+[client.services.minecraft-udp]
+type = "udp"
+token = "token"
+local_addr = "127.0.0.1:25565"

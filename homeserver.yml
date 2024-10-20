@@ -1,0 +1,103 @@
+---
+- name: Configure homeserver (Debian)
+  hosts: "*"
+  become: true
+  remote_user: sawyer
+    
+  pre_tasks: 
+    - name: install docker
+      ansible.builtin.include_tasks:
+        file: tasks/install-docker.yml   
+    
+    - name: Add specified repository into sources list using specified filename
+      when: ansible_distribution == "Debian"
+      ansible.builtin.apt_repository:
+        repo: deb http://deb.debian.org/debian/ {{ ansible_distribution_release | lower }} main contrib non-free non-free-firmware
+        state: present
+
+    - name: update 
+      ansible.builtin.include_tasks:
+        file: tasks/apt.yml
+
+    - name: Crate docker stack dir
+      ansible.builtin.file:
+        path: /home/sawyer/compose-files/
+        state: directory
+
+    - name: Copy secrets file
+      ansible.builtin.copy:
+        decrypt: true
+        src: secrets.env
+        dest: /home/sawyer/compose-files
+
+  tasks:  
+    - name: install and configure tailscale
+      ansible.builtin.include_tasks:
+        file: tasks/tailscale.yml
+      vars:
+        tailscale_hostname: homeserver
+
+    - name: install nvidia and nvidia container tools
+      ansible.builtin.include_tasks:
+        file: tasks/nvidia.yml
+
+    - name: Copy compose files
+      ansible.builtin.copy:
+        src: docker
+        dest: /home/sawyer/compose-files
+
+    - name: Get rathole token
+      ansible.builtin.shell:
+        cat /home/sawyer/compose-files/secrets.env | grep RATHOLE_TOKEN | sed 's/^.*RATHOLE_TOKEN=//'
+      register: rathole_token
+      ignore_errors: true
+      changed_when: false
+
+    - name: Replace rathole tokens with secret
+      ansible.builtin.replace:
+        path: /home/sawyer/compose-files/docker/rathole/rathole.toml
+        regexp: '"token"'
+        replace: '"{{ rathole_token.stdout }}"'
+
+    - name: Get cf email
+      ansible.builtin.shell:
+        cat /home/sawyer/compose-files/secrets.env | grep CF_API_EMAIL | sed 's/^.*CF_API_EMAIL=//'
+      register: cf_email
+      ignore_errors: true
+      changed_when: false
+
+    - name: Replace cf_email with email
+      ansible.builtin.replace:
+        path: /home/sawyer/compose-files/docker/traefik/static.toml
+        regexp: '"email"'
+        replace: '"{{ cf_email.stdout }}"'
+
+    - name: Create 'web' network
+      community.docker.docker_network:
+        name: web
+
+    - name: Create 'internal' network
+      community.docker.docker_network:
+        name: internal
+
+    - name: reboot if needed
+      ansible.builtin.include_tasks:
+        file: tasks/reboot.yml
+
+    - name: install cif utils
+      apt:
+        name:
+          - cifs-utils
+
+    - name: Create acme dir
+      ansible.builtin.file:
+        path: /home/sawyer/acme/
+        state: "directory"
+        mode: '0600'
+
+    - name: Setup containers
+      community.docker.docker_compose_v2:
+        project_name: homeserver
+        env_files: /home/sawyer/compose-files/secrets.env
+        project_src: ./
+        files: /home/sawyer/compose-files/docker/compose.yml
