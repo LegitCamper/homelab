@@ -151,6 +151,16 @@ certResolver = "cloudflare"
 [[http.services.adguard.loadBalancer.servers]]
 url = "http://adguardhome:80"
 
+[http.routers.chhotot]
+service = "chhotot"
+rule = "Host(`short.sawyer.services`)"
+[http.routers.chhotot.tls]
+certResolver = "cloudflare"
+
+[http.services.chhotot.loadBalancer]
+[[http.services.chhotot.loadBalancer.servers]]
+url = "http://chhoto-url:4567"
+
 [http.routers.doh]
 service = "doh"
 rule = "Host(`dns.sawyer.services`)"

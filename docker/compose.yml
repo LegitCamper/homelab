@@ -34,6 +34,8 @@ volumes:
     driver: local
   adguard-work:
     driver: local
+  chhoto:
+    driver: local
 
   media:
     driver_opts:
@@ -374,35 +376,18 @@ services:
     expose:
       - 3001
 
-  # prometheus:
-  #   image: prom/prometheus
-  #   container_name: prometheus
-  #   expose:
-  #     - 9090
-  #   command:
-  #     - --config.file=/etc/prometheus/prometheus.yml
-  #   volumes:
-  #     - /home/sawyer/compose-files/docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-  #     - prometheus-data:/prometheus
-  #   depends_on:
-  #     - cadvisor
-  #   restart: always
-
-  # cadvisor:
-  #   image: gcr.io/cadvisor/cadvisor
-  #   container_name: cadvisor
-  #   expose:
-  #     - 8080
-  #   volumes:
-  #     - /:/rootfs:ro
-  #     - /var/run:/var/run:rw
-  #     - /sys:/sys:ro
-  #     - /var/li/home/sawyer/compose-files/docker/:/var/li/home/sawyer/compose-files/docker:ro
-  #   restart: always
-
-  # grafana:
-  #   image: grafana/grafana
-  #   container_name: grafana
-  #   expose:
-  #    - :3000
-  #   restart: always
+  chhoto-url:
+        image: sintan1729/chhoto-url:latest
+        restart: unless-stopped
+        container_name: chhoto-url
+        networks:
+          - web
+        expose:
+            - 4567
+        environment:
+            - db_url=/db/urls.sqlite
+            - password=${CHHOTO_URL_PASSWORD}
+            - redirect_method=TEMPORARY
+            - public_mode=Disable           
+        volumes:
+            - chhoto:/db
