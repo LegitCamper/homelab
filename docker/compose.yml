@@ -378,7 +378,7 @@ services:
 
   chhoto-url:
         image: sintan1729/chhoto-url:latest
-        restart: unless-stopped
+        restart: always
         container_name: chhoto-url
         networks:
           - web
@@ -391,3 +391,12 @@ services:
             - public_mode=Disable           
         volumes:
             - chhoto:/db
+
+  portfolio:
+        image: registry.sawyer.services/portfolio:latest
+        restart: always
+        container_name: portfolio
+        networks:
+          - web
+        expose:
+            - 8000
