@@ -393,7 +393,7 @@ services:
             - chhoto:/db
 
   portfolio:
-        image: registry.sawyer.services/portfolio:latest
+        image: registry.sawyer.services/legitcamper/portfolio:latest
         restart: always
         container_name: portfolio
         networks:
