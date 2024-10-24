@@ -393,9 +393,9 @@ services:
             - chhoto:/db
 
   portfolio:
-        image: registry.sawyer.services/legitcamper/portfolio:latest
-        restart: always
+        image: ghcr.io/legitcamper/portfolio-site:latest
         container_name: portfolio
+        restart: always
         networks:
           - web
         expose:
