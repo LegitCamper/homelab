@@ -10,31 +10,13 @@ networks:
         - subnet: 172.55.0.0/24
 
 volumes:
-  db-data:
-    driver: local
-  db-config:
-    driver: local
-  komodo-repos:
-    driver: local
-  komodo-stacks:
-    driver: local
   fooocus_data:
-    driver: local
-  ollama-ui_data:
-    driver: local
-  audiocraft_data:
-    driver: local
-  languagetool_ngrams:
-    driver: local
-  languagetool_fasttext:
-    driver: local
-  jellyfin-config:
     driver: local
   jellyfin-cache:
     driver: local
   adguard-work:
     driver: local
-  chhoto:
+  audiocraft_data:
     driver: local
 
   media:
@@ -42,12 +24,16 @@ volumes:
       type: cifs
       o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
       device: "//${NETWORK_DRIVE}/media"
-
-  ollama:
+  jellyfin-config:
     driver_opts:
       type: cifs
       o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
-      device: "//${NETWORK_DRIVE}/homelab/ollama"
+      device: "//${NETWORK_DRIVE}/homelab/jellyfin"
+  chhoto:
+    driver_opts:
+      type: cifs
+      o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
+      device: "//${NETWORK_DRIVE}/homelab/chhoto"
   uptime-kuma:
     driver_opts:
       type: cifs
@@ -63,6 +49,46 @@ volumes:
       type: cifs
       o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
       device: "//${NETWORK_DRIVE}/homelab/adgaurd"
+  db-data:
+    driver_opts:
+      type: cifs
+      o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
+      device: "//${NETWORK_DRIVE}/homelab/komodo/data"
+  db-config:
+    driver_opts:
+      type: cifs
+      o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
+      device: "//${NETWORK_DRIVE}/homelab/komodo/conf"
+  komodo-repos:
+    driver_opts:
+      type: cifs
+      o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
+      device: "//${NETWORK_DRIVE}/homelab/komodo/repos"
+  komodo-stacks:
+    driver_opts:
+      type: cifs
+      o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
+      device: "//${NETWORK_DRIVE}/homelab/komodo/stacks"
+  ollama:
+    driver_opts:
+      type: cifs
+      o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
+      device: "//${NETWORK_DRIVE}/homelab/ollama"
+  ollama-ui_data:
+    driver_opts:
+      type: cifs
+      o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
+      device: "//${NETWORK_DRIVE}/homelab/ollama-ui"
+  languagetool_ngrams:
+    driver_opts:
+      type: cifs
+      o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
+      device: "//${NETWORK_DRIVE}/homelab/languagetool/ngrams"
+  languagetool_fasttext:
+    driver_opts:
+      type: cifs
+      o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
+      device: "//${NETWORK_DRIVE}/homelab/languagetool/fasttext"
 
 services:
   komodo-core:
