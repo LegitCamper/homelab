@@ -17,12 +17,23 @@
         dest: /home/sawyer/compose-files
 
   tasks:  
+    - name: enable tailscale
+      become: true
+      ansible.builtin.systemd_service:
+          name: tailscaled
+          state: started
+          enabled: true
+
     - name: enable docker
       become: true
       ansible.builtin.systemd_service:
           name: docker.socket
           state: started
           enabled: true
+
+    - name: install and configure tailscale
+      ansible.builtin.include_tasks:
+        file: tasks/cifs.yml
 
     - name: Copy compose files
       ansible.builtin.copy:

@@ -19,77 +19,6 @@ volumes:
   audiocraft_data:
     driver: local
 
-  media:
-    driver_opts:
-      type: cifs
-      o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
-      device: "//${NETWORK_DRIVE}/media"
-  jellyfin-config:
-    driver_opts:
-      type: cifs
-      o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
-      device: "//${NETWORK_DRIVE}/homelab/jellyfin"
-  chhoto:
-    driver_opts:
-      type: cifs
-      o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
-      device: "//${NETWORK_DRIVE}/homelab/chhoto"
-  uptime-kuma:
-    driver_opts:
-      type: cifs
-      o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
-      device: "//${NETWORK_DRIVE}/homelab/uptimekuma"
-  letsencrypt:
-    driver_opts:
-      type: cifs
-      o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
-      device: "//${NETWORK_DRIVE}/homelab/letsencrypt"
-  adgaurd-conf:
-    driver_opts:
-      type: cifs
-      o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
-      device: "//${NETWORK_DRIVE}/homelab/adgaurd"
-  db-data:
-    driver_opts:
-      type: cifs
-      o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
-      device: "//${NETWORK_DRIVE}/homelab/komodo/data"
-  db-config:
-    driver_opts:
-      type: cifs
-      o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
-      device: "//${NETWORK_DRIVE}/homelab/komodo/conf"
-  komodo-repos:
-    driver_opts:
-      type: cifs
-      o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
-      device: "//${NETWORK_DRIVE}/homelab/komodo/repos"
-  komodo-stacks:
-    driver_opts:
-      type: cifs
-      o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
-      device: "//${NETWORK_DRIVE}/homelab/komodo/stacks"
-  ollama:
-    driver_opts:
-      type: cifs
-      o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
-      device: "//${NETWORK_DRIVE}/homelab/ollama"
-  ollama-ui_data:
-    driver_opts:
-      type: cifs
-      o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
-      device: "//${NETWORK_DRIVE}/homelab/ollama-ui"
-  languagetool_ngrams:
-    driver_opts:
-      type: cifs
-      o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
-      device: "//${NETWORK_DRIVE}/homelab/languagetool/ngrams"
-  languagetool_fasttext:
-    driver_opts:
-      type: cifs
-      o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
-      device: "//${NETWORK_DRIVE}/homelab/languagetool/fasttext"
-
 services:
   komodo-core:
     image: ghcr.io/mbecker20/komodo:latest
@@ -131,8 +60,8 @@ services:
       - internal
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - komodo-repos:/etc/komodo/repos:rw 
-      - komodo-stacks:/etc/komodo/stacks:rw 
+      - /mnt/homelab/komodo/repos:/etc/komodo/repos:rw 
+      - /mnt/homelab/komodo/stacks:/etc/komodo/stacks:rw 
 
   komodo-mongo:
     image: mongo
@@ -146,8 +75,8 @@ services:
     expose:
       - 27017
     volumes:
-      - db-data:/data/db:rw
-      - db-config:/data/configdb:rw
+      - /mnt/homelab/komodo/data:/data/db:rw
+      - /mnt/homelab/komodo/config:/data/configdb:rw
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${KOMODO_DB_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${KOMODO_DB_PASSWORD}
@@ -161,7 +90,7 @@ services:
     expose:
       - 11434
     volumes:
-      - ollama:/root/.ollama:rw
+      - /mnt/homelab/ollama:/root/.ollama:rw
     runtime: nvidia
     deploy:
       resources:
@@ -183,7 +112,7 @@ services:
     environment:
       - OLLAMA_BASE_URL=http://ollama:11434
     volumes:
-      - ollama-ui_data:/app/backend/data:rw
+      - /mnt/homelab/ollama-ui:/app/backend/data:rw
 
   jellyfin:
     image: jellyfin/jellyfin
@@ -195,8 +124,8 @@ services:
       - 8096 # http
       - 8920 # https
     volumes:
-      - media:/data/media/:ro
-      - jellyfin-config:/config
+      - /mnt/media:/data/media/:ro
+      - /mnt/homelab/jellyfin:/config
       - jellyfin-cache:/cache
     environment:
       - NVIDIA_DRIVER_CAPABILITIES=all
@@ -215,7 +144,7 @@ services:
     networks:
       - web
     volumes:
-      - media:/data:rw
+      - /mnt/media:/data:rw
     environment:
       - OPENVPN_OPTS=--pull-filter ignore ifconfig-ipv6
       - OPENVPN_PROVIDER=${OPENVPN_PROVIDER}
@@ -286,9 +215,9 @@ services:
       dns: 
         ipv4_address: 172.55.0.10 
     volumes:
-      - adgaurd-conf:/opt/adguardhome/conf:rw
+      - /mnt/homelab/adgaurd:/opt/adguardhome/conf:rw
       - adguard-work:/opt/adguardhome/work:rw
-      - letsencrypt:/opt/adguardhome/certs/:ro
+      - /mnt/homelab/letsencrypt:/opt/adguardhome/certs/:ro
     expose:
       - 80 # webui
       - 53 # dns - not used
@@ -308,7 +237,7 @@ services:
       --domains dns.${DOMAIN} --path /etc/letsencrypt/ 
       run
     volumes:
-      - letsencrypt:/etc/letsencrypt:rw
+      - /mnt/homelab/letsencrypt:/etc/letsencrypt:rw
 
   dashy:
     container_name: dashy
@@ -367,8 +296,8 @@ services:
       langtool_languageModel: /ngrams
       langtool_fasttextModel: /fasttext/lid.176.bin
     volumes:
-      - languagetool_ngrams:/ngrams:rw
-      - languagetool_fasttext:/fasttext:rw
+      - /mnt/homelab/languagetool/ngrams:/ngrams:rw
+      - /mnt/homelab/languagetool/fasttext:/fasttext:rw
 
   # configures a gh action runner to redeploy this file
   homelab-github-runner:
@@ -398,7 +327,7 @@ services:
     container_name: uptime-kuma
     restart: always
     volumes:
-      - uptime-kuma:/app/data:rw
+      - /mnt/homelab/uptimekuma:/app/data:rw
     expose:
       - 3001
 
@@ -416,7 +345,7 @@ services:
             - redirect_method=TEMPORARY
             - public_mode=Disable           
         volumes:
-            - chhoto:/db
+            - /mnt/homelab/chhoto:/db
 
   portfolio:
         image: ghcr.io/legitcamper/portfolio-site:latest
