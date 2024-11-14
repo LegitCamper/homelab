@@ -3,7 +3,7 @@
 - transpile it to an [ingition file](https://coreos.github.io/butane/getting-started/#container-image)
 - validate the ignition file `podman run --pull=always --rm -i quay.io/coreos/ignition-validate:release - < ucore.ign`
 > This example uses podman, but docker can be used too
-- start an http server to host the ingnition file and prepare for install
+- start an http server to host the ingnition file and prepare for install `podman run --rm -it -v $PWD:/html -p 8080:80 docker.io/casperklein/http`
 - boot up the fedora core installer and install with your ingition file: `sudo coreos-installer install /dev/sda --ignition-url https://example.com/example.ign` and then reboot
 
 # Setup
