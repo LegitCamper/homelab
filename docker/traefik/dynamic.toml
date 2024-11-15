@@ -44,17 +44,7 @@ certResolver = "cloudflare"
 
 [http.services.ollama.loadBalancer]
 [[http.services.ollama.loadBalancer.servers]]
-url = "http://ollama-ui:8080"
-
-[http.routers.ollama-api]
-service = "ollama-api"
-rule = "Host(`ollama-api.sawyer.services`)"
-[http.routers.ollama-api.tls]
-certResolver = "cloudflare"
-
-[http.services.ollama-api.loadBalancer]
-[[http.services.ollama-api.loadBalancer.servers]]
-url = "http://ollama:11434"
+url = "http://ollama:8080"
 
 [http.routers.jellyfin]
 service = "jellyfin"

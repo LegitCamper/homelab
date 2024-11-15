@@ -86,14 +86,13 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: ${KOMODO_DB_PASSWORD}
 
   ollama:
-    image: ollama/ollama
+    image: ghcr.io/open-webui/open-webui:ollama
     container_name: ollama
     restart: always
     networks:
-      - internal
       - web
     expose:
-      - 11434
+      - 8080
     volumes:
       - /mnt/homelab/ollama:/root/.ollama:rw
     security_opt:
@@ -105,23 +104,6 @@ services:
             - driver: nvidia
               capabilities: [gpu]
               count: all
-
-  ollama-ui:
-    image: ghcr.io/open-webui/open-webui:main
-    container_name: ollama-ui
-    restart: always
-    user: "1000:1000"
-    depends_on:
-      - ollama
-    networks:
-      - web
-      - internal
-    expose:
-      - 8080
-    environment:
-      - OLLAMA_BASE_URL=http://ollama:11434
-    volumes:
-      - /mnt/homelab/ollama-ui:/app/backend/data:rw
 
   jellyfin:
     image: jellyfin/jellyfin

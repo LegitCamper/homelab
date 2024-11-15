@@ -117,3 +117,4 @@
         env_files: /home/core/compose-files/secrets.env
         project_src: ./
         files: /home/core/compose-files/docker/compose.yml
+        remove_orphans: true
