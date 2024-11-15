@@ -184,7 +184,7 @@ services:
     image: traefik
     container_name: traefik
     restart: always
-    user: $(id -u):$(id -g)
+    user: "1000:1000"
     environment:
       - CF_API_KEY=${CF_API_KEY}
       - CF_API_EMAIL=${CF_API_EMAIL}
