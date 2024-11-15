@@ -7,14 +7,14 @@
   pre_tasks: 
     - name: Crate docker stack dir
       ansible.builtin.file:
-        path: /home/sawyer/compose-files/
+        path: /home/core/compose-files/
         state: directory
 
     - name: Copy secrets file
       ansible.builtin.copy:
         decrypt: true
         src: secrets.env
-        dest: /home/sawyer/compose-files
+        dest: /home/core/compose-files
 
   tasks:  
     - name: enable tailscale
@@ -38,31 +38,31 @@
     - name: Copy compose files
       ansible.builtin.copy:
         src: docker
-        dest: /home/sawyer/compose-files
+        dest: /home/core/compose-files
 
     - name: Get rathole token
       ansible.builtin.shell:
-        cat /home/sawyer/compose-files/secrets.env | grep RATHOLE_TOKEN | sed 's/^.*RATHOLE_TOKEN=//'
+        cat /home/core/compose-files/secrets.env | grep RATHOLE_TOKEN | sed 's/^.*RATHOLE_TOKEN=//'
       register: rathole_token
       ignore_errors: true
       changed_when: false
 
     - name: Replace rathole tokens with secret
       ansible.builtin.replace:
-        path: /home/sawyer/compose-files/docker/rathole/rathole.toml
+        path: /home/core/compose-files/docker/rathole/rathole.toml
         regexp: '"token"'
         replace: '"{{ rathole_token.stdout }}"'
 
     - name: Get cf email
       ansible.builtin.shell:
-        cat /home/sawyer/compose-files/secrets.env | grep CF_API_EMAIL | sed 's/^.*CF_API_EMAIL=//'
+        cat /home/core/compose-files/secrets.env | grep CF_API_EMAIL | sed 's/^.*CF_API_EMAIL=//'
       register: cf_email
       ignore_errors: true
       changed_when: false
 
     - name: Replace cf_email with email
       ansible.builtin.replace:
-        path: /home/sawyer/compose-files/docker/traefik/static.toml
+        path: /home/core/compose-files/docker/traefik/static.toml
         regexp: '"email"'
         replace: '"{{ cf_email.stdout }}"'
 
@@ -76,13 +76,13 @@
 
     - name: Create acme dir
       ansible.builtin.file:
-        path: /home/sawyer/acme/
+        path: /home/core/acme/
         state: "directory"
         mode: '0600'
 
     - name: Setup containers
       community.docker.docker_compose_v2:
         project_name: homeserver
-        env_files: /home/sawyer/compose-files/secrets.env
+        env_files: /home/core/compose-files/secrets.env
         project_src: ./
-        files: /home/sawyer/compose-files/docker/compose.yml
+        files: /home/core/compose-files/docker/compose.yml
