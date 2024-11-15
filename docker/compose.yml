@@ -25,6 +25,7 @@ services:
     user: "1000:1000"
     depends_on:
       - komodo-mongo
+      - komodo-periphery
     logging:
       driver: local 
     networks:
@@ -124,7 +125,7 @@ services:
     image: jellyfin/jellyfin
     container_name: jellyfin
     restart: always
-    # user: "1000:1000"
+    user: "1000:1000"
     networks:
       - web
     expose:
