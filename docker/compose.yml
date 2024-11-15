@@ -12,6 +12,8 @@ networks:
 volumes:
   fooocus_data:
     driver: local
+  jellyfin-config:
+    driver: local
   jellyfin-cache:
     driver: local
   adguard-work:
@@ -131,7 +133,7 @@ services:
     expose:
       - 8096
     volumes:
-      - /mnt/homelab/jellyfin:/config:rw
+      - jellyfin-config:/config:rw
       - jellyfin-cache:/cache:rw
       - /mnt/media:/data/media/:ro
     environment:
@@ -150,7 +152,7 @@ services:
 
   transmission-openvpn:
     image: haugene/transmission-openvpn
-    container_name: transmission-openvpn
+    container_name: transmission
     restart: always
     user: "1000:1000"
     networks:
