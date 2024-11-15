@@ -22,7 +22,7 @@ services:
     image: ghcr.io/mbecker20/komodo:latest
     container_name: komodo-core
     restart: always
-    user: "1000:1000"
+    user: $(id -u):$(id -g) 
     depends_on:
       - komodo-mongo
       - komodo-periphery
@@ -52,7 +52,7 @@ services:
     image: ghcr.io/mbecker20/periphery:latest
     container_name: komodo-periphery
     restart: always
-    user: "1000:1000"
+    user: $(id -u):$(id -g) 
     logging:
       driver: local
     expose:
@@ -69,7 +69,7 @@ services:
     container_name: komodo-mongo
     command: --quiet # suppress mongo logs a bit
     restart: always
-    user: "1000:1000"
+    user: $(id -u):$(id -g) 
     logging:
       driver: local
     networks:
@@ -87,7 +87,7 @@ services:
     image: ollama/ollama
     container_name: ollama
     restart: always
-    user: "1000:1000"
+    user: $(id -u):$(id -g) 
     networks:
       - web
     expose:
@@ -108,7 +108,7 @@ services:
     image: ghcr.io/open-webui/open-webui:main
     container_name: ollama-ui
     restart: always
-    user: "1000:1000"
+    user: $(id -u):$(id -g) 
     depends_on:
       - ollama
     networks:
@@ -125,17 +125,17 @@ services:
     image: jellyfin/jellyfin
     container_name: jellyfin
     restart: always
-    user: "1000:1000"
+    user: $(id -u):$(id -g) 
     networks:
       - web
     expose:
-      - 8096 # http
-      - 8920 # https
+      - 8096
     volumes:
+      - /mnt/homelab/jellyfin:/config:rw
+      - jellyfin-cache:/cache:rw
       - /mnt/media:/data/media/:ro
-      - /mnt/homelab/jellyfin:/config
-      - jellyfin-cache:/cache
     environment:
+      - JELLYFIN_PublishedServerUrl=https://jellyfin.${DOMAIN}
       - NVIDIA_DRIVER_CAPABILITIES=all
       - NVIDIA_VISIBLE_DEVICES=all
     security_opt:
@@ -152,7 +152,7 @@ services:
     image: haugene/transmission-openvpn
     container_name: transmission-openvpn
     restart: always
-    user: "1000:1000"
+    user: $(id -u):$(id -g) 
     networks:
       - web
     volumes:
@@ -184,7 +184,7 @@ services:
     image: traefik
     container_name: traefik
     restart: always
-    user: "1000:1000"
+    user: $(id -u):$(id -g)
     environment:
       - CF_API_KEY=${CF_API_KEY}
       - CF_API_EMAIL=${CF_API_EMAIL}
@@ -224,7 +224,7 @@ services:
     image: adguard/adguardhome
     container_name: adguardhome
     restart: always
-    # user: "1000:1000"
+    # user: $(id -u):$(id -g) 
     networks:
       dns: 
         ipv4_address: 172.55.0.10 
@@ -242,7 +242,7 @@ services:
     image: goacme/lego
     container_name: lego-certbot
     restart: always
-    user: "1000:1000"
+    user: $(id -u):$(id -g) 
     environment:
       - CLOUDFLARE_EMAIL=${CF_API_EMAIL}
       - CLOUDFLARE_API_KEY=${CF_API_KEY}
@@ -267,7 +267,7 @@ services:
     image: searxng/searxng
     container_name: searxng
     restart: always
-    user: "1000:1000"
+    user: $(id -u):$(id -g) 
     environment:
       - SEARXNG_SECRET=${SEARXNG_SECRET}
     networks:
@@ -290,7 +290,7 @@ services:
     image: meyay/languagetool
     container_name: languagetool
     restart: always
-    user: "1000:1000"
+    user: $(id -u):$(id -g) 
     networks:
       - web
     expose:
@@ -317,7 +317,7 @@ services:
   watchtower:
     image: containrrr/watchtower
     container_name: watchtower
-    user: "1000:1000"
+    user: $(id -u):$(id -g) 
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
@@ -331,7 +331,7 @@ services:
     image: louislam/uptime-kuma:1
     container_name: uptime-kuma
     restart: always
-    user: "1000:1000"
+    user: $(id -u):$(id -g) 
     volumes:
       - /mnt/homelab/uptimekuma:/app/data:rw
     expose:
@@ -341,7 +341,7 @@ services:
     image: sintan1729/chhoto-url:latest
     restart: always
     container_name: chhoto-url
-    user: "1000:1000"
+    user: $(id -u):$(id -g) 
     networks:
       - web
     expose:
