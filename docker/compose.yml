@@ -16,8 +16,6 @@ volumes:
     driver: local
   adguard-work:
     driver: local
-  audiocraft_data:
-    driver: local
 
 services:
   komodo-core:
@@ -91,12 +89,15 @@ services:
       - 11434
     volumes:
       - /mnt/homelab/ollama:/root/.ollama:rw
-    runtime: nvidia
+    security_opt:
+      - label=type:nvidia_container_t
     deploy:
       resources:
         reservations:
           devices:
-            - capabilities: [gpu]
+            - driver: nvidia
+              capabilities: [gpu]
+              count: all
 
   ollama-ui:
     image: ghcr.io/open-webui/open-webui:main
@@ -130,12 +131,15 @@ services:
     environment:
       - NVIDIA_DRIVER_CAPABILITIES=all
       - NVIDIA_VISIBLE_DEVICES=all
-    runtime: nvidia
+    security_opt:
+      - label=type:nvidia_container_t
     deploy:
       resources:
         reservations:
           devices:
-            - capabilities: [gpu]
+            - driver: nvidia
+              capabilities: [gpu]
+              count: all
 
   transmission-openvpn:
     image: haugene/transmission-openvpn
