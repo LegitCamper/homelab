@@ -22,7 +22,7 @@ services:
     image: ghcr.io/mbecker20/komodo:latest
     container_name: komodo-core
     restart: always
-    user: $(id -u):$(id -g) 
+    user: "1000:1000"
     depends_on:
       - komodo-mongo
       - komodo-periphery
@@ -52,7 +52,7 @@ services:
     image: ghcr.io/mbecker20/periphery:latest
     container_name: komodo-periphery
     restart: always
-    user: $(id -u):$(id -g) 
+    user: "1000:1000"
     logging:
       driver: local
     expose:
@@ -69,7 +69,7 @@ services:
     container_name: komodo-mongo
     command: --quiet # suppress mongo logs a bit
     restart: always
-    user: $(id -u):$(id -g) 
+    user: "1000:1000"
     logging:
       driver: local
     networks:
@@ -87,7 +87,7 @@ services:
     image: ollama/ollama
     container_name: ollama
     restart: always
-    user: $(id -u):$(id -g) 
+    user: "1000:1000"
     networks:
       - web
     expose:
@@ -108,7 +108,7 @@ services:
     image: ghcr.io/open-webui/open-webui:main
     container_name: ollama-ui
     restart: always
-    user: $(id -u):$(id -g) 
+    user: "1000:1000"
     depends_on:
       - ollama
     networks:
@@ -125,7 +125,7 @@ services:
     image: jellyfin/jellyfin
     container_name: jellyfin
     restart: always
-    user: $(id -u):$(id -g) 
+    user: "1000:1000"
     networks:
       - web
     expose:
@@ -152,7 +152,7 @@ services:
     image: haugene/transmission-openvpn
     container_name: transmission-openvpn
     restart: always
-    user: $(id -u):$(id -g) 
+    user: "1000:1000"
     networks:
       - web
     volumes:
@@ -224,7 +224,7 @@ services:
     image: adguard/adguardhome
     container_name: adguardhome
     restart: always
-    # user: $(id -u):$(id -g) 
+    # user: "1000:1000"
     networks:
       dns: 
         ipv4_address: 172.55.0.10 
@@ -242,7 +242,7 @@ services:
     image: goacme/lego
     container_name: lego-certbot
     restart: always
-    user: $(id -u):$(id -g) 
+    user: "1000:1000"
     environment:
       - CLOUDFLARE_EMAIL=${CF_API_EMAIL}
       - CLOUDFLARE_API_KEY=${CF_API_KEY}
@@ -267,7 +267,7 @@ services:
     image: searxng/searxng
     container_name: searxng
     restart: always
-    user: $(id -u):$(id -g) 
+    user: "1000:1000"
     environment:
       - SEARXNG_SECRET=${SEARXNG_SECRET}
     networks:
@@ -290,7 +290,7 @@ services:
     image: meyay/languagetool
     container_name: languagetool
     restart: always
-    user: $(id -u):$(id -g) 
+    user: "1000:1000"
     networks:
       - web
     expose:
@@ -317,7 +317,7 @@ services:
   watchtower:
     image: containrrr/watchtower
     container_name: watchtower
-    user: $(id -u):$(id -g) 
+    user: "1000:1000"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
@@ -331,7 +331,7 @@ services:
     image: louislam/uptime-kuma:1
     container_name: uptime-kuma
     restart: always
-    user: $(id -u):$(id -g) 
+    user: "1000:1000"
     volumes:
       - /mnt/homelab/uptimekuma:/app/data:rw
     expose:
@@ -341,7 +341,7 @@ services:
     image: sintan1729/chhoto-url:latest
     restart: always
     container_name: chhoto-url
-    user: $(id -u):$(id -g) 
+    user: "1000:1000"
     networks:
       - web
     expose:
