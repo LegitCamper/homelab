@@ -124,7 +124,7 @@ services:
     image: jellyfin/jellyfin
     container_name: jellyfin
     restart: always
-    user: "1000:1000"
+    # user: "1000:1000"
     networks:
       - web
     expose:
@@ -223,13 +223,13 @@ services:
     image: adguard/adguardhome
     container_name: adguardhome
     restart: always
-    user: "1000:1000"
+    # user: "1000:1000"
     networks:
       dns: 
         ipv4_address: 172.55.0.10 
     volumes:
       - /mnt/homelab/adgaurd:/opt/adguardhome/conf:rw
-      - adguard-work:/opt/adguardhome/work:rw
+      - adguard-work:/opt/adguardhome/work:Z
       - /mnt/homelab/letsencrypt:/opt/adguardhome/certs/:ro
     expose:
       - 80 # webui
