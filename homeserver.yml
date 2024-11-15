@@ -90,13 +90,6 @@
       when: core_in_docker.rc != 0
       ansible.builtin.reboot:
 
-    - name: change permissions on /dev/net/tun
-      become: true
-      file: 
-        path: /dev/net/tun 
-        group: core
-        mode: 0600
-
     - name: Create 'web' network
       community.docker.docker_network:
         name: web

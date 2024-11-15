@@ -136,8 +136,6 @@ services:
     image: haugene/transmission-openvpn
     container_name: transmission
     restart: always
-    user: "1000:1000"
-    privileged: true
     networks:
       - web
     volumes:
@@ -148,10 +146,9 @@ services:
       - OPENVPN_CONFIG=${OPENVPN_CONFIG}
       - OPENVPN_USERNAME=${OPENVPN_USERNAME}
       - OPENVPN_PASSWORD=${OPENVPN_PASSWORD}
+      - CREATE_TUN_DEVICE=true
     security_opt:
       - label=disable
-    devices:
-      - /dev/net/tun:/dev/net/tun
     cap_add:
       - NET_ADMIN
       - MKNOD
