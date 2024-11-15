@@ -169,7 +169,7 @@ services:
     restart: always
     network_mode: host
     volumes:
-      - /home/sawyer/compose-files/docker/rathole/rathole.toml:/app/config.toml:ro
+      - /home/core/compose-files/docker/rathole/rathole.toml:/app/config.toml:ro
     command: --client /app/config.toml
 
   traefik:
@@ -183,9 +183,9 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /home/sawyer/acme/:/etc/traefik/acme:rw
-      - /home/sawyer/compose-files/docker/traefik/static.toml:/etc/traefik/traefik.toml:ro
-      - /home/sawyer/compose-files/docker/traefik/dynamic.toml:/etc/traefik/dynamic.toml:ro
+      - /home/core/acme/:/etc/traefik/acme:rw
+      - /home/core/compose-files/docker/traefik/static.toml:/etc/traefik/traefik.toml:ro
+      - /home/core/compose-files/docker/traefik/dynamic.toml:/etc/traefik/dynamic.toml:ro
     networks:
       - web
       - dns
@@ -252,7 +252,7 @@ services:
     expose:
       - 80
     volumes:
-      - /home/sawyer/compose-files/docker/dashy/conf.yml:/app/public/conf.yml:ro
+      - /home/core/compose-files/docker/dashy/conf.yml:/app/public/conf.yml:ro
     environment:
       - NODE_ENV=production
 
@@ -276,7 +276,7 @@ services:
     expose:
       - 8080
     volumes:
-      - /home/sawyer/compose-files/docker/searxng:/etc/searxng:rw
+      - /home/core/compose-files/docker/searxng:/etc/searxng:rw
 
   smokeping:
     image: lscr.io/linuxserver/smokeping

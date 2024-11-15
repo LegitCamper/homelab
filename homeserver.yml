@@ -1,7 +1,6 @@
 ---
 - name: Configure homeserver (ublue-core)
   hosts: "*"
-  become: true
   remote_user: core
     
   pre_tasks: 
@@ -67,10 +66,12 @@
         replace: '"{{ cf_email.stdout }}"'
 
     - name: Create 'web' network
+      become: true
       community.docker.docker_network:
         name: web
 
     - name: Create 'internal' network
+      become: true
       community.docker.docker_network:
         name: internal
 
@@ -81,6 +82,7 @@
         mode: '0600'
 
     - name: Setup containers
+      become: true
       community.docker.docker_compose_v2:
         project_name: homeserver
         env_files: /home/core/compose-files/secrets.env

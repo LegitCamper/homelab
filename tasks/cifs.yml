@@ -54,7 +54,7 @@
   when: not media_mount.stat.exists or not homelab_mount.stat.exists
   ansible.builtin.reboot:
 
-- name: restart mount
+- name: restart if need
   become: true
   ansible.builtin.systemd_service:
       name: remote-fs.target
