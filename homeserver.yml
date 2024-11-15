@@ -65,16 +65,6 @@
         regexp: '"email"'
         replace: '"{{ cf_email.stdout }}"'
 
-    - name: Create 'web' network
-      become: true
-      community.docker.docker_network:
-        name: web
-
-    - name: Create 'internal' network
-      become: true
-      community.docker.docker_network:
-        name: internal
-
     - name: Is core user in docker group 
       ansible.builtin.shell:
         grep 'docker' /etc/group | grep core
@@ -94,6 +84,14 @@
       when: core_in_docker.rc != 0
       ansible.builtin.reboot:
 
+    - name: Create 'web' network
+      community.docker.docker_network:
+        name: web
+
+    - name: Create 'internal' network
+      community.docker.docker_network:
+        name: internal
+
     - name: Create acme dir
       ansible.builtin.file:
         path: /home/core/acme/
@@ -101,7 +99,6 @@
         mode: '0600'
 
     - name: Setup containers
-      become: true
       community.docker.docker_compose_v2:
         project_name: homeserver
         env_files: /home/core/compose-files/secrets.env
