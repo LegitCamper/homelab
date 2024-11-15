@@ -4,6 +4,12 @@
   remote_user: core
     
   pre_tasks: 
+    - name: Put SELinux in permissive mode
+      become: true
+      ansible.posix.selinux:
+        policy: targeted
+        state: permissive
+
     - name: Crate docker stack dir
       ansible.builtin.file:
         path: /home/core/compose-files/
