@@ -89,8 +89,8 @@ services:
     image: ollama/ollama
     container_name: ollama
     restart: always
-    user: "1000:1000"
     networks:
+      - internal
       - web
     expose:
       - 11434
@@ -155,6 +155,7 @@ services:
     container_name: transmission
     restart: always
     user: "1000:1000"
+    privileged: true
     networks:
       - web
     volumes:
@@ -165,10 +166,13 @@ services:
       - OPENVPN_CONFIG=${OPENVPN_CONFIG}
       - OPENVPN_USERNAME=${OPENVPN_USERNAME}
       - OPENVPN_PASSWORD=${OPENVPN_PASSWORD}
+    security_opt:
+      - label=disable
     devices:
       - /dev/net/tun:/dev/net/tun
     cap_add:
       - NET_ADMIN
+      - MKNOD
     ports:
       # any services proxied through this container need to declare ports here
       - 9091:9091 # transmission
@@ -321,7 +325,7 @@ services:
     container_name: watchtower
     user: "1000:1000"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/run/docker.sock:/var/run/docker.sock:rw
     environment:
       WATCHTOWER_CLEANUP: true
       WATCHTOWER_REVIVE_STOPPED: true
@@ -338,23 +342,6 @@ services:
       - /mnt/homelab/uptimekuma:/app/data:rw
     expose:
       - 3001
-
-  chhoto-url:
-    image: sintan1729/chhoto-url:latest
-    restart: always
-    container_name: chhoto-url
-    user: "1000:1000"
-    networks:
-      - web
-    expose:
-        - 4567
-    environment:
-        - db_url=/db/urls.sqlite
-        - password=${CHHOTO_URL_PASSWORD}
-        - redirect_method=TEMPORARY
-        - public_mode=Disable           
-    volumes:
-        - /mnt/homelab/chhoto:/db
 
   portfolio:
     image: ghcr.io/legitcamper/portfolio-site:latest
