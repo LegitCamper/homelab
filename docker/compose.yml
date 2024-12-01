@@ -330,3 +330,12 @@ services:
       - web
     expose:
         - 8000
+
+  mom-contact:
+    image: ghcr.io/legitcamper/mom-contact:latest
+    container_name: mom-contact
+    restart: always
+    networks:
+      - web
+    expose:
+        - 8000

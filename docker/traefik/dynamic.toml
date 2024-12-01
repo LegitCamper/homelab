@@ -98,6 +98,16 @@ certResolver = "cloudflare"
 [[http.services.portfolio.loadBalancer.servers]]
 url = "http://portfolio:8000"
 
+[http.routers.mom-contact]
+service = "mom-contact"
+rule = "Host(`casey.sawyer.services`)"
+[http.routers.mom-contact.tls]
+certResolver = "cloudflare"
+
+[http.services.mom-contact.loadBalancer]
+[[http.services.mom-contact.loadBalancer.servers]]
+url = "http://mom-contact:8000"
+
 [http.routers.searxng]
 service = "searxng"
 rule = "Host(`searxng.sawyer.services`) || Host(`search.sawyer.services`)"
