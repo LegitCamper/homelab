@@ -304,14 +304,12 @@ services:
   watchtower:
     image: containrrr/watchtower
     container_name: watchtower
-    user: "1000:1000"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:rw
     environment:
       WATCHTOWER_CLEANUP: true
       WATCHTOWER_REVIVE_STOPPED: true
       WATCHTOWER_POLL_INTERVAL: 604800 # every 7 days
-    command: --cleanup
     restart: always
 
   uptime-kuma:
