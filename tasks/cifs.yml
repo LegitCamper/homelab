@@ -1,0 +1,63 @@
+---
+- name: Get cifs host
+  ansible.builtin.shell:
+    cat /home/sawyer/compose-files/secrets.env | grep NETWORK_DRIVE_HOST | sed 's/^.*NETWORK_DRIVE_HOST=//'
+  register: cifs_host 
+  ignore_errors: true
+  changed_when: false
+
+- name: Get cifs username
+  ansible.builtin.shell:
+    cat /home/sawyer/compose-files/secrets.env | grep NETWORK_DRIVE_USERNAME | sed 's/^.*NETWORK_DRIVE_USERNAME=//'
+  register: cifs_user
+  ignore_errors: true
+  changed_when: false
+
+- name: Get cifs password
+  ansible.builtin.shell:
+    cat /home/sawyer/compose-files/secrets.env | grep NETWORK_DRIVE_PASSWORD | sed 's/^.*NETWORK_DRIVE_PASSWORD=//'
+  register: cifs_password
+  ignore_errors: true
+  changed_when: false
+
+- name: Check homelab mount
+  stat:
+    path: /mnt/homelab 
+  register: homelab_mount
+
+- name: mount homenas homelab fs
+  become: true
+  when: not homelab_mount.stat.exists
+  ansible.posix.mount:
+    path: /mnt/homelab
+    src: "//{{ cifs_host.stdout }}/homelab"
+    fstype: cifs
+    opts: "username={{ cifs_user.stdout }},password={{ cifs_password.stdout }},vers=3.0,rw,nofail,uid=1000,gid=1000"
+    state: present
+
+- name: Check media mount
+  stat:
+    path: /mnt/media
+  register: media_mount
+
+- name: mount homenas media fs
+  become: true
+  when: not media_mount.stat.exists
+  ansible.posix.mount:
+    path: /mnt/media
+    src: "//{{ cifs_host.stdout }}/media"
+    fstype: cifs
+    opts: "username={{ cifs_user.stdout }},password={{ cifs_password.stdout }},vers=3.0,rw,nofail,uid=1000,gid=1000"
+    state: present
+
+- name: reboot if needed
+  when: not media_mount.stat.exists or not homelab_mount.stat.exists
+  ansible.builtin.reboot:
+
+- name: reload mount
+  when: not media_mount.stat.exists or not homelab_mount.stat.exists
+  become: true
+  ansible.builtin.systemd_service:
+      name: remote-fs.target
+      state: restarted
+      enabled: true

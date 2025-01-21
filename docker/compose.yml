@@ -10,23 +10,7 @@ networks:
         - subnet: 172.55.0.0/24
 
 volumes:
-  db-data:
-    driver: local
-  db-config:
-    driver: local
-  komodo-repos:
-    driver: local
-  komodo-stacks:
-    driver: local
   fooocus_data:
-    driver: local
-  ollama-ui_data:
-    driver: local
-  audiocraft_data:
-    driver: local
-  languagetool_ngrams:
-    driver: local
-  languagetool_fasttext:
     driver: local
   jellyfin-config:
     driver: local
@@ -34,43 +18,16 @@ volumes:
     driver: local
   adguard-work:
     driver: local
-  chhoto:
-    driver: local
-
-  media:
-    driver_opts:
-      type: cifs
-      o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
-      device: "//${NETWORK_DRIVE}/media"
-
-  ollama:
-    driver_opts:
-      type: cifs
-      o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
-      device: "//${NETWORK_DRIVE}/homelab/ollama"
-  uptime-kuma:
-    driver_opts:
-      type: cifs
-      o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
-      device: "//${NETWORK_DRIVE}/homelab/uptimekuma"
-  letsencrypt:
-    driver_opts:
-      type: cifs
-      o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
-      device: "//${NETWORK_DRIVE}/homelab/letsencrypt"
-  adgaurd-conf:
-    driver_opts:
-      type: cifs
-      o: username=${NETWORK_DRIVE_USERNAME},password=${NETWORK_DRIVE_PASSWORD},vers=3.0,rw
-      device: "//${NETWORK_DRIVE}/homelab/adgaurd"
 
 services:
   komodo-core:
     image: ghcr.io/mbecker20/komodo:latest
     container_name: komodo-core
     restart: always
+    user: "1000:1000"
     depends_on:
       - komodo-mongo
+      - komodo-periphery
     logging:
       driver: local 
     networks:
@@ -97,6 +54,7 @@ services:
     image: ghcr.io/mbecker20/periphery:latest
     container_name: komodo-periphery
     restart: always
+    user: "1000:1000"
     logging:
       driver: local
     expose:
@@ -105,14 +63,15 @@ services:
       - internal
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - komodo-repos:/etc/komodo/repos:rw 
-      - komodo-stacks:/etc/komodo/stacks:rw 
+      - /mnt/homelab/komodo/repos:/etc/komodo/repos:rw 
+      - /mnt/homelab/komodo/stacks:/etc/komodo/stacks:rw 
 
   komodo-mongo:
     image: mongo
     container_name: komodo-mongo
     command: --quiet # suppress mongo logs a bit
     restart: always
+    user: "1000:1000"
     logging:
       driver: local
     networks:
@@ -120,89 +79,84 @@ services:
     expose:
       - 27017
     volumes:
-      - db-data:/data/db:rw
-      - db-config:/data/configdb:rw
+      - /mnt/homelab/komodo/data:/data/db:rw
+      - /mnt/homelab/komodo/config:/data/configdb:rw
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${KOMODO_DB_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${KOMODO_DB_PASSWORD}
 
   ollama:
-    image: ollama/ollama
+    image: ghcr.io/open-webui/open-webui:ollama
     container_name: ollama
     restart: always
     networks:
       - web
     expose:
-      - 11434
+      - 8080
     volumes:
-      - ollama:/root/.ollama:rw
-    runtime: nvidia
+      - /mnt/homelab/ollama:/root/.ollama:rw
+    security_opt:
+      - label=type:nvidia_container_t
     deploy:
       resources:
         reservations:
           devices:
-            - capabilities: [gpu]
-
-  ollama-ui:
-    image: ghcr.io/open-webui/open-webui:main
-    container_name: ollama-ui
-    restart: always
-    depends_on:
-      - ollama
-    networks:
-      - web
-      - internal
-    expose:
-      - 8080
-    environment:
-      - OLLAMA_BASE_URL=http://ollama:11434
-    volumes:
-      - ollama-ui_data:/app/backend/data:rw
+            - driver: nvidia
+              capabilities: [gpu]
+              count: all
 
   jellyfin:
     image: jellyfin/jellyfin
     container_name: jellyfin
     restart: always
+    user: "1000:1000"
     networks:
       - web
     expose:
-      - 8096 # http
-      - 8920 # https
+      - 8096
     volumes:
-      - media:/data/media/:ro
-      - jellyfin-config:/config
-      - jellyfin-cache:/cache
+      - jellyfin-config:/config:rw
+      - jellyfin-cache:/cache:rw
+      - /mnt/media:/data/media/:ro
     environment:
+      - JELLYFIN_PublishedServerUrl=https://jellyfin.${DOMAIN}
       - NVIDIA_DRIVER_CAPABILITIES=all
       - NVIDIA_VISIBLE_DEVICES=all
-    runtime: nvidia
+    security_opt:
+      - label=type:nvidia_container_t
     deploy:
       resources:
         reservations:
           devices:
-            - capabilities: [gpu]
+            - driver: nvidia
+              capabilities: [gpu]
+              count: all
 
   transmission-openvpn:
     image: haugene/transmission-openvpn
-    container_name: transmission-openvpn
+    container_name: transmission
     restart: always
     networks:
       - web
     volumes:
-      - media:/data:rw
+      - /mnt/media:/data:rw
     environment:
       - OPENVPN_OPTS=--pull-filter ignore ifconfig-ipv6
       - OPENVPN_PROVIDER=${OPENVPN_PROVIDER}
       - OPENVPN_CONFIG=${OPENVPN_CONFIG}
       - OPENVPN_USERNAME=${OPENVPN_USERNAME}
       - OPENVPN_PASSWORD=${OPENVPN_PASSWORD}
-    devices:
-      - /dev/net/tun:/dev/net/tun
+      - CREATE_TUN_DEVICE=true
+    security_opt:
+      - label=disable
     cap_add:
       - NET_ADMIN
+      - MKNOD
     ports:
       # any services proxied through this container need to declare ports here
       - 9091:9091 # transmission
+    devices:
+      - /dev/net/tun
 
   rathole:
     image: rapiz1/rathole
@@ -210,13 +164,14 @@ services:
     restart: always
     network_mode: host
     volumes:
-      - /home/sawyer/compose-files/docker/rathole/rathole.toml:/app/config.toml:ro
+      - /home/core/compose-files/docker/rathole/rathole.toml:/app/config.toml:ro
     command: --client /app/config.toml
 
   traefik:
     image: traefik
     container_name: traefik
     restart: always
+    user: "1000:1000"
     environment:
       - CF_API_KEY=${CF_API_KEY}
       - CF_API_EMAIL=${CF_API_EMAIL}
@@ -224,9 +179,9 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /home/sawyer/acme/:/etc/traefik/acme:rw
-      - /home/sawyer/compose-files/docker/traefik/static.toml:/etc/traefik/traefik.toml:ro
-      - /home/sawyer/compose-files/docker/traefik/dynamic.toml:/etc/traefik/dynamic.toml:ro
+      - /home/core/acme/:/etc/traefik/acme:rw
+      - /home/core/compose-files/docker/traefik/static.toml:/etc/traefik/traefik.toml:ro
+      - /home/core/compose-files/docker/traefik/dynamic.toml:/etc/traefik/dynamic.toml:ro
     networks:
       - web
       - dns
@@ -256,13 +211,14 @@ services:
     image: adguard/adguardhome
     container_name: adguardhome
     restart: always
+    # user: "1000:1000"
     networks:
       dns: 
         ipv4_address: 172.55.0.10 
     volumes:
-      - adgaurd-conf:/opt/adguardhome/conf:rw
-      - adguard-work:/opt/adguardhome/work:rw
-      - letsencrypt:/opt/adguardhome/certs/:ro
+      - /mnt/homelab/adgaurd:/opt/adguardhome/conf:rw
+      - adguard-work:/opt/adguardhome/work:Z
+      - /mnt/homelab/letsencrypt:/opt/adguardhome/certs/:ro
     expose:
       - 80 # webui
       - 53 # dns - not used
@@ -273,6 +229,7 @@ services:
     image: goacme/lego
     container_name: lego-certbot
     restart: always
+    user: "1000:1000"
     environment:
       - CLOUDFLARE_EMAIL=${CF_API_EMAIL}
       - CLOUDFLARE_API_KEY=${CF_API_KEY}
@@ -282,34 +239,13 @@ services:
       --domains dns.${DOMAIN} --path /etc/letsencrypt/ 
       run
     volumes:
-      - letsencrypt:/etc/letsencrypt:rw
-
-  dashy:
-    container_name: dashy
-    image: lissy93/dashy
-    restart: always
-    networks:
-      - web
-    expose:
-      - 80
-    volumes:
-      - /home/sawyer/compose-files/docker/dashy/conf.yml:/app/public/conf.yml:ro
-    environment:
-      - NODE_ENV=production
-
-  registry: # My own docker registry
-    container_name: registry
-    image: registry
-    restart: always
-    networks:
-      - web
-    expose:
-      - 5000
+      - /mnt/homelab/letsencrypt:/etc/letsencrypt:rw
 
   searxng:
     image: searxng/searxng
     container_name: searxng
     restart: always
+    user: "1000:1000"
     environment:
       - SEARXNG_SECRET=${SEARXNG_SECRET}
     networks:
@@ -317,7 +253,7 @@ services:
     expose:
       - 8080
     volumes:
-      - /home/sawyer/compose-files/docker/searxng:/etc/searxng:rw
+      - /home/core/compose-files/docker/searxng:/etc/searxng:rw
 
   smokeping:
     image: lscr.io/linuxserver/smokeping
@@ -332,6 +268,7 @@ services:
     image: meyay/languagetool
     container_name: languagetool
     restart: always
+    user: "1000:1000"
     networks:
       - web
     expose:
@@ -341,8 +278,8 @@ services:
       langtool_languageModel: /ngrams
       langtool_fasttextModel: /fasttext/lid.176.bin
     volumes:
-      - languagetool_ngrams:/ngrams:rw
-      - languagetool_fasttext:/fasttext:rw
+      - /mnt/homelab/languagetool/ngrams:/ngrams:rw
+      - /mnt/homelab/languagetool/fasttext:/fasttext:rw
 
   # configures a gh action runner to redeploy this file
   homelab-github-runner:
@@ -359,44 +296,37 @@ services:
     image: containrrr/watchtower
     container_name: watchtower
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/run/docker.sock:/var/run/docker.sock:rw
     environment:
       WATCHTOWER_CLEANUP: true
       WATCHTOWER_REVIVE_STOPPED: true
       WATCHTOWER_POLL_INTERVAL: 604800 # every 7 days
-    command: --cleanup
     restart: always
 
   uptime-kuma:
     image: louislam/uptime-kuma:1
     container_name: uptime-kuma
     restart: always
+    user: "1000:1000"
     volumes:
-      - uptime-kuma:/app/data:rw
+      - /mnt/homelab/uptimekuma:/app/data:rw
     expose:
       - 3001
 
-  chhoto-url:
-        image: sintan1729/chhoto-url:latest
-        restart: always
-        container_name: chhoto-url
-        networks:
-          - web
-        expose:
-            - 4567
-        environment:
-            - db_url=/db/urls.sqlite
-            - password=${CHHOTO_URL_PASSWORD}
-            - redirect_method=TEMPORARY
-            - public_mode=Disable           
-        volumes:
-            - chhoto:/db
-
   portfolio:
-        image: ghcr.io/legitcamper/portfolio-site:latest
-        container_name: portfolio
-        restart: always
-        networks:
-          - web
-        expose:
-            - 8000
+    image: ghcr.io/legitcamper/portfolio-site:latest
+    container_name: portfolio
+    restart: always
+    networks:
+      - web
+    expose:
+        - 8000
+
+  mom-contact:
+    image: ghcr.io/legitcamper/mom-contact:latest
+    container_name: mom-contact
+    restart: always
+    networks:
+      - web
+    expose:
+        - 8000
