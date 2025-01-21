@@ -241,15 +241,6 @@ services:
     volumes:
       - /mnt/homelab/letsencrypt:/etc/letsencrypt:rw
 
-  registry: # My own docker registry
-    container_name: registry
-    image: registry
-    restart: always
-    networks:
-      - web
-    expose:
-      - 5000
-
   searxng:
     image: searxng/searxng
     container_name: searxng
