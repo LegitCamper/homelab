@@ -4,6 +4,16 @@ rule = "Host(`traefik.internal.sawyer.services`)"
 [http.routers.traefik.tls]
 certResolver = "cloudflare"
 
+[http.routers.homenas]
+service = "komodo"
+rule = "Host(`homenas.internal.sawyer.services`)"
+[http.routers.homenas.tls]
+certResolver = "cloudflare"
+
+[http.services.homenas.loadBalancer]
+[[http.services.homenas.loadBalancer.servers]]
+url = "https://homenas/cgi-bin/"
+
 [http.routers.komodo]
 service = "komodo"
 rule = "Host(`komodo.internal.sawyer.services`)"
