@@ -94,6 +94,16 @@ certResolver = "cloudflare"
 [[http.services.smokeping.loadBalancer.servers]]
 url = "http://smokeping:80"
 
+[http.routers.pterodactyl]
+service = "pterodactyl"
+rule = "Host(`pterodactyl.sawyer.services`)"
+[http.routers.pterodactyl.tls]
+certResolver = "cloudflare"
+
+[http.services.pterodactyl.loadBalancer]
+[[http.services.pterodactyl.loadBalancer.servers]]
+url = "http://pterodactyl:80"
+
 [http.routers.languagetool]
 service = "languagetool"
 rule = "Host(`languagetool.sawyer.services`)"

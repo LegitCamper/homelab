@@ -20,71 +20,6 @@ volumes:
     driver: local
 
 services:
-  komodo-core:
-    image: ghcr.io/mbecker20/komodo:latest
-    container_name: komodo-core
-    restart: always
-    user: "1000:1000"
-    depends_on:
-      - komodo-mongo
-      - komodo-periphery
-    logging:
-      driver: local 
-    networks:
-      - internal
-      - web
-    expose:
-      - 9120
-    environment: 
-      KOMODO_HOST: ${KOMODO_HOST}
-      KOMODO_TITLE: Komodo 
-      KOMODO_ENSURE_SERVER: http://komodo-periphery:8120 # Creates the "default" server.
-      KOMODO_MONGO_ADDRESS: komodo-mongo:27017
-      KOMODO_MONGO_USERNAME: ${KOMODO_DB_USERNAME}
-      KOMODO_MONGO_PASSWORD: ${KOMODO_DB_PASSWORD}
-      KOMODO_LOCAL_AUTH: false 
-      KOMODO_PASSKEY: ${KOMODO_PASSKEY}
-      KOMODO_WEBHOOK_SECRET: ${KOMODO_WEBHOOK_SECRET}
-      KOMODO_JWT_SECRET: ${KOMODO_JWT_SECRET}
-      KOMODO_GITHUB_OAUTH_ENABLED: true       
-      KOMODO_GITHUB_OAUTH_ID: ${KOMODO_GITHUB_OAUTH_ID}
-      KOMODO_GITHUB_OAUTH_SECRET: ${KOMODO_GITHUB_OAUTH_SECRET}
-
-  komodo-periphery:
-    image: ghcr.io/mbecker20/periphery:latest
-    container_name: komodo-periphery
-    restart: always
-    user: "1000:1000"
-    logging:
-      driver: local
-    expose:
-      - 8120
-    networks:
-      - internal
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /mnt/homelab/komodo/repos:/etc/komodo/repos:rw 
-      - /mnt/homelab/komodo/stacks:/etc/komodo/stacks:rw 
-
-  komodo-mongo:
-    image: mongo
-    container_name: komodo-mongo
-    command: --quiet # suppress mongo logs a bit
-    restart: always
-    user: "1000:1000"
-    logging:
-      driver: local
-    networks:
-      - internal
-    expose:
-      - 27017
-    volumes:
-      - /mnt/homelab/komodo/data:/data/db:rw
-      - /mnt/homelab/komodo/config:/data/configdb:rw
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${KOMODO_DB_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${KOMODO_DB_PASSWORD}
-
   ollama:
     image: ghcr.io/open-webui/open-webui:ollama
     container_name: ollama
@@ -192,21 +127,6 @@ services:
     expose:
       - "8080:8080"
 
-  traefik-forward-auth:
-    image: thomseddon/traefik-forward-auth:2
-    container_name: traefik-auth
-    environment:
-      - PROVIDERS_GOOGLE_CLIENT_ID=${PROVIDERS_GOOGLE_CLIENT_ID}
-      - PROVIDERS_GOOGLE_CLIENT_SECRET=${PROVIDERS_GOOGLE_CLIENT_SECRET}
-      - SECRET=${GOOGLE_OATH_SECRET}
-      - AUTH_HOST=auth.${DOMAIN}
-      - COOKIE_DOMAIN=${DOMAIN}
-      - WHITELIST=${WHITELIST}
-    networks:
-      - web
-    expose: 
-      - 4181
-
   adguardhome:
     image: adguard/adguardhome
     container_name: adguardhome
@@ -302,6 +222,54 @@ services:
       WATCHTOWER_REVIVE_STOPPED: true
       WATCHTOWER_POLL_INTERVAL: 604800 # every 7 days
     restart: always
+
+  mysql:
+    image: library/mysql:8.0
+    container_name: mysql
+    restart: always
+    networks:
+      - internal
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - /mnt/homelab/mysql:/var/lib/mysql:rw
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: "panel"
+      MYSQL_USER: "pterodactyl"
+
+  cache:
+    image: redis:alpine
+    container_name: mysql-cache
+    restart: always
+    networks:
+      - internal
+
+  pterodactyl:
+    image: ghcr.io/pterodactyl/panel:v1.11.10
+    container_name: pterodactyl
+    restart: always
+    user: "1000:1000"
+    networks:
+      - web
+      - internal
+    links:
+      - mysql
+      - cache
+    volumes:
+      - /mnt/homelab/Pterodactyl/var/:/app/var/:rw
+      - /mnt/homelab/Pterodactyl/logs/:/app/storage/logs:rw
+      - /mnt/homelab/Pterodactyl/nginx/:/etc/nginx/conf.d/:rw
+    environment:
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      APP_ENV: "production"
+      APP_ENVIRONMENT_ONLY: "false"
+      CACHE_DRIVER: "redis"
+      SESSION_DRIVER: "redis"
+      QUEUE_DRIVER: "redis"
+      REDIS_HOST: "cache"
+      DB_HOST: "mysql"
+      TRUSTED_PROXIES: "*"
 
   uptime-kuma:
     image: louislam/uptime-kuma:1
