@@ -177,7 +177,6 @@ services:
     image: traefik
     container_name: traefik
     restart: always
-    user: "1000:1000"
     environment:
       - CF_API_KEY=${CF_API_KEY}
       - CF_API_EMAIL=${CF_API_EMAIL}
@@ -210,7 +209,7 @@ services:
       CUSTOM_HOSTNAME: crowdsec
       BOUNCER_KEY_TRAEFIK: ${TRAEFIK_BOUNCER_KEY}
     volumes:
-      - ./acquis.yaml:/etc/crowdsec/acquis.yaml:ro
+      # - /home/core/compose-files/docker/crowdsec/acquis.yaml:/etc/crowdsec/acquis.yaml:ro
       - traefik-logs:/var/log/traefik:ro
       - crowdsec-db:/var/lib/crowdsec/data/
       - crowdsec-config:/etc/crowdsec/

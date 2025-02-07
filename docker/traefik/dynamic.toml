@@ -4,10 +4,6 @@ rule = "Host(`traefik.internal.sawyer.services`)"
 [http.routers.traefik.tls]
 certResolver = "cloudflare"
 
-[middleware-crowdsec-bouncer.forwardauth]
-address = "http://traefik-crowdsec-bouncer:8080/api/v1/forwardAuth"
-trustForwardHeader = true
-
 [http.routers.homenas]
 service = "homenas"
 rule = "Host(`homenas.internal.sawyer.services`)"
@@ -151,36 +147,19 @@ rule = "HostSNI(`*`)"
 [[tcp.services.dot.loadBalancer.servers]]
 address = "172.55.0.10:853"
 
-[middlewares.crowdsec.plugin.bouncer]
-enabled = false
-logLevel = "DEBUG"
+[http.middlewares]
+[http.middlewares.crowdsec.plugin.bouncer]
+crowdseclapikey = "BOUNCER_KEY_TRAEFIK"
+enabled = true
+logLevel = "INFO"
 updateIntervalSeconds = 60
 updateMaxFailure = 0
 defaultDecisionSeconds = 60
 httpTimeoutSeconds = 10
 crowdsecMode = "stream"
 crowdsecAppsecEnabled = false
-crowdsecAppsecHost = "crowdsec:7422"
-crowdsecAppsecPath = "/"
-crowdsecAppsecFailureBlock = true
-crowdsecAppsecUnreachableBlock = true
-crowdsecAppsecBodyLimit = 10_485_760
 crowdsecLapiScheme = "http"
 crowdsecLapiHost = "crowdsec:8080"
 crowdsecLapiPath = "/"
 crowdsecLapiTLSInsecureVerify = false
-# crowdsecCapiMachineId = "login"
-# crowdsecCapiPassword = "password"
-crowdsecCapiScenarios = [
-  "crowdsecurity/http-path-traversal-probing",
-  "crowdsecurity/http-xss-probing",
-  "crowdsecurity/http-generic-bf",
-]
-forwardedHeadersTrustedIPs = ["10.0.10.23/32", "10.0.20.0/24"]
-clientTrustedIPs = ["192.168.1.0/24"]
-forwardedHeadersCustomName = "X-Custom-Header"
-remediationHeadersCustomName = "cs-remediation"
-redisCacheEnabled = true
-# redisCacheHost = "redis:6379"
-# redisCachePassword = "password"
-redisCacheDatabase = "5"
+redisCacheEnabled = false
