@@ -10,6 +10,12 @@ networks:
         - subnet: 172.55.0.0/24
 
 volumes:
+  traefik-logs:
+    driver: local
+  crowdsec-db:
+    driver: local
+  crowdsec-config:
+    driver: local
   fooocus_data:
     driver: local
   jellyfin-config:
@@ -182,6 +188,7 @@ services:
       - /home/core/acme/:/etc/traefik/acme:rw
       - /home/core/compose-files/docker/traefik/static.toml:/etc/traefik/traefik.toml:ro
       - /home/core/compose-files/docker/traefik/dynamic.toml:/etc/traefik/dynamic.toml:ro
+      - traefik-logs:/var/log/traefik
     networks:
       - web
       - dns
@@ -191,21 +198,22 @@ services:
       - "853:853"
     expose:
       - "8080:8080"
+    depends_on:
+      - crowdsec
 
-  traefik-forward-auth:
-    image: thomseddon/traefik-forward-auth:2
-    container_name: traefik-auth
+  crowdsec:
+    image: crowdsecurity/crowdsec:v1.6.1-2
+    container_name: crowdsec
+    restart: always
     environment:
-      - PROVIDERS_GOOGLE_CLIENT_ID=${PROVIDERS_GOOGLE_CLIENT_ID}
-      - PROVIDERS_GOOGLE_CLIENT_SECRET=${PROVIDERS_GOOGLE_CLIENT_SECRET}
-      - SECRET=${GOOGLE_OATH_SECRET}
-      - AUTH_HOST=auth.${DOMAIN}
-      - COOKIE_DOMAIN=${DOMAIN}
-      - WHITELIST=${WHITELIST}
-    networks:
-      - web
-    expose: 
-      - 4181
+      COLLECTIONS: crowdsecurity/traefik crowdsecurity/appsec-virtual-patching crowdsecurity/appsec-generic-rules
+      CUSTOM_HOSTNAME: crowdsec
+      BOUNCER_KEY_TRAEFIK: ${TRAEFIK_BOUNCER_KEY}
+    volumes:
+      - ./acquis.yaml:/etc/crowdsec/acquis.yaml:ro
+      - traefik-logs:/var/log/traefik:ro
+      - crowdsec-db:/var/lib/crowdsec/data/
+      - crowdsec-config:/etc/crowdsec/
 
   adguardhome:
     image: adguard/adguardhome
