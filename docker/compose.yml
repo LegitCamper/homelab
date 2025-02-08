@@ -16,7 +16,7 @@ volumes:
     driver: local
   crowdsec-config:
     driver: local
-  fooocus_data:
+  ollama-open-webui:
     driver: local
   jellyfin-config:
     driver: local
@@ -101,6 +101,7 @@ services:
       - 8080
     volumes:
       - /mnt/homelab/ollama:/root/.ollama:rw
+      - ollama-open-webui:/app/backend/data:rw
     security_opt:
       - label=type:nvidia_container_t
     deploy:
