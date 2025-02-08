@@ -32,7 +32,7 @@
     path: /mnt/homelab
     src: "//{{ cifs_host.stdout }}/homelab"
     fstype: cifs
-    opts: "username={{ cifs_user.stdout }},password={{ cifs_password.stdout }},vers=4.0,rw,nofail,uid=1000,gid=1000"
+    opts: "username={{ cifs_user.stdout }},password={{ cifs_password.stdout }},vers=3.0,rw,nofail,uid=1000,gid=1000"
     state: present
 
 - name: Check media mount
@@ -47,7 +47,7 @@
     path: /mnt/media
     src: "//{{ cifs_host.stdout }}/media"
     fstype: cifs
-    opts: "username={{ cifs_user.stdout }},password={{ cifs_password.stdout }},vers=4.0,rw,nofail,uid=1000,gid=1000"
+    opts: "username={{ cifs_user.stdout }},password={{ cifs_password.stdout }},vers=3.0,rw,nofail,uid=1000,gid=1000"
     state: present
 
 - name: reboot if needed

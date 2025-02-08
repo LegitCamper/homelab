@@ -42,7 +42,7 @@
       ansible.builtin.systemd_service:
           name: docker.service
           state: stopped
-          enabled: true
+          enabled: false
 
     - name: install and configure tailscale
       ansible.builtin.include_tasks:
