@@ -75,7 +75,7 @@ certResolver = "cloudflare"
 url = "http://uptime-kuma:3001"
 
 [http.routers.jellyfin]
-middlewares = ["crowdsec"]
+# middlewares = ["crowdsec"]
 service = "jellyfin"
 rule = "Host(`jellyfin.sawyer.services`)"
 [http.routers.jellyfin.tls]
@@ -106,7 +106,7 @@ certResolver = "cloudflare"
 url = "http://mom-contact:8000"
 
 [http.routers.searxng]
-middlewares = ["crowdsec"]
+# middlewares = ["crowdsec"]
 service = "searxng"
 rule = "Host(`searxng.sawyer.services`) || Host(`search.sawyer.services`)"
 [http.routers.searxng.tls]
@@ -117,7 +117,7 @@ certResolver = "cloudflare"
 url = "http://searxng:8080"
 
 [http.routers.languagetool]
-middlewares = ["crowdsec"]
+# middlewares = ["crowdsec"]
 service = "languagetool"
 rule = "Host(`languagetool.sawyer.services`)"
 [http.routers.languagetool.tls]
@@ -172,7 +172,7 @@ updateIntervalSeconds = 60
 updateMaxFailure = 0
 defaultDecisionSeconds = 60
 httpTimeoutSeconds = 10
-crowdsecMode = "stream"
+crowdsecMode = "live"
 crowdsecLapiScheme = "http"
 crowdsecLapiHost = "crowdsec:8080"
 crowdsecLapiPath = "/"
