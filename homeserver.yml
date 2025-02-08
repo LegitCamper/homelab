@@ -71,6 +71,32 @@
         regexp: '"BOUNCER_KEY_TRAEFIK"'
         replace: '"{{ crowdsec_token.stdout }}"'
 
+    - name: Get crowdsec turnstile site key
+      ansible.builtin.shell:
+        cat /home/core/compose-files/secrets.env | grep TURNSTILE_SITE_KEY | sed 's/^.*TURNSTILE_SITE_KEY=//'
+      register: crowdsec_turnstile_site_key
+      ignore_errors: true
+      changed_when: false
+
+    - name: Replace crowdsec token with site key
+      ansible.builtin.replace:
+        path: /home/core/compose-files/docker/traefik/dynamic.toml
+        regexp: '"TURNSTILE_SITE_KEY"'
+        replace: '"{{ crowdsec_turnstile_site_key.stdout }}"'
+
+    - name: Get crowdsec turnstile secret key
+      ansible.builtin.shell:
+        cat /home/core/compose-files/secrets.env | grep TURNSTILE_SECRET_KEY | sed 's/^.*TURNSTILE_SECRET_KEY=//'
+      register: crowdsec_turnstile_secret_key
+      ignore_errors: true
+      changed_when: false
+
+    - name: Replace crowdsec token with secret key
+      ansible.builtin.replace:
+        path: /home/core/compose-files/docker/traefik/dynamic.toml
+        regexp: '"TURNSTILE_SECRET_KEY"'
+        replace: '"{{ crowdsec_turnstile_secret_key.stdout }}"'
+
     - name: Get cf email
       ansible.builtin.shell:
         cat /home/core/compose-files/secrets.env | grep CF_API_EMAIL | sed 's/^.*CF_API_EMAIL=//'

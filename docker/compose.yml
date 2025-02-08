@@ -189,6 +189,7 @@ services:
       - /home/core/acme/:/etc/traefik/acme:rw
       - /home/core/compose-files/docker/traefik/static.toml:/etc/traefik/traefik.toml:ro
       - /home/core/compose-files/docker/traefik/dynamic.toml:/etc/traefik/dynamic.toml:ro
+      - /home/core/compose-files/docker/traefik/captcha.html:/captcha.html:ro
       - traefik-logs:/var/log/traefik
     networks:
       - web
@@ -217,6 +218,7 @@ services:
       BOUNCER_KEY_TRAEFIK: ${TRAEFIK_BOUNCER_KEY}
     volumes:
       - /home/core/compose-files/docker/crowdsec/acquis.yaml:/etc/crowdsec/acquis.yaml:ro
+      - /home/core/compose-files/docker/crowdsec/profiles_captcha_only.yaml:/etc/crowdsec/profiles.yaml:ro
       - traefik-logs:/var/log/traefik:ro
       - crowdsec-db:/var/lib/crowdsec/data/
       - crowdsec-config:/etc/crowdsec/
