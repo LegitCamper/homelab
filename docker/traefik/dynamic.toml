@@ -5,14 +5,24 @@ rule = "Host(`traefik.internal.sawyer.services`)"
 certResolver = "cloudflare"
 
 [http.routers.homenas]
-service = "komodo"
+service = "homenas"
 rule = "Host(`homenas.internal.sawyer.services`)"
 [http.routers.homenas.tls]
 certResolver = "cloudflare"
 
 [http.services.homenas.loadBalancer]
 [[http.services.homenas.loadBalancer.servers]]
-url = "https://homenas/cgi-bin/"
+url = "https://homenas/"
+
+[http.routers.bevbot]
+service = "bevbot"
+rule = "Host(`bevbot.internal.sawyer.services`)"
+[http.routers.bevbot.tls]
+certResolver = "cloudflare"
+
+[http.services.bevbot.loadBalancer]
+[[http.services.bevbot.loadBalancer.servers]]
+url = "http://bevbot.tail2e10d8.ts.net/"
 
 [http.routers.komodo]
 service = "komodo"
@@ -30,20 +40,6 @@ rule = "Host(`ollama.internal.sawyer.services`)"
 [http.routers.ollama.tls]
 certResolver = "cloudflare"
 
-[http.services.ollama.loadBalancer]
-[[http.services.ollama.loadBalancer.servers]]
-url = "http://ollama:8080"
-
-[http.routers.jellyfin]
-service = "jellyfin"
-rule = "Host(`jellyfin.sawyer.services`)"
-[http.routers.jellyfin.tls]
-certResolver = "cloudflare"
-
-[http.services.jellyfin.loadBalancer]
-[[http.services.jellyfin.loadBalancer.servers]]
-url = "http://jellyfin:8096"
-
 [http.routers.transmission]
 service = "transmission"
 rule = "Host(`transmission.internal.sawyer.services`) || Host(`torrent.internal.sawyer.services`)"
@@ -53,6 +49,41 @@ certResolver = "cloudflare"
 [http.services.transmission.loadBalancer]
 [[http.services.transmission.loadBalancer.servers]]
 url = "http://transmission-openvpn:9091"
+
+[http.services.ollama.loadBalancer]
+[[http.services.ollama.loadBalancer.servers]]
+url = "http://ollama:8080"
+
+[http.routers.smokeping]
+service = "smokeping"
+rule = "Host(`smokeping.internal.sawyer.services`)"
+[http.routers.smokeping.tls]
+certResolver = "cloudflare"
+
+[http.services.smokeping.loadBalancer]
+[[http.services.smokeping.loadBalancer.servers]]
+url = "http://smokeping:80"
+
+[http.routers.uptime-kuma]
+service = "uptime-kuma"
+rule = "Host(`uptime-kuma.internal.sawyer.services`)"
+[http.routers.uptime-kuma.tls]
+certResolver = "cloudflare"
+
+[http.services.uptime-kuma.loadBalancer]
+[[http.services.uptime-kuma.loadBalancer.servers]]
+url = "http://uptime-kuma:3001"
+
+[http.routers.jellyfin]
+middlewares = ["crowdsec"]
+service = "jellyfin"
+rule = "Host(`jellyfin.sawyer.services`)"
+[http.routers.jellyfin.tls]
+certResolver = "cloudflare"
+
+[http.services.jellyfin.loadBalancer]
+[[http.services.jellyfin.loadBalancer.servers]]
+url = "http://jellyfin:8096"
 
 [http.routers.portfolio]
 service = "portfolio"
@@ -75,6 +106,7 @@ certResolver = "cloudflare"
 url = "http://mom-contact:8000"
 
 [http.routers.searxng]
+middlewares = ["crowdsec"]
 service = "searxng"
 rule = "Host(`searxng.sawyer.services`) || Host(`search.sawyer.services`)"
 [http.routers.searxng.tls]
@@ -84,17 +116,8 @@ certResolver = "cloudflare"
 [[http.services.searxng.loadBalancer.servers]]
 url = "http://searxng:8080"
 
-[http.routers.smokeping]
-service = "smokeping"
-rule = "Host(`smokeping.internal.sawyer.services`)"
-[http.routers.smokeping.tls]
-certResolver = "cloudflare"
-
-[http.services.smokeping.loadBalancer]
-[[http.services.smokeping.loadBalancer.servers]]
-url = "http://smokeping:80"
-
 [http.routers.languagetool]
+middlewares = ["crowdsec"]
 service = "languagetool"
 rule = "Host(`languagetool.sawyer.services`)"
 [http.routers.languagetool.tls]
@@ -103,16 +126,6 @@ certResolver = "cloudflare"
 [http.services.languagetool.loadBalancer]
 [[http.services.languagetool.loadBalancer.servers]]
 url = "http://languagetool:8010"
-
-[http.routers.uptime-kuma]
-service = "uptime-kuma"
-rule = "Host(`uptime-kuma.internal.sawyer.services`)"
-[http.routers.uptime-kuma.tls]
-certResolver = "cloudflare"
-
-[http.services.uptime-kuma.loadBalancer]
-[[http.services.uptime-kuma.loadBalancer.servers]]
-url = "http://uptime-kuma:3001"
 
 [http.routers.adguard]
 service = "adguard"
@@ -143,3 +156,25 @@ rule = "HostSNI(`*`)"
 [tcp.services.dot.loadBalancer]
 [[tcp.services.dot.loadBalancer.servers]]
 address = "172.55.0.10:853"
+
+[http.middlewares]
+[http.middlewares.crowdsec.plugin.bouncer]
+crowdsecAppsecEnabled = false
+crowdsecAppsecHost = "crowdsec:7422"
+crowdsecAppsecPath = "/"
+crowdsecAppsecFailureBlock = true
+crowdsecAppsecUnreachableBlock = true
+crowdsecAppsecBodyLimit = 10485760
+crowdseclapikey = "BOUNCER_KEY_TRAEFIK"
+enabled = true
+logLevel = "INFO"
+updateIntervalSeconds = 60
+updateMaxFailure = 0
+defaultDecisionSeconds = 60
+httpTimeoutSeconds = 10
+crowdsecMode = "stream"
+crowdsecLapiScheme = "http"
+crowdsecLapiHost = "crowdsec:8080"
+crowdsecLapiPath = "/"
+crowdsecLapiTLSInsecureVerify = false
+redisCacheEnabled = false

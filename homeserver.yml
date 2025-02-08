@@ -58,6 +58,19 @@
         regexp: '"token"'
         replace: '"{{ rathole_token.stdout }}"'
 
+    - name: Get crowdsec api key
+      ansible.builtin.shell:
+        cat /home/core/compose-files/secrets.env | grep TRAEFIK_BOUNCER_KEY | sed 's/^.*TRAEFIK_BOUNCER_KEY=//'
+      register: crowdsec_token
+      ignore_errors: true
+      changed_when: false
+
+    - name: Replace crowdsec api with secret
+      ansible.builtin.replace:
+        path: /home/core/compose-files/docker/traefik/dynamic.toml
+        regexp: '"BOUNCER_KEY_TRAEFIK"'
+        replace: '"{{ crowdsec_token.stdout }}"'
+
     - name: Get cf email
       ansible.builtin.shell:
         cat /home/core/compose-files/secrets.env | grep CF_API_EMAIL | sed 's/^.*CF_API_EMAIL=//'
