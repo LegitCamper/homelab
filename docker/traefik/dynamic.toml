@@ -12,7 +12,17 @@ certResolver = "cloudflare"
 
 [http.services.homenas.loadBalancer]
 [[http.services.homenas.loadBalancer.servers]]
-url = "https://homenas/cgi-bin/"
+url = "https://homenas/"
+
+[http.routers.bevbot]
+service = "bevbot"
+rule = "Host(`bevbot.internal.sawyer.services`)"
+[http.routers.bevbot.tls]
+certResolver = "cloudflare"
+
+[http.services.bevbot.loadBalancer]
+[[http.services.bevbot.loadBalancer.servers]]
+url = "http://bevbot.tail2e10d8.ts.net/"
 
 [http.routers.komodo]
 service = "komodo"
@@ -149,6 +159,12 @@ address = "172.55.0.10:853"
 
 [http.middlewares]
 [http.middlewares.crowdsec.plugin.bouncer]
+crowdsecAppsecEnabled = false
+crowdsecAppsecHost = "crowdsec:7422"
+crowdsecAppsecPath = "/"
+crowdsecAppsecFailureBlock = true
+crowdsecAppsecUnreachableBlock = true
+crowdsecAppsecBodyLimit = 10485760
 crowdseclapikey = "BOUNCER_KEY_TRAEFIK"
 enabled = true
 logLevel = "INFO"
@@ -157,7 +173,6 @@ updateMaxFailure = 0
 defaultDecisionSeconds = 60
 httpTimeoutSeconds = 10
 crowdsecMode = "stream"
-crowdsecAppsecEnabled = false
 crowdsecLapiScheme = "http"
 crowdsecLapiHost = "crowdsec:8080"
 crowdsecLapiPath = "/"

@@ -1,7 +1,7 @@
 networks:
   web:
     external: true
-  internal:
+  internal: # Not exposed via traefik (dbs & severices
     external: false
   # This network exists just so adugard can have a static ip for tcp routing
   dns:
@@ -181,6 +181,8 @@ services:
       - CF_API_KEY=${CF_API_KEY}
       - CF_API_EMAIL=${CF_API_EMAIL}
       - DNS=${DNS}
+      # Allows CNAME certs to be issued
+      - LEGO_DISABLE_CNAME_SUPPORT=true
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -204,6 +206,11 @@ services:
     image: crowdsecurity/crowdsec:v1.6.1-2
     container_name: crowdsec
     restart: always
+    networks:
+      - web
+    expose:
+      - 8080
+      - 7422 
     environment:
       COLLECTIONS: crowdsecurity/traefik crowdsecurity/appsec-virtual-patching crowdsecurity/appsec-generic-rules
       CUSTOM_HOSTNAME: crowdsec
