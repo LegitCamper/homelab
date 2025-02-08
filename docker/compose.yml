@@ -182,8 +182,6 @@ services:
       - CF_API_KEY=${CF_API_KEY}
       - CF_API_EMAIL=${CF_API_EMAIL}
       - DNS=${DNS}
-      # Allows CNAME certs to be issued
-      - LEGO_DISABLE_CNAME_SUPPORT=true
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
