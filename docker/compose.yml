@@ -10,20 +10,15 @@ networks:
         - subnet: 172.55.0.0/24
 
 volumes:
-  traefik-logs:
-    driver: local
+  logs:
+  prometheus:
+  uptimekuma:
   crowdsec-db:
-    driver: local
   crowdsec-config:
-    driver: local
   ollama-open-webui:
-    driver: local
   jellyfin-config:
-    driver: local
   jellyfin-cache:
-    driver: local
   adguard-work:
-    driver: local
 
 services:
   komodo-core:
@@ -34,8 +29,6 @@ services:
     depends_on:
       - komodo-mongo
       - komodo-periphery
-    logging:
-      driver: local 
     networks:
       - internal
       - web
@@ -61,8 +54,6 @@ services:
     container_name: komodo-periphery
     restart: always
     user: "1000:1000"
-    logging:
-      driver: local
     expose:
       - 8120
     networks:
@@ -78,8 +69,6 @@ services:
     command: --quiet # suppress mongo logs a bit
     restart: always
     user: "1000:1000"
-    logging:
-      driver: local
     networks:
       - internal
     expose:
@@ -189,7 +178,7 @@ services:
       - /home/core/compose-files/docker/traefik/static.toml:/etc/traefik/traefik.toml:ro
       - /home/core/compose-files/docker/traefik/dynamic.toml:/etc/traefik/dynamic.toml:ro
       - /home/core/compose-files/docker/traefik/captcha.html:/captcha.html:ro
-      - traefik-logs:/var/log/traefik
+      - logs:/var/log/traefik
     networks:
       - web
       - dns
@@ -318,13 +307,81 @@ services:
       WATCHTOWER_POLL_INTERVAL: 604800 # every 7 days
     restart: always
 
+  loki:
+    image: grafana/loki:3.3.2
+    container_name: loki
+    volumes:
+      - /home/core/compose-files/docker/loki/:/mnt/config:ro
+    command: -config.file=/mnt/config/loki-config.yaml
+    network:
+      - internal
+    expose:
+     - 3100  
+    restart: always
+
+  promtail:
+    container_name: promtail
+    image: grafana/promtail:3.3.2
+    volumes:
+      - /home/core/compose-files/docker/promtail/config:/mnt/config:ro
+      - log:/var/log:ro
+    command: -config.file=/mnt/config/promtail-config.yaml
+    expose:
+      - 9080
+    network:
+      - internal
+    depends_on:
+      loki
+    restart: always
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana-enterprise 
+    expose:
+      - 3000
+    network:
+      - internal
+      - web
+    volume:
+      - /mnt/homelab/grafana_data:/var/lib/grafana:rw
+      - /home/core/compose-files/docker/grafana/:etc/grafana/provisioning/datasources:rw
+    depends_on:
+      - loki
+    restart: always
+
+  prometheus:
+    image: prom/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    expose:
+      - 9090
+    restart: always
+    volumes:
+      - /mnt/homelab/prometheus:/etc/prometheus:rw
+      - prometheus:/prometheus
+
+  node_exporter:
+    image: quay.io/prometheus/node-exporter:latest
+    container_name: node_exporter
+    command:
+      - '--path.rootfs=/host'
+    # network_mode: host
+    # pid: host
+    network:
+      - internal
+    ports:
+      - 9100
+    restart: always
+    volumes:
+      - '/:/host:ro,rslave'
+  
   uptime-kuma:
     image: louislam/uptime-kuma:1
     container_name: uptime-kuma
     restart: always
     user: "1000:1000"
     volumes:
-      - /mnt/homelab/uptimekuma:/app/data:rw
+      - uptimekuma:/app/data:rw
     expose:
       - 3001
 
