@@ -312,7 +312,7 @@ services:
     container_name: loki
     volumes:
       - /home/core/compose-files/docker/loki/:/mnt/config:ro
-    command: -config.file=/mnt/config/loki-config.yaml
+    command: -config.file=/mnt/config/config.yml
     networks:
       - internal
     expose:
@@ -323,9 +323,9 @@ services:
     container_name: promtail
     image: grafana/promtail:3.3.2
     volumes:
-      - /home/core/compose-files/docker/promtail/config:/mnt/config:ro
+      - /home/core/compose-files/docker/promtail:/mnt/config:ro
       - logs:/var/log:ro
-    command: -config.file=/mnt/config/promtail-config.yaml
+    command: -config.file=/mnt/config/config.yml
     expose:
       - 9080
     networks:
@@ -337,6 +337,7 @@ services:
   grafana:
     container_name: grafana
     image: grafana/grafana-enterprise 
+    user: "1000:1000"
     expose:
       - 3000
     networks:
