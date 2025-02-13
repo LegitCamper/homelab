@@ -11,7 +11,6 @@ networks:
 
 volumes:
   logs:
-  prometheus:
   uptimekuma:
   crowdsec-db:
   crowdsec-config:
@@ -356,28 +355,31 @@ services:
   prometheus:
     container_name: prometheus
     image: prom/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
+    user: "1000:1000"
     expose:
       - 9090
     restart: always
     volumes:
-      - /mnt/homelab/prometheus:/etc/prometheus:rw
-      - prometheus:/prometheus
+      - /home/core/compose-files/docker/prometheus:/etc/prometheus:ro
+      - /mnt/homelab/prometheus:/prometheus:rw
+    command:
+      - --config.file=/etc/prometheus/config.yml
+    depends_on:
+      - node_exporter
 
   node_exporter:
     image: quay.io/prometheus/node-exporter:latest
     container_name: node_exporter
     command:
-      - '--path.rootfs=/host'
+      - --path.rootfs=/host
     # pid: host
     networks:
       - internal
-    ports:
+    expose:
       - 9100
     restart: always
     volumes:
-      - '/:/host:ro,rslave'
+      - /:/host:ro,rslave
   
   uptime-kuma:
     image: louislam/uptime-kuma:1
