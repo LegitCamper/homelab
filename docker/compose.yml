@@ -190,6 +190,7 @@ services:
       - "8080:8080"
     depends_on:
       - crowdsec
+      - loki
 
   crowdsec:
     image: crowdsecurity/crowdsec:v1.6.1-2
@@ -210,6 +211,8 @@ services:
       - logs:/var/log/traefik:ro
       - crowdsec-db:/var/lib/crowdsec/data/
       - crowdsec-config:/etc/crowdsec/
+    depends_on:
+      - loki
 
   adguardhome:
     image: adguard/adguardhome
@@ -351,6 +354,7 @@ services:
     restart: always
 
   prometheus:
+    container_name: prometheus
     image: prom/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'

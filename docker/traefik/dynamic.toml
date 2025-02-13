@@ -9,7 +9,6 @@ service = "homenas"
 rule = "Host(`homenas.internal.sawyer.services`)"
 [http.routers.homenas.tls]
 certResolver = "cloudflare"
-
 [http.services.homenas.loadBalancer]
 [[http.services.homenas.loadBalancer.servers]]
 url = "https://homenas/"
@@ -19,7 +18,6 @@ service = "bevbot"
 rule = "Host(`bevbot.internal.sawyer.services`)"
 [http.routers.bevbot.tls]
 certResolver = "cloudflare"
-
 [http.services.bevbot.loadBalancer]
 [[http.services.bevbot.loadBalancer.servers]]
 url = "http://bevbot.tail2e10d8.ts.net/"
@@ -29,37 +27,42 @@ service = "komodo"
 rule = "Host(`komodo.internal.sawyer.services`)"
 [http.routers.komodo.tls]
 certResolver = "cloudflare"
-
 [http.services.komodo.loadBalancer]
 [[http.services.komodo.loadBalancer.servers]]
 url = "http://komodo-core:9120"
+
+[http.routers.grafana]
+service = "grafana"
+rule = "Host(`grafana.internal.sawyer.services`)"
+[http.routers.grafana.tls]
+certResolver = "cloudflare"
+[http.services.grafana.loadBalancer]
+[[http.services.grafana.loadBalancer.servers]]
+url = "http://grafana:3000"
 
 [http.routers.ollama]
 service = "ollama"
 rule = "Host(`ollama.internal.sawyer.services`)"
 [http.routers.ollama.tls]
 certResolver = "cloudflare"
+[http.services.ollama.loadBalancer]
+[[http.services.ollama.loadBalancer.servers]]
+url = "http://ollama:8080"
 
 [http.routers.transmission]
 service = "transmission"
 rule = "Host(`transmission.internal.sawyer.services`) || Host(`torrent.internal.sawyer.services`)"
 [http.routers.transmission.tls]
 certResolver = "cloudflare"
-
 [http.services.transmission.loadBalancer]
 [[http.services.transmission.loadBalancer.servers]]
 url = "http://transmission-openvpn:9091"
-
-[http.services.ollama.loadBalancer]
-[[http.services.ollama.loadBalancer.servers]]
-url = "http://ollama:8080"
 
 [http.routers.smokeping]
 service = "smokeping"
 rule = "Host(`smokeping.internal.sawyer.services`)"
 [http.routers.smokeping.tls]
 certResolver = "cloudflare"
-
 [http.services.smokeping.loadBalancer]
 [[http.services.smokeping.loadBalancer.servers]]
 url = "http://smokeping:80"
@@ -69,7 +72,6 @@ service = "uptime-kuma"
 rule = "Host(`uptime-kuma.internal.sawyer.services`)"
 [http.routers.uptime-kuma.tls]
 certResolver = "cloudflare"
-
 [http.services.uptime-kuma.loadBalancer]
 [[http.services.uptime-kuma.loadBalancer.servers]]
 url = "http://uptime-kuma:3001"
@@ -80,7 +82,6 @@ service = "jellyfin"
 rule = "Host(`jellyfin.sawyer.services`)"
 [http.routers.jellyfin.tls]
 certResolver = "cloudflare"
-
 [http.services.jellyfin.loadBalancer]
 [[http.services.jellyfin.loadBalancer.servers]]
 url = "http://jellyfin:8096"
@@ -90,7 +91,6 @@ service = "portfolio"
 rule = "Host(`sawyer.services`) || Host(`portfolio.sawyer.services`)"
 [http.routers.portfolio.tls]
 certResolver = "cloudflare"
-
 [http.services.portfolio.loadBalancer]
 [[http.services.portfolio.loadBalancer.servers]]
 url = "http://portfolio:8000"
@@ -100,7 +100,6 @@ service = "mom-contact"
 rule = "Host(`casey.sawyer.services`)"
 [http.routers.mom-contact.tls]
 certResolver = "cloudflare"
-
 [http.services.mom-contact.loadBalancer]
 [[http.services.mom-contact.loadBalancer.servers]]
 url = "http://mom-contact:8000"
@@ -111,7 +110,6 @@ service = "searxng"
 rule = "Host(`searxng.sawyer.services`) || Host(`search.sawyer.services`)"
 [http.routers.searxng.tls]
 certResolver = "cloudflare"
-
 [http.services.searxng.loadBalancer]
 [[http.services.searxng.loadBalancer.servers]]
 url = "http://searxng:8080"
@@ -122,7 +120,6 @@ service = "languagetool"
 rule = "Host(`languagetool.sawyer.services`)"
 [http.routers.languagetool.tls]
 certResolver = "cloudflare"
-
 [http.services.languagetool.loadBalancer]
 [[http.services.languagetool.loadBalancer.servers]]
 url = "http://languagetool:8010"
@@ -132,7 +129,6 @@ service = "adguard"
 rule = "Host(`adguard.internal.sawyer.services`) || Host(`adguardhome.internal.sawyer.services`)"
 [http.routers.adguard.tls]
 certResolver = "cloudflare"
-
 [http.services.adguard.loadBalancer]
 [[http.services.adguard.loadBalancer.servers]]
 url = "http://adguardhome:80"
@@ -142,7 +138,6 @@ service = "doh"
 rule = "Host(`dns.sawyer.services`)"
 [http.routers.doh.tls]
 certResolver = "cloudflare"
-
 [http.services.doh.loadBalancer]
 [[http.services.doh.loadBalancer.servers]]
 url = "https://adguardhome:443"
@@ -152,7 +147,6 @@ url = "https://adguardhome:443"
 entryPoints = ["dot"]
 service = "dot"
 rule = "HostSNI(`*`)"
-
 [tcp.services.dot.loadBalancer]
 [[tcp.services.dot.loadBalancer.servers]]
 address = "172.55.0.10:853"
