@@ -207,7 +207,7 @@ services:
     volumes:
       - /home/core/compose-files/docker/crowdsec/acquis.yaml:/etc/crowdsec/acquis.yaml:ro
       - /home/core/compose-files/docker/crowdsec/profiles_captcha_only.yaml:/etc/crowdsec/profiles.yaml:ro
-      - traefik-logs:/var/log/traefik:ro
+      - logs:/var/log/traefik:ro
       - crowdsec-db:/var/lib/crowdsec/data/
       - crowdsec-config:/etc/crowdsec/
 
@@ -313,7 +313,7 @@ services:
     volumes:
       - /home/core/compose-files/docker/loki/:/mnt/config:ro
     command: -config.file=/mnt/config/loki-config.yaml
-    network:
+    networks:
       - internal
     expose:
      - 3100  
@@ -324,14 +324,14 @@ services:
     image: grafana/promtail:3.3.2
     volumes:
       - /home/core/compose-files/docker/promtail/config:/mnt/config:ro
-      - log:/var/log:ro
+      - logs:/var/log:ro
     command: -config.file=/mnt/config/promtail-config.yaml
     expose:
       - 9080
-    network:
+    networks:
       - internal
     depends_on:
-      loki
+      - loki
     restart: always
 
   grafana:
@@ -339,12 +339,12 @@ services:
     image: grafana/grafana-enterprise 
     expose:
       - 3000
-    network:
+    networks:
       - internal
       - web
-    volume:
+    volumes:
       - /mnt/homelab/grafana_data:/var/lib/grafana:rw
-      - /home/core/compose-files/docker/grafana/:etc/grafana/provisioning/datasources:rw
+      - /home/core/compose-files/docker/grafana/:/etc/grafana/provisioning/datasources:rw
     depends_on:
       - loki
     restart: always
@@ -365,9 +365,8 @@ services:
     container_name: node_exporter
     command:
       - '--path.rootfs=/host'
-    # network_mode: host
     # pid: host
-    network:
+    networks:
       - internal
     ports:
       - 9100
