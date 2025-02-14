@@ -25,11 +25,7 @@ scrape_configs:
   static_configs:
     - targets:
       - dcgm-exporter:9400
-- job_name: docker_engines
+- job_name: cadvisor
   static_configs:
     - targets:
-      - host.docker.internal:9323
-- job_name: docker_containers
-  static_configs:
-    - targets:
-      - host.docker.internal:3080
+      - cadvisor:8080

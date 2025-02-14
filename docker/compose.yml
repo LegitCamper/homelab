@@ -401,16 +401,24 @@ services:
             - driver: nvidia
               capabilities: [gpu]
               count: all
-  
-  uptime-kuma:
-    image: louislam/uptime-kuma:1
-    container_name: uptime-kuma
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    privileged: true
     restart: always
-    user: "1000:1000"
-    volumes:
-      - uptimekuma:/app/data:rw
     expose:
-      - 3001
+      - 8080
+    networks:
+      - internal
+    volumes:
+      - /:/rootfs:ro 
+      - /var/run:/var/run:ro 
+      - /sys:/sys:ro 
+      - /var/lib/docker/:/var/lib/docker:ro 
+      - /dev/disk/:/dev/disk:ro 
+    devices:
+      - /dev/kmsg:/dev/kmsg
 
   portfolio:
     image: ghcr.io/legitcamper/portfolio-site:latest
