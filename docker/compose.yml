@@ -10,20 +10,14 @@ networks:
         - subnet: 172.55.0.0/24
 
 volumes:
-  traefik-logs:
-    driver: local
+  logs:
+  uptimekuma:
   crowdsec-db:
-    driver: local
   crowdsec-config:
-    driver: local
   ollama-open-webui:
-    driver: local
   jellyfin-config:
-    driver: local
   jellyfin-cache:
-    driver: local
   adguard-work:
-    driver: local
 
 services:
   komodo-core:
@@ -34,8 +28,6 @@ services:
     depends_on:
       - komodo-mongo
       - komodo-periphery
-    logging:
-      driver: local 
     networks:
       - internal
       - web
@@ -61,8 +53,6 @@ services:
     container_name: komodo-periphery
     restart: always
     user: "1000:1000"
-    logging:
-      driver: local
     expose:
       - 8120
     networks:
@@ -78,8 +68,6 @@ services:
     command: --quiet # suppress mongo logs a bit
     restart: always
     user: "1000:1000"
-    logging:
-      driver: local
     networks:
       - internal
     expose:
@@ -189,7 +177,7 @@ services:
       - /home/core/compose-files/docker/traefik/static.toml:/etc/traefik/traefik.toml:ro
       - /home/core/compose-files/docker/traefik/dynamic.toml:/etc/traefik/dynamic.toml:ro
       - /home/core/compose-files/docker/traefik/captcha.html:/captcha.html:ro
-      - traefik-logs:/var/log/traefik
+      - logs:/var/log/traefik
     networks:
       - web
       - dns
@@ -201,6 +189,7 @@ services:
       - "8080:8080"
     depends_on:
       - crowdsec
+      - loki
 
   crowdsec:
     image: crowdsecurity/crowdsec:v1.6.1-2
@@ -218,9 +207,11 @@ services:
     volumes:
       - /home/core/compose-files/docker/crowdsec/acquis.yaml:/etc/crowdsec/acquis.yaml:ro
       - /home/core/compose-files/docker/crowdsec/profiles_captcha_only.yaml:/etc/crowdsec/profiles.yaml:ro
-      - traefik-logs:/var/log/traefik:ro
+      - logs:/var/log/traefik:ro
       - crowdsec-db:/var/lib/crowdsec/data/
       - crowdsec-config:/etc/crowdsec/
+    depends_on:
+      - loki
 
   adguardhome:
     image: adguard/adguardhome
@@ -318,15 +309,116 @@ services:
       WATCHTOWER_POLL_INTERVAL: 604800 # every 7 days
     restart: always
 
-  uptime-kuma:
-    image: louislam/uptime-kuma:1
-    container_name: uptime-kuma
-    restart: always
-    user: "1000:1000"
+  loki:
+    image: grafana/loki:3.3.2
+    container_name: loki
     volumes:
-      - /mnt/homelab/uptimekuma:/app/data:rw
+      - /home/core/compose-files/docker/loki/:/mnt/config:ro
+    command: -config.file=/mnt/config/config.yml
+    networks:
+      - internal
     expose:
-      - 3001
+     - 3100  
+    restart: always
+
+  promtail:
+    container_name: promtail
+    image: grafana/promtail:3.3.2
+    volumes:
+      - /home/core/compose-files/docker/promtail:/mnt/config:ro
+      - logs:/var/log:ro
+    command: -config.file=/mnt/config/config.yml
+    expose:
+      - 9080
+    networks:
+      - internal
+    depends_on:
+      - loki
+    restart: always
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana-enterprise 
+    user: "1000:1000"
+    expose:
+      - 3000
+    networks:
+      - internal
+      - web
+    volumes:
+      - /mnt/homelab/grafana_data:/var/lib/grafana:rw
+      - /home/core/compose-files/docker/grafana/:/etc/grafana/provisioning/datasources:rw
+    depends_on:
+      - loki
+    restart: always
+
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus
+    user: "1000:1000"
+    networks:
+      - internal
+    expose:
+      - 9090
+    restart: always
+    volumes:
+      - /home/core/compose-files/docker/prometheus:/etc/prometheus:ro
+      - /mnt/homelab/prometheus:/prometheus:rw
+    command:
+      - --config.file=/etc/prometheus/config.yml
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    depends_on:
+      - node_exporter
+
+  node_exporter:
+    image: quay.io/prometheus/node-exporter:latest
+    container_name: node_exporter
+    command:
+      - --path.rootfs=/host -–collector.systemd -–collector.processes
+    networks:
+      - internal
+    expose:
+      - 9100
+    restart: always
+    volumes:
+      - /:/host:ro,rslave
+
+  dcgm-exporter:
+    image: nvcr.io/nvidia/k8s/dcgm-exporter:latest
+    container_name: dcgm-exporter
+    networks:
+      - internal
+    expose:
+      - 9400
+    restart: always
+    security_opt:
+      - label=type:nvidia_container_t
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+              count: all
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    privileged: true
+    restart: always
+    expose:
+      - 8080
+    networks:
+      - internal
+    volumes:
+      - /:/rootfs:ro 
+      - /var/run:/var/run:ro 
+      - /sys:/sys:ro 
+      - /var/lib/docker/:/var/lib/docker:ro 
+      - /dev/disk/:/dev/disk:ro 
+    devices:
+      - /dev/kmsg:/dev/kmsg
 
   portfolio:
     image: ghcr.io/legitcamper/portfolio-site:latest
