@@ -366,6 +366,8 @@ services:
       - /mnt/homelab/prometheus:/prometheus:rw
     command:
       - --config.file=/etc/prometheus/config.yml
+    extra_hosts:
+      - host.docker.internal:host-gateway
     depends_on:
       - node_exporter
 
@@ -373,10 +375,7 @@ services:
     image: quay.io/prometheus/node-exporter:latest
     container_name: node_exporter
     command:
-      - --path.rootfs=/host
-      - –collector.systemd
-      - –collector.processes
-    # pid: host
+      - --path.rootfs=/host -–collector.systemd -–collector.processes
     networks:
       - internal
     expose:
@@ -384,6 +383,24 @@ services:
     restart: always
     volumes:
       - /:/host:ro,rslave
+
+  dcgm-exporter:
+    image: nvcr.io/nvidia/k8s/dcgm-exporter:latest
+    container_name: dcgm-exporter
+    networks:
+      - internal
+    expose:
+      - 9400
+    restart: always
+    security_opt:
+      - label=type:nvidia_container_t
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+              count: all
   
   uptime-kuma:
     image: louislam/uptime-kuma:1
