@@ -31,6 +31,15 @@ certResolver = "cloudflare"
 [[http.services.komodo.loadBalancer.servers]]
 url = "http://komodo-core:9120"
 
+[http.routers.linkwarden]
+service = "linkwarden"
+rule = "Host(`linkwarden.internal.sawyer.services`)"
+[http.routers.linkwarden.tls]
+certResolver = "cloudflare"
+[http.services.linkwarden.loadBalancer]
+[[http.services.linkwarden.loadBalancer.servers]]
+url = "http://linkwarden-core:3000"
+
 [http.routers.grafana]
 service = "grafana"
 rule = "Host(`grafana.internal.sawyer.services`)"

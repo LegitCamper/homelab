@@ -51,6 +51,7 @@ services:
   komodo-periphery:
     image: ghcr.io/mbecker20/periphery:latest
     container_name: komodo-periphery
+    privileged: true
     restart: always
     user: "1000:1000"
     expose:
@@ -308,6 +309,38 @@ services:
       WATCHTOWER_REVIVE_STOPPED: true
       WATCHTOWER_POLL_INTERVAL: 604800 # every 7 days
     restart: always
+
+  linkwarden_postgres:
+    image: postgres:16-alpine
+    container_name: linkwarden_postgres 
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: ${LINKWARDEN_POSTGRES_PASSWORD} 
+      PUID: 1000
+      PGID: 1000
+    networks:
+      - internal
+    user: "1000:1000"
+    volumes:
+      - /mnt/homelab/linkwarden/postgres:/var/lib/postgresql/data:rw
+      - /etc/passwd:/etc/passwd:ro
+
+  linkwarden:
+    image: ghcr.io/linkwarden/linkwarden:latest 
+    container_name: linkwarden 
+    environment:
+      - DATABASE_URL=postgresql://linkwarden_postgres:${LINKWARDEN_POSTGRES_PASSWORD}@postgres:5432/postgres
+    restart: always
+    expose:
+      - 3000
+    networks:
+      - web
+      - internal
+    user: "1000:1000"
+    volumes:
+      - /mnt/homelab/linkwarden/linkwarden:/data/data:rw
+    depends_on:
+      - linkwarden_postgres
 
   loki:
     image: grafana/loki:3.3.2
