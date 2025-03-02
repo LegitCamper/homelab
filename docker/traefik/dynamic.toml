@@ -58,6 +58,15 @@ certResolver = "cloudflare"
 [[http.services.transmission.loadBalancer.servers]]
 url = "http://transmission-openvpn:9091"
 
+[http.routers.yt-dlp]
+service = "yt-dlp"
+rule = "Host(`yt-dlp.internal.sawyer.services`)"
+[http.routers.yt-dlp.tls]
+certResolver = "cloudflare"
+[http.services.yt-dlp.loadBalancer]
+[[http.services.yt-dlp.loadBalancer.servers]]
+url = "http://yt-dlp-webui:3033"
+
 [http.routers.smokeping]
 service = "smokeping"
 rule = "Host(`smokeping.internal.sawyer.services`)"

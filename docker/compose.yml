@@ -153,6 +153,19 @@ services:
     devices:
       - /dev/net/tun
 
+  yt-dlp-webui:
+    image: marcobaobao/yt-dlp-webui
+    container_name: yt-dlp-webui
+    networks:
+      - web
+    expose:
+      - 3033
+    volumes:
+      - /mnt/media/yt-dlp:/downloads:rw
+    healthcheck:
+      test: curl -f http://localhost:3033 || exit 1
+    restart: always
+
   rathole:
     image: rapiz1/rathole
     container_name: rathole
