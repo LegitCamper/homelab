@@ -95,6 +95,16 @@ certResolver = "cloudflare"
 [[http.services.jellyfin.loadBalancer.servers]]
 url = "http://jellyfin:8096"
 
+[http.routers.navidrome]
+# middlewares = ["crowdsec"]
+service = "navidrome"
+rule = "Host(`navidrome.sawyer.services`)"
+[http.routers.navidrome.tls]
+certResolver = "cloudflare"
+[http.services.navidrome.loadBalancer]
+[[http.services.navidrome.loadBalancer.servers]]
+url = "http://navidrome:4533"
+
 [http.routers.portfolio]
 service = "portfolio"
 rule = "Host(`sawyer.services`) || Host(`portfolio.sawyer.services`)"
