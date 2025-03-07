@@ -202,8 +202,7 @@ services:
       - TZ=America/Denver
     volumes:
       - /mnt/homelab/lidarr:/config:rw
-      - /mnt/media/music:/music:rw
-      - /mnt/media/complete:/downloads:rw
+      - /mnt/media:/data:rw
     network_mode: "service:transmission-openvpn"
     depends_on:
       - transmission-openvpn 
@@ -219,8 +218,7 @@ services:
       - TZ=America/Denver
     volumes:
       - /mnt/homelab/sonarr:/config:rw
-      - /mnt/media/shows:/tv:rw
-      - /mnt/media/complete:/downloads:rw 
+      - /mnt/media:/data:rw
     network_mode: "service:transmission-openvpn"
     depends_on:
       - transmission-openvpn 
@@ -236,8 +234,7 @@ services:
       - TZ=America/Denver
     volumes:
       - /mnt/homelab/radarr:/config:rw
-      - /mnt/media/movies:/movies:rw 
-      - /mnt/media/complete:/downloads:rw
+      - /mnt/media:/data:rw
     network_mode: "service:transmission-openvpn"
     depends_on:
       - transmission-openvpn 
@@ -253,8 +250,7 @@ services:
       - TZ=America/Denver
     volumes:
       - /mnt/homelab/readarr:/config:rw
-      - /mnt/media/books:/books:rw 
-      - /mnt/media/complete:/downloads:rw
+      - /mnt/media:/data:rw
     network_mode: "service:transmission-openvpn"
     depends_on:
       - transmission-openvpn 
