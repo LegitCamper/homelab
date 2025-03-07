@@ -58,6 +58,51 @@ certResolver = "cloudflare"
 [[http.services.transmission.loadBalancer.servers]]
 url = "http://transmission-openvpn:9091"
 
+[http.routers.prowlarr]
+service = "prowlarr"
+rule = "Host(`prowlarr.internal.sawyer.services`)"
+[http.routers.prowlarr.tls]
+certResolver = "cloudflare"
+[http.services.prowlarr.loadBalancer]
+[[http.services.prowlarr.loadBalancer.servers]]
+url = "http://transmission-openvpn:9696"
+
+[http.routers.sonarr]
+service = "sonarr"
+rule = "Host(`sonarr.internal.sawyer.services`)"
+[http.routers.sonarr.tls]
+certResolver = "cloudflare"
+[http.services.sonarr.loadBalancer]
+[[http.services.sonarr.loadBalancer.servers]]
+url = "http://transmission-openvpn:8989"
+
+[http.routers.readarr]
+service = "readarr"
+rule = "Host(`readarr.internal.sawyer.services`)"
+[http.routers.readarr.tls]
+certResolver = "cloudflare"
+[http.services.readarr.loadBalancer]
+[[http.services.readarr.loadBalancer.servers]]
+url = "http://transmission-openvpn:8989"
+
+[http.routers.lidarr]
+service = "lidarr"
+rule = "Host(`lidarr.internal.sawyer.services`)"
+[http.routers.lidarr.tls]
+certResolver = "cloudflare"
+[http.services.lidarr.loadBalancer]
+[[http.services.lidarr.loadBalancer.servers]]
+url = "http://transmission-openvpn:8686"
+
+[http.routers.radarr]
+service = "radarr"
+rule = "Host(`radarr.internal.sawyer.services`)"
+[http.routers.radarr.tls]
+certResolver = "cloudflare"
+[http.services.radarr.loadBalancer]
+[[http.services.radarr.loadBalancer.servers]]
+url = "http://transmission-openvpn:7878"
+
 [http.routers.yt-dlp]
 service = "yt-dlp"
 rule = "Host(`yt-dlp.internal.sawyer.services`)"
