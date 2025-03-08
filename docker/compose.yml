@@ -166,11 +166,95 @@ services:
     cap_add:
       - NET_ADMIN
       - MKNOD
-    ports:
+    expose:
+      - 9091 # transmission
       # any services proxied through this container need to declare ports here
-      - 9091:9091 # transmission
+      - 9696 # prowlarr
+      - 8989 # sonarr
+      - 8787 # readarr
+      - 8686 # lidarr
+      - 7878 # radarr
     devices:
       - /dev/net/tun
+
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    user: 1000:1000 
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Denver
+    volumes:
+      - /mnt/homelab/prowlarr:/config:rw
+    network_mode: "service:transmission-openvpn"
+    depends_on:
+      - transmission-openvpn 
+    restart: always
+
+  lidarr:
+    image: lscr.io/linuxserver/lidarr:latest
+    container_name: lidarr
+    user: 1000:1000 
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Denver
+    volumes:
+      - /mnt/homelab/lidarr:/config:rw
+      - /mnt/media:/data:rw
+    network_mode: "service:transmission-openvpn"
+    depends_on:
+      - transmission-openvpn 
+    restart: always
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    user: 1000:1000 
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Denver
+    volumes:
+      - /mnt/homelab/sonarr:/config:rw
+      - /mnt/media:/data:rw
+    network_mode: "service:transmission-openvpn"
+    depends_on:
+      - transmission-openvpn 
+    restart: always
+
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    user: 1000:1000 
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Denver
+    volumes:
+      - /mnt/homelab/radarr:/config:rw
+      - /mnt/media:/data:rw
+    network_mode: "service:transmission-openvpn"
+    depends_on:
+      - transmission-openvpn 
+    restart: always
+
+  readarr:
+    image: lscr.io/linuxserver/readarr:develop
+    container_name: readarr
+    user: 1000:1000 
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Denver
+    volumes:
+      - /mnt/homelab/readarr:/config:rw
+      - /mnt/media:/data:rw
+    network_mode: "service:transmission-openvpn"
+    depends_on:
+      - transmission-openvpn 
+    restart: always
 
   yt-dlp-webui:
     image: marcobaobao/yt-dlp-webui
