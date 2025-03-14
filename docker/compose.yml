@@ -127,25 +127,6 @@ services:
               capabilities: [gpu]
               count: all
 
-  navidrome:
-    image: deluan/navidrome:latest
-    container_name: navidrome
-    user: 1000:1000 
-    expose:
-      - 4533
-    networks:
-      - web
-    restart: always
-    environment:
-      ND_SCANSCHEDULE: 1h
-      ND_LOGLEVEL: info  
-      ND_SESSIONTIMEOUT: 24h
-      ND_BASEURL: ""
-    volumes:
-      - "/mnt/homelab/navidrome:/data"
-      - "/mnt/media/yt-dlp:/music:ro"
-
-
   transmission-openvpn:
     image: haugene/transmission-openvpn
     container_name: transmission
