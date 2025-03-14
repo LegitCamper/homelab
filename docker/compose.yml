@@ -189,6 +189,11 @@ services:
     depends_on:
       - transmission-openvpn 
     restart: always
+    healthcheck: 
+      test: curl -f http://localhost:9091 || exit 1
+      interval: 5m00s
+      timeout: 10s
+      retries: 2
 
   lidarr:
     image: lscr.io/linuxserver/lidarr:latest
@@ -205,6 +210,11 @@ services:
     depends_on:
       - transmission-openvpn 
     restart: always
+    healthcheck: 
+      test: curl -f http://localhost:9091 || exit 1
+      interval: 5m00s
+      timeout: 10s
+      retries: 2
 
   sonarr:
     image: lscr.io/linuxserver/sonarr:latest
@@ -221,6 +231,11 @@ services:
     depends_on:
       - transmission-openvpn 
     restart: always
+    healthcheck: 
+      test: curl -f http://localhost:9091 || exit 1
+      interval: 5m00s
+      timeout: 10s
+      retries: 2
 
   radarr:
     image: lscr.io/linuxserver/radarr:latest
@@ -237,6 +252,11 @@ services:
     depends_on:
       - transmission-openvpn 
     restart: always
+    healthcheck: 
+      test: curl -f http://localhost:9091 || exit 1
+      interval: 5m00s
+      timeout: 10s
+      retries: 2
 
   readarr:
     image: lscr.io/linuxserver/readarr:develop
@@ -253,6 +273,11 @@ services:
     depends_on:
       - transmission-openvpn 
     restart: always
+    healthcheck: 
+      test: curl -f http://localhost:9091 || exit 1
+      interval: 5m00s
+      timeout: 10s
+      retries: 2
 
   yt-dlp-webui:
     image: marcobaobao/yt-dlp-webui
