@@ -102,7 +102,8 @@ services:
     networks:
       - web
     expose:
-      - 8080
+      - 8080 # ui
+      - 11434 # api
     volumes:
       - /mnt/homelab/ollama:/root/.ollama:rw
       - ollama-open-webui:/app/backend/data:rw
