@@ -56,7 +56,7 @@ rule = "Host(`ollama-api.internal.sawyer.services`)"
 certResolver = "cloudflare"
 [http.services.ollama-api.loadBalancer]
 [[http.services.ollama-api.loadBalancer.servers]]
-url = "http://ollama-api:11434"
+url = "http://ollama:11434"
 
 [http.routers.transmission]
 service = "transmission"
