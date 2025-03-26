@@ -4,14 +4,15 @@
   remote_user: root
   
   pre_tasks: 
-    - name: update 
-      ansible.builtin.include_tasks:
-        file: tasks/apt.yml
-
+    - name: add crowdsec repo
+      ansible.builtin.shell: curl -s https://install.crowdsec.net | sudo sh
+    
     - name: Install packages
       apt:
         pkg:
           - docker.io
+          - crowdsec
+          - crowdsec-firewall-bouncer-iptables
 
     - name: Crate docker stack dir
       ansible.builtin.file:
@@ -36,6 +37,25 @@
         file: tasks/tailscale.yml
       vars:
         tailscale_hostname: gateway
+
+    - name: Get crowdsec api key
+      ansible.builtin.shell:
+        cat ~/compose-files/secrets.env | grep CROWDSEC_API_KEY | sed 's/^.*CROWDSEC_API_KEY=//'
+      register: crowdsec_token
+      ignore_errors: true
+      changed_when: false
+
+    - name: Replace crowdsec api with secret
+      ansible.builtin.replace:
+        path: ~/compose-files/files/crowdsec-firewall-bouncer.yaml
+        regexp: '"${API_KEY}"'
+        replace: '"{{ crowdsec_token.stdout }}"'
+
+    - name: Overwrite crowdsec config
+      copy:
+        src: "/home/compose-files/files/crowdsec-firewall-bouncer.yaml"
+        dest: "/etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml"
+        remote_src: yes
 
     - name: Get rathole token
       ansible.builtin.shell:

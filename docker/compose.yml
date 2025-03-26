@@ -12,8 +12,6 @@ networks:
 volumes:
   logs:
   uptimekuma:
-  crowdsec-db:
-  crowdsec-config:
   ollama-open-webui:
   jellyfin-config:
   jellyfin-cache:
@@ -310,29 +308,6 @@ services:
       - "853:853"
     expose:
       - "8080:8080"
-    depends_on:
-      - crowdsec
-      - loki
-
-  crowdsec:
-    image: crowdsecurity/crowdsec:v1.6.1-2
-    container_name: crowdsec
-    restart: always
-    networks:
-      - web
-    expose:
-      - 8080
-      - 7422 
-    environment:
-      COLLECTIONS: crowdsecurity/traefik crowdsecurity/appsec-virtual-patching crowdsecurity/appsec-generic-rules
-      CUSTOM_HOSTNAME: crowdsec
-      BOUNCER_KEY_TRAEFIK: ${TRAEFIK_BOUNCER_KEY}
-    volumes:
-      - /home/core/compose-files/docker/crowdsec/acquis.yaml:/etc/crowdsec/acquis.yaml:ro
-      - /home/core/compose-files/docker/crowdsec/profiles_captcha_only.yaml:/etc/crowdsec/profiles.yaml:ro
-      - logs:/var/log/traefik:ro
-      - crowdsec-db:/var/lib/crowdsec/data/
-      - crowdsec-config:/etc/crowdsec/
     depends_on:
       - loki
 

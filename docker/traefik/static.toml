@@ -8,10 +8,6 @@ level = "INFO"
 [accesslog]
 filepath = "/var/log/traefik/access.log"
 
-[experimental.plugins.bouncer]
-moduleName = "github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin"
-version = "v1.3.0"
-
 [api]
 insecure = true
 dashboard = true

@@ -140,7 +140,6 @@ certResolver = "cloudflare"
 url = "http://uptime-kuma:3001"
 
 [http.routers.jellyfin]
-# middlewares = ["crowdsec"]
 service = "jellyfin"
 rule = "Host(`jellyfin.sawyer.services`)"
 [http.routers.jellyfin.tls]
@@ -168,7 +167,6 @@ certResolver = "cloudflare"
 url = "http://mom-contact:8000"
 
 [http.routers.searxng]
-# middlewares = ["crowdsec"]
 service = "searxng"
 rule = "Host(`searxng.sawyer.services`) || Host(`search.sawyer.services`)"
 [http.routers.searxng.tls]
@@ -178,7 +176,6 @@ certResolver = "cloudflare"
 url = "http://searxng:8080"
 
 [http.routers.languagetool]
-# middlewares = ["crowdsec"]
 service = "languagetool"
 rule = "Host(`languagetool.sawyer.services`)"
 [http.routers.languagetool.tls]
@@ -213,30 +210,3 @@ rule = "HostSNI(`*`)"
 [tcp.services.dot.loadBalancer]
 [[tcp.services.dot.loadBalancer.servers]]
 address = "172.55.0.10:853"
-
-[http.middlewares]
-[http.middlewares.crowdsec.plugin.bouncer]
-crowdsecAppsecEnabled = false
-crowdsecAppsecHost = "crowdsec:7422"
-crowdsecAppsecPath = "/"
-crowdsecAppsecFailureBlock = true
-crowdsecAppsecUnreachableBlock = true
-crowdsecAppsecBodyLimit = 10485760
-crowdseclapikey = "BOUNCER_KEY_TRAEFIK"
-enabled = true
-logLevel = "INFO"
-updateIntervalSeconds = 60
-updateMaxFailure = 0
-defaultDecisionSeconds = 60
-httpTimeoutSeconds = 10
-crowdsecMode = "live"
-crowdsecLapiScheme = "http"
-crowdsecLapiHost = "crowdsec:8080"
-crowdsecLapiPath = "/"
-crowdsecLapiTLSInsecureVerify = false
-redisCacheEnabled = false
-captchaGracePeriodSeconds = 1800
-captchaHTMLFilePath = "/captcha.html"
-captchaProvider = "turnstile"
-captchaSiteKey = "TURNSTILE_SITE_KEY"
-captchaSecretKey = "TURNSTILE_SECRET_KEY"
