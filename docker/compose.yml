@@ -18,65 +18,6 @@ volumes:
   adguard-work:
 
 services:
-  komodo-core:
-    image: ghcr.io/mbecker20/komodo:latest
-    container_name: komodo-core
-    restart: always
-    user: "1000:1000"
-    depends_on:
-      - komodo-mongo
-      - komodo-periphery
-    networks:
-      - internal
-      - web
-    expose:
-      - 9120
-    environment: 
-      KOMODO_HOST: ${KOMODO_HOST}
-      KOMODO_TITLE: Komodo 
-      KOMODO_ENSURE_SERVER: http://komodo-periphery:8120 # Creates the "default" server.
-      KOMODO_MONGO_ADDRESS: komodo-mongo:27017
-      KOMODO_MONGO_USERNAME: ${KOMODO_DB_USERNAME}
-      KOMODO_MONGO_PASSWORD: ${KOMODO_DB_PASSWORD}
-      KOMODO_LOCAL_AUTH: false 
-      KOMODO_PASSKEY: ${KOMODO_PASSKEY}
-      KOMODO_WEBHOOK_SECRET: ${KOMODO_WEBHOOK_SECRET}
-      KOMODO_JWT_SECRET: ${KOMODO_JWT_SECRET}
-      KOMODO_GITHUB_OAUTH_ENABLED: true       
-      KOMODO_GITHUB_OAUTH_ID: ${KOMODO_GITHUB_OAUTH_ID}
-      KOMODO_GITHUB_OAUTH_SECRET: ${KOMODO_GITHUB_OAUTH_SECRET}
-
-  komodo-periphery:
-    image: ghcr.io/mbecker20/periphery:latest
-    container_name: komodo-periphery
-    restart: always
-    user: "1000:1000"
-    expose:
-      - 8120
-    networks:
-      - internal
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /mnt/homelab/komodo/repos:/etc/komodo/repos:rw 
-      - /mnt/homelab/komodo/stacks:/etc/komodo/stacks:rw 
-
-  komodo-mongo:
-    image: mongo
-    container_name: komodo-mongo
-    command: --quiet # suppress mongo logs a bit
-    restart: always
-    user: "1000:1000"
-    networks:
-      - internal
-    expose:
-      - 27017
-    volumes:
-      - /mnt/homelab/komodo/data:/data/db:rw
-      - /mnt/homelab/komodo/config:/data/configdb:rw
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${KOMODO_DB_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${KOMODO_DB_PASSWORD}
-
   ollama:
     image: ghcr.io/open-webui/open-webui:ollama
     container_name: ollama
@@ -261,6 +202,46 @@ services:
       timeout: 10s
       retries: 2
 
+  calibre:
+    image: lscr.io/linuxserver/calibre:latest
+    container_name: calibre
+    security_opt:
+      - seccomp:unconfined #optional
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Denver
+    volumes:
+      - /mnt/homelab/calibre:/config:rw
+      - /mnt/media/books:/books:rw
+    networks:
+      - web
+    expose:
+      - 8080 # Desktop Gui
+      - 8081 # Webserver Gui
+    restart: always
+
+  calibre-web:
+    image: lscr.io/linuxserver/calibre-web:latest
+    container_name: calibre-web
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Denver
+      #optional & x86-64 only Adds the ability to perform ebook conversion
+      - DOCKER_MODS=linuxserver/mods:universal-calibre 
+    volumes:
+      - /mnt/homelab/calibre-web:/config:rw
+      - /mnt/homelab/calibre:/calibre:rw
+      - /mnt/media/books:/books:rw
+    networks:
+      - web
+    expose:
+      - 8083
+    restart: always
+    depends_on: 
+      - calibre
+
   yt-dlp-webui:
     image: marcobaobao/yt-dlp-webui
     container_name: yt-dlp-webui
@@ -397,7 +378,7 @@ services:
     restart: always
 
   watchtower:
-    image: containrrr/watchtower
+    image: ghcr.io/beatkind/watchtower:latest-dev
     container_name: watchtower
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:rw
