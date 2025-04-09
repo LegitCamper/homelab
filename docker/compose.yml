@@ -62,6 +62,7 @@ services:
     deploy:
       resources:
         reservations:
+          memory: 20G
           devices:
             - driver: nvidia
               capabilities: [gpu]
@@ -103,7 +104,7 @@ services:
           memory: 5G
 
   prowlarr:
-    image: lscr.io/linuxserver/prowlarr:latest
+    image: lscr.io/linuxserver/prowlarr
     container_name: prowlarr
     user: 1000:1000 
     environment:
@@ -123,7 +124,7 @@ services:
       retries: 2
 
   lidarr:
-    image: lscr.io/linuxserver/lidarr:latest
+    image: lscr.io/linuxserver/lidarr
     container_name: lidarr
     user: 1000:1000 
     environment:
@@ -144,7 +145,7 @@ services:
       retries: 2
 
   sonarr:
-    image: lscr.io/linuxserver/sonarr:latest
+    image: lscr.io/linuxserver/sonarr
     container_name: sonarr
     user: 1000:1000 
     environment:
@@ -165,7 +166,7 @@ services:
       retries: 2
 
   radarr:
-    image: lscr.io/linuxserver/radarr:latest
+    image: lscr.io/linuxserver/radarr
     container_name: radarr
     user: 1000:1000 
     environment:
@@ -207,7 +208,7 @@ services:
       retries: 2
 
   calibre:
-    image: lscr.io/linuxserver/calibre:latest
+    image: lscr.io/linuxserver/calibre
     container_name: calibre
     security_opt:
       - seccomp:unconfined #optional
@@ -226,7 +227,7 @@ services:
     restart: always
 
   calibre-web:
-    image: lscr.io/linuxserver/calibre-web:latest
+    image: lscr.io/linuxserver/calibre-web
     container_name: calibre-web
     environment:
       - PUID=1000
@@ -455,7 +456,7 @@ services:
       - node_exporter
 
   node_exporter:
-    image: quay.io/prometheus/node-exporter:latest
+    image: quay.io/prometheus/node-exporter
     container_name: node_exporter
     command:
       - --path.rootfs=/host -–collector.systemd -–collector.processes
@@ -468,7 +469,7 @@ services:
       - /:/host:ro,rslave
 
   dcgm-exporter:
-    image: nvcr.io/nvidia/k8s/dcgm-exporter:latest
+    image: nvcr.io/nvidia/k8s/dcgm-exporter
     container_name: dcgm-exporter
     networks:
       - internal
@@ -486,7 +487,7 @@ services:
               count: all
 
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:latest
+    image: gcr.io/cadvisor/cadvisor
     container_name: cadvisor
     privileged: true
     restart: always
@@ -504,7 +505,7 @@ services:
       - /dev/kmsg:/dev/kmsg
 
   portfolio:
-    image: ghcr.io/legitcamper/portfolio-site:latest
+    image: ghcr.io/legitcamper/portfolio-site
     container_name: portfolio
     restart: always
     networks:
@@ -513,7 +514,7 @@ services:
         - 8000
 
   mom-contact:
-    image: ghcr.io/legitcamper/mom-contact:latest
+    image: ghcr.io/legitcamper/mom-contact
     container_name: mom-contact
     restart: always
     networks:
