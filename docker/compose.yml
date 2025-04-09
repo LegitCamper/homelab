@@ -97,6 +97,10 @@ services:
       - 7878 # radarr
     devices:
       - /dev/net/tun
+    deploy:
+      resources:
+        limits:
+          memory: 5G
 
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:latest
