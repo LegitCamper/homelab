@@ -139,6 +139,15 @@ certResolver = "cloudflare"
 [[http.services.calibre.loadBalancer.servers]]
 url = "http://calibre:8080"
 
+[http.routers.calibre-server]
+service = "calibre-server"
+rule = "Host(`calibre.sawyer.services`)"
+[http.routers.calibre-server.tls]
+certResolver = "cloudflare"
+[http.services.calibre-server.loadBalancer]
+[[http.services.calibre-server.loadBalancer.servers]]
+url = "http://calibre:8081"
+
 [http.routers.calibre-web]
 service = "calibre-web"
 rule = "Host(`calibre-web.sawyer.services`)"
