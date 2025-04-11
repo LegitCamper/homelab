@@ -1,3 +1,5 @@
+version: "3.4"
+
 networks:
   web:
     external: true
@@ -16,12 +18,15 @@ volumes:
   jellyfin-config:
   jellyfin-cache:
   adguard-work:
+  tdarr_cache:
 
 services:
   ollama:
     image: ghcr.io/open-webui/open-webui:ollama
     container_name: ollama
     restart: always
+    environment:
+      - TZ=${TZ}
     networks:
       - web
     expose:
@@ -39,6 +44,45 @@ services:
             - driver: nvidia
               capabilities: [gpu]
               count: all
+  tdarr:
+    container_name: tdarr
+    image: ghcr.io/haveagitgat/tdarr:latest
+    restart: always
+    networks:
+      - web
+    expose:
+      - 8265 # webUI port
+      - 8266 # server port
+    environment:
+      - TZ=${TZ}
+      - PUID=1000
+      - PGID=1000
+      - UMASK_SET=002
+      - serverIP=0.0.0.0
+      - serverPort=8266
+      - webUIPort=8265
+      - internalNode=true
+      - inContainer=true
+      - ffmpegVersion=7
+      - nodeName=InternalNode
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - NVIDIA_VISIBLE_DEVICES=all
+    volumes:
+      - /mnt/homelab/tdarr/server:/app/server:rw
+      - /mnt/homelab/tdarr/configs:/app/configs:rw
+      - /mnt/homelab/tdarr/logs:/app/logs:rw
+      - /mnt/media/movies:/media/movies:rw
+      - /mnt/media/shows:/media/shows:rw
+      - tdarr_cache:/temp:rw
+    security_opt:
+      - label=type:nvidia_container_t
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            capabilities: [gpu]
+            count: all          
 
   jellyfin:
     image: jellyfin/jellyfin
@@ -110,7 +154,7 @@ services:
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=America/Denver
+      - TZ=${TZ}
     volumes:
       - /mnt/homelab/prowlarr:/config:rw
     network_mode: "service:transmission-openvpn"
@@ -130,7 +174,7 @@ services:
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=America/Denver
+      - TZ=${TZ}
     volumes:
       - /mnt/homelab/lidarr:/config:rw
       - /mnt/media:/data:rw
@@ -151,7 +195,7 @@ services:
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=America/Denver
+      - TZ=${TZ}
     volumes:
       - /mnt/homelab/sonarr:/config:rw
       - /mnt/media:/data:rw
@@ -172,7 +216,7 @@ services:
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=America/Denver
+      - TZ=${TZ}
     volumes:
       - /mnt/homelab/radarr:/config:rw
       - /mnt/media:/data:rw
@@ -193,7 +237,7 @@ services:
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=America/Denver
+      - TZ=${TZ}
     volumes:
       - /mnt/homelab/readarr:/config:rw
       - /mnt/media:/data:rw
@@ -215,7 +259,7 @@ services:
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=America/Denver
+      - TZ=${TZ}
     volumes:
       - /mnt/homelab/calibre:/config:rw
       - /mnt/media/books:/books:rw
@@ -232,7 +276,7 @@ services:
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=America/Denver
+      - TZ=${TZ}
       #optional & x86-64 only Adds the ability to perform ebook conversion
       - DOCKER_MODS=linuxserver/mods:universal-calibre 
     volumes:
@@ -250,6 +294,8 @@ services:
   yt-dlp-webui:
     image: marcobaobao/yt-dlp-webui
     container_name: yt-dlp-webui
+    environment:
+      - TZ=${TZ}
     networks:
       - web
     expose:
@@ -265,6 +311,8 @@ services:
     container_name: rathole
     restart: always
     network_mode: host
+    environment:
+      - TZ=${TZ}
     volumes:
       - /home/core/compose-files/docker/rathole/rathole.toml:/app/config.toml:ro
     command: --client /app/config.toml
@@ -301,6 +349,8 @@ services:
     image: adguard/adguardhome
     container_name: adguardhome
     restart: always
+    environment:
+      - TZ=${TZ}
     # user: "1000:1000"
     networks:
       dns: 
@@ -321,6 +371,7 @@ services:
     restart: always
     user: "1000:1000"
     environment:
+      - TZ=${TZ}
       - CLOUDFLARE_EMAIL=${CF_API_EMAIL}
       - CLOUDFLARE_API_KEY=${CF_API_KEY}
     command:
@@ -337,6 +388,7 @@ services:
     restart: always
     user: "1000:1000"
     environment:
+      - TZ=${TZ}
       - SEARXNG_SECRET=${SEARXNG_SECRET}
     networks:
       - web
@@ -348,6 +400,8 @@ services:
   smokeping:
     image: lscr.io/linuxserver/smokeping
     container_name: smokeping
+    environment:
+      - TZ=${TZ}
     restart: always
     networks:
       - web
@@ -364,6 +418,7 @@ services:
     expose:
       - 8010
     environment:
+      TZ: ${TZ}
       download_ngrams_for_langs: en
       langtool_languageModel: /ngrams
       langtool_fasttextModel: /fasttext/lid.176.bin
@@ -371,23 +426,13 @@ services:
       - /mnt/homelab/languagetool/ngrams:/ngrams:rw
       - /mnt/homelab/languagetool/fasttext:/fasttext:rw
 
-  # configures a gh action runner to redeploy this file
-  homelab-github-runner:
-    image: myoung34/github-runner:debian-bookworm
-    container_name: homelab-github-runner  
-    network_mode: host # allows containers to use tailscale dns
-    environment:
-      ORG_NAME: LegitCamper
-      REPO_URL: https://github.com/LegitCamper/homelab
-      ACCESS_TOKEN: ${SELF_HOSTED_RUNNER}
-    restart: always
-
   watchtower:
     image: ghcr.io/beatkind/watchtower:latest-dev
     container_name: watchtower
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:rw
     environment:
+      TZ: ${TZ}
       WATCHTOWER_CLEANUP: true
       WATCHTOWER_REVIVE_STOPPED: true
       WATCHTOWER_POLL_INTERVAL: 604800 # every 7 days
@@ -396,6 +441,8 @@ services:
   loki:
     image: grafana/loki:3.3.2
     container_name: loki
+    environment:
+      TZ: ${TZ}
     volumes:
       - /home/core/compose-files/docker/loki/:/mnt/config:ro
     command: -config.file=/mnt/config/config.yml
@@ -408,6 +455,8 @@ services:
   promtail:
     container_name: promtail
     image: grafana/promtail:3.3.2
+    environment:
+      TZ: ${TZ}
     volumes:
       - /home/core/compose-files/docker/promtail:/mnt/config:ro
       - logs:/var/log:ro
@@ -424,6 +473,8 @@ services:
     container_name: grafana
     image: grafana/grafana-enterprise 
     user: "1000:1000"
+    environment:
+      TZ: ${TZ}
     expose:
       - 3000
     networks:
@@ -440,6 +491,8 @@ services:
     container_name: prometheus
     image: prom/prometheus
     user: "1000:1000"
+    environment:
+      TZ: ${TZ}
     networks:
       - internal
     expose:
@@ -458,6 +511,8 @@ services:
   node_exporter:
     image: quay.io/prometheus/node-exporter
     container_name: node_exporter
+    environment:
+      TZ: ${TZ}
     command:
       - --path.rootfs=/host -–collector.systemd -–collector.processes
     networks:
@@ -471,6 +526,8 @@ services:
   dcgm-exporter:
     image: nvcr.io/nvidia/k8s/dcgm-exporter
     container_name: dcgm-exporter
+    environment:
+      TZ: ${TZ}
     networks:
       - internal
     expose:
@@ -491,6 +548,8 @@ services:
     container_name: cadvisor
     privileged: true
     restart: always
+    environment:
+      TZ: ${TZ}
     expose:
       - 8080
     networks:

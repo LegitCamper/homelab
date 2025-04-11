@@ -40,6 +40,15 @@ certResolver = "cloudflare"
 [[http.services.ollama-api.loadBalancer.servers]]
 url = "http://ollama:11434"
 
+[http.routers.tdarr]
+service = "tdarr"
+rule = "Host(`tdarr.internal.sawyer.services`)"
+[http.routers.tdarr.tls]
+certResolver = "cloudflare"
+[http.services.tdarr.loadBalancer]
+[[http.services.tdarr.loadBalancer.servers]]
+url = "http://tdarr:8265"
+
 [http.routers.transmission]
 service = "transmission"
 rule = "Host(`transmission.internal.sawyer.services`) || Host(`torrent.internal.sawyer.services`)"
