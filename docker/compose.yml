@@ -96,7 +96,7 @@ services:
     volumes:
       - jellyfin-config:/config:rw
       - jellyfin-cache:/cache:rw
-      - /mnt/media:/data/media/:ro
+      - /mnt/media:/data/media/:rw
     environment:
       - JELLYFIN_PublishedServerUrl=https://jellyfin.${DOMAIN}
       - NVIDIA_DRIVER_CAPABILITIES=all
