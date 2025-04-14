@@ -112,6 +112,20 @@ services:
               capabilities: [gpu]
               count: all
 
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr
+    container_name: flaresolverr
+    environment:
+      - LOG_LEVEL=info
+      - LOG_HTML=false
+      - CAPTCHA_SOLVER=none
+      - TZ=${TZ}
+    networks:
+      - web
+    expose:
+      - 8191
+    restart: always
+
   transmission-openvpn:
     image: haugene/transmission-openvpn
     container_name: transmission
@@ -135,17 +149,33 @@ services:
     expose:
       - 9091 # transmission
       # any services proxied through this container need to declare ports here
-      - 9696 # prowlarr
-      - 8989 # sonarr
-      - 8787 # readarr
-      - 8686 # lidarr
-      - 7878 # radarr
     devices:
       - /dev/net/tun
     deploy:
       resources:
         limits:
           memory: 5G
+
+  jackett:
+    image: lscr.io/linuxserver/jackett
+    container_name: jackett
+    user: 1000:1000 
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TZ}
+    volumes:
+      - /mnt/homelab/jackett:/config
+      - /mnt/media/completed:/downloads
+    networks:
+      - web
+    expose:
+      - 9117
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1
+    depends_on:
+      - transmission-openvpn 
+    restart: always
 
   prowlarr:
     image: lscr.io/linuxserver/prowlarr
@@ -157,7 +187,10 @@ services:
       - TZ=${TZ}
     volumes:
       - /mnt/homelab/prowlarr:/config:rw
-    network_mode: "service:transmission-openvpn"
+    networks:
+      - web
+    expose:
+      - 9696
     depends_on:
       - transmission-openvpn 
     restart: always
@@ -178,7 +211,10 @@ services:
     volumes:
       - /mnt/homelab/lidarr:/config:rw
       - /mnt/media:/data:rw
-    network_mode: "service:transmission-openvpn"
+    networks:
+      - web
+    expose:
+      - 8686
     depends_on:
       - transmission-openvpn 
     restart: always
@@ -199,7 +235,10 @@ services:
     volumes:
       - /mnt/homelab/sonarr:/config:rw
       - /mnt/media:/data:rw
-    network_mode: "service:transmission-openvpn"
+    networks:
+      - web
+    expose:
+      - 8989
     depends_on:
       - transmission-openvpn 
     restart: always
@@ -219,8 +258,11 @@ services:
       - TZ=${TZ}
     volumes:
       - /mnt/homelab/radarr:/config:rw
-      - /mnt/media:/data:rw
-    network_mode: "service:transmission-openvpn"
+      - /mnt/media:/data:rw   
+    networks:
+      - web
+    expose:
+      - 7878
     depends_on:
       - transmission-openvpn 
     restart: always
@@ -241,7 +283,10 @@ services:
     volumes:
       - /mnt/homelab/readarr:/config:rw
       - /mnt/media:/data:rw
-    network_mode: "service:transmission-openvpn"
+    networks:
+      - web
+    expose:
+      - 8787
     depends_on:
       - transmission-openvpn 
     restart: always
