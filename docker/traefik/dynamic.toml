@@ -193,6 +193,15 @@ certResolver = "cloudflare"
 [[http.services.mom-contact.loadBalancer.servers]]
 url = "http://mom-contact:8000"
 
+[http.routers.unduck]
+service = "unduck"
+rule = "Host(`unduck.sawyer.services`)"
+[http.routers.unduck.tls]
+certResolver = "cloudflare"
+[http.services.unduck.loadBalancer]
+[[http.services.unduck.loadBalancer.servers]]
+url = "http://unduck:3000"
+
 [http.routers.searxng]
 service = "searxng"
 rule = "Host(`searxng.sawyer.services`) || Host(`search.sawyer.services`)"

@@ -427,6 +427,15 @@ services:
     volumes:
       - /mnt/homelab/letsencrypt:/etc/letsencrypt:rw
 
+  unduck:
+    image: ghcr.io/legitcamper/unduck
+    container_name: unduck
+    restart: always
+    networks:
+      - web
+    expose:
+      - 3000
+
   searxng:
     image: searxng/searxng
     container_name: searxng
