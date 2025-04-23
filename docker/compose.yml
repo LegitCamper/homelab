@@ -113,17 +113,18 @@ services:
               count: all
 
   flaresolverr:
-    image: ghcr.io/flaresolverr/flaresolverr
+    # use fork as flaresolverr is not working
+    image: ghcr.io/yoori/flare-bypasser
     container_name: flaresolverr
-    environment:
-      - LOG_LEVEL=info
-      - LOG_HTML=false
-      - CAPTCHA_SOLVER=none
-      - TZ=${TZ}
     networks:
-      - web
+      - internal
+    environment:
+      UNUSED: "false"
+      DEBUG: "false"
+      VERBOSE: "true"
+      SAVE_CHALLENGE_SCREENSHOTS: "true"
     expose:
-      - 8191
+      - 8080
     restart: always
 
   transmission-openvpn:
@@ -189,6 +190,7 @@ services:
       - /mnt/homelab/prowlarr:/config:rw
     networks:
       - web
+      - internal
     expose:
       - 9696
     depends_on:
@@ -370,6 +372,7 @@ services:
       - CF_API_KEY=${CF_API_KEY}
       - CF_API_EMAIL=${CF_API_EMAIL}
       - DNS=${DNS}
+      - LEGO_DISABLE_CNAME_SUPPORT=true
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -378,6 +381,13 @@ services:
       - /home/core/compose-files/docker/traefik/dynamic.toml:/etc/traefik/dynamic.toml:ro
       - /home/core/compose-files/docker/traefik/captcha.html:/captcha.html:ro
       - logs:/var/log/traefik
+    extra_hosts:
+      # - "homeserver.dunker-arctic.ts.net:24.199.78.82"
+      - "ollama.internal.sawyer.services:24.199.78.82"
+      - "tdarr.internal.sawyer.services:24.199.78.82"
+      - "bevbot.internal.sawyer.services:24.199.78.82"
+      - "jackett.internal.sawyer.services:24.199.78.82"
+      - "calibre.internal.sawyer.services:24.199.78.82"
     networks:
       - web
       - dns
