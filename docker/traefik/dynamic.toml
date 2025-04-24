@@ -112,14 +112,14 @@ certResolver = "cloudflare"
 [[http.services.radarr.loadBalancer.servers]]
 url = "http://radarr:7878"
 
-[http.routers.yt-dlp]
-service = "yt-dlp"
-rule = "Host(`yt-dlp.internal.sawyer.services`)"
-[http.routers.yt-dlp.tls]
+[http.routers.lidatube]
+service = "lidatube"
+rule = "Host(`lidatube.internal.sawyer.services`)"
+[http.routers.lidatube.tls]
 certResolver = "cloudflare"
-[http.services.yt-dlp.loadBalancer]
-[[http.services.yt-dlp.loadBalancer.servers]]
-url = "http://yt-dlp-webui:3033"
+[http.services.lidatube.loadBalancer]
+[[http.services.lidatube.loadBalancer.servers]]
+url = "http://lidatube:5000"
 
 [http.routers.smokeping]
 service = "smokeping"

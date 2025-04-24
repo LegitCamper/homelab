@@ -338,19 +338,20 @@ services:
     depends_on: 
       - calibre
 
-  yt-dlp-webui:
-    image: marcobaobao/yt-dlp-webui
-    container_name: yt-dlp-webui
+  lidatube:
+    image: thewicklowwolf/lidatube:latest
+    container_name: lidatube
     environment:
+      - PUID=1000
+      - PGID=1000
       - TZ=${TZ}
+    volumes:
+      - /mnt/homelab/lidatube:/lidatube/config
+      - /mnt/media/lidatube:/lidatube/downloads
     networks:
       - web
     expose:
-      - 3033
-    volumes:
-      - /mnt/media/yt-dlp:/downloads:rw
-    healthcheck:
-      test: curl -f http://localhost:3033 || exit 1
+      - 5000
     restart: always
 
   rathole:
@@ -381,13 +382,6 @@ services:
       - /home/core/compose-files/docker/traefik/dynamic.toml:/etc/traefik/dynamic.toml:ro
       - /home/core/compose-files/docker/traefik/captcha.html:/captcha.html:ro
       - logs:/var/log/traefik
-    extra_hosts:
-      # - "homeserver.dunker-arctic.ts.net:24.199.78.82"
-      - "ollama.internal.sawyer.services:24.199.78.82"
-      - "tdarr.internal.sawyer.services:24.199.78.82"
-      - "bevbot.internal.sawyer.services:24.199.78.82"
-      - "jackett.internal.sawyer.services:24.199.78.82"
-      - "calibre.internal.sawyer.services:24.199.78.82"
     networks:
       - web
       - dns
