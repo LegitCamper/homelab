@@ -155,7 +155,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 5G
+          memory: 25G
 
   jackett:
     image: lscr.io/linuxserver/jackett
@@ -345,6 +345,7 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=${TZ}
+      - thread_limit=8
     volumes:
       - /mnt/homelab/lidatube:/lidatube/config
       - /mnt/media/lidatube:/lidatube/downloads
@@ -353,6 +354,10 @@ services:
     expose:
       - 5000
     restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 15G
 
   rathole:
     image: rapiz1/rathole
