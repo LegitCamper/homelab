@@ -274,6 +274,19 @@ services:
       timeout: 10s
       retries: 2
 
+  huntarr:
+    image: huntarr/huntarr:latest
+    container_name: huntarr
+    restart: always
+    networks:
+      - web
+    expose:
+      - 9705
+    volumes:
+      - /mnt/homelab/huntarr:/config:rw
+    environment:
+      - TZ=${TZ}
+
   readarr:
     image: lscr.io/linuxserver/readarr:develop
     container_name: readarr

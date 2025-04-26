@@ -112,6 +112,15 @@ certResolver = "cloudflare"
 [[http.services.radarr.loadBalancer.servers]]
 url = "http://radarr:7878"
 
+[http.routers.huntarr]
+service = "huntarr"
+rule = "Host(`huntarr.internal.sawyer.services`)"
+[http.routers.huntarr.tls]
+certResolver = "cloudflare"
+[http.services.huntarr.loadBalancer]
+[[http.services.huntarr.loadBalancer.servers]]
+url = "http://huntarr:9705"
+
 [http.routers.lidatube]
 service = "lidatube"
 rule = "Host(`lidatube.internal.sawyer.services`)"
