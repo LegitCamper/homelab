@@ -56,7 +56,7 @@ rule = "Host(`transmission.internal.sawyer.services`) || Host(`torrent.internal.
 certResolver = "cloudflare"
 [http.services.transmission.loadBalancer]
 [[http.services.transmission.loadBalancer.servers]]
-url = "http://transmission-openvpn:9091"
+url = "http://gluetun:9091"
 
 [http.routers.jackett]
 service = "jackett"
