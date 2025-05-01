@@ -154,13 +154,13 @@ services:
       - 9091 # transmission
 
   transmission:
-    image: lscr.io/linuxserver/transmission:latest
+    image: lscr.io/linuxserver/transmission
     container_name: transmission
     restart: always
     network_mode: "service:gluetun"
     volumes:
       - /mnt/homelab/transmission:/config:rw
-      - /mnt/media:/:rw
+      - /mnt/media:/data:rw
     environment:
       - PUID=1000
       - PGID=1000
@@ -170,14 +170,18 @@ services:
         limits:
           memory: 25G
 
-  # transmission-exporter:
-  #   image: metalmatze/transmission-exporter
-  #   container_name: transmission-exporter
-  #   restart: always
-  #   expose:
-  #     - 19091
-  #   environment:
-  #     TRANSMISSION_ADDR: http://gluetun:9091
+  transmission-exporter:
+    image: metalmatze/transmission-exporter
+    container_name: transmission-exporter
+    restart: always
+    networks:
+      - internal
+    expose:
+      - 19091
+    environment:
+      TRANSMISSION_ADDR: http://gluetun:9091
+    depends_on:
+      - transmission
 
   jackett:
     image: lscr.io/linuxserver/jackett
@@ -297,7 +301,7 @@ services:
       retries: 2
 
   huntarr:
-    image: huntarr/huntarr:latest
+    image: huntarr/huntarr
     container_name: huntarr
     restart: always
     networks:
@@ -373,26 +377,26 @@ services:
     depends_on: 
       - calibre
 
-  lidatube:
-    image: thewicklowwolf/lidatube:latest
-    container_name: lidatube
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=${TZ}
-      - thread_limit=8
-    volumes:
-      - /mnt/homelab/lidatube:/lidatube/config
-      - /mnt/media/lidatube:/lidatube/downloads
-    networks:
-      - web
-    expose:
-      - 5000
-    restart: always
-    deploy:
-      resources:
-        limits:
-          memory: 15G
+  # lidatube:
+  #   image: thewicklowwolf/lidatube
+  #   container_name: lidatube
+  #   environment:
+  #     - PUID=1000
+  #     - PGID=1000
+  #     - TZ=${TZ}
+  #     - thread_limit=2
+  #   volumes:
+  #     - /mnt/homelab/lidatube:/lidatube/config
+  #     - /mnt/media/lidatube:/lidatube/downloads
+  #   networks:
+  #     - web
+  #   expose:
+  #     - 5000
+  #   restart: always
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 10G
 
   rathole:
     image: rapiz1/rathole
@@ -605,6 +609,7 @@ services:
       - host.docker.internal:host-gateway
     depends_on:
       - node_exporter
+      - transmission-exporter
 
   node_exporter:
     image: quay.io/prometheus/node-exporter

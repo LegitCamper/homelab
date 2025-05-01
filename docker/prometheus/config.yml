@@ -35,3 +35,7 @@ scrape_configs:
     - targets:
       - cadvisor:8080
 
+- job_name: transmission
+  static_configs:
+    - targets:
+      - transmission-exporter:19091
