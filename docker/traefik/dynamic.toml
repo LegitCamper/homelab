@@ -229,6 +229,15 @@ certResolver = "cloudflare"
 [[http.services.languagetool.loadBalancer.servers]]
 url = "http://languagetool:8010"
 
+[http.routers.ocean-block]
+service = "ocean-block"
+rule = "Host(`ocean-block.sawyer.services`)"
+[http.routers.ocean-block.tls]
+certResolver = "cloudflare"
+[http.services.ocean-block.loadBalancer]
+[[http.services.ocean-block.loadBalancer.servers]]
+url = "http://ocean-block:25565"
+
 [http.routers.adguard]
 service = "adguard"
 rule = "Host(`adguard.internal.sawyer.services`) || Host(`adguardhome.internal.sawyer.services`)"

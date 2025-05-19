@@ -666,6 +666,24 @@ services:
     devices:
       - /dev/kmsg:/dev/kmsg
 
+  ocean-block:
+    image: itzg/minecraft-server
+    container_name: ocean-block
+    tty: true
+    stdin_open: true
+    expose:
+      - 25565
+    networks:
+      - web
+    volumes:
+      - /mnt/homelab/ocean_block:/data
+    environment:
+      EULA: TRUE
+      CF_PAGE_URL: https://www.curseforge.com/minecraft/modpacks/ftb-oceanblock-2
+      CF_API_KEY: ${CURSE_FORGE_API_KEY}
+      ICON: https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fi.redd.it%2F8bedacqx1sy81.jpg&f=1&nofb=1&ipt=bdd675e4c8b8876f99671fbd1c41ea235878119b8063ddc18d53e489239929cf
+      ALLOW_FLIGHT: True
+
   portfolio:
     image: ghcr.io/legitcamper/portfolio-site
     container_name: portfolio
