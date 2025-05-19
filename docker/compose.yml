@@ -430,9 +430,9 @@ services:
       - web
       - dns
     ports:
-      - "80:80"
-      - "443:443"
-      - "853:853"
+      - 80:80
+      - 443:443
+      - 853:853
     expose:
       - "8080:8080"
     depends_on:
@@ -671,8 +671,8 @@ services:
     container_name: ocean-block
     tty: true
     stdin_open: true
-    expose:
-      - 25565
+    ports:
+      - 25565:25565
     networks:
       - web
     volumes:
