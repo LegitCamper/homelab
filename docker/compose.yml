@@ -683,6 +683,7 @@ services:
       CF_API_KEY: ${CURSE_FORGE_API_KEY}
       ICON: https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fi.redd.it%2F8bedacqx1sy81.jpg&f=1&nofb=1&ipt=bdd675e4c8b8876f99671fbd1c41ea235878119b8063ddc18d53e489239929cf
       ALLOW_FLIGHT: True
+      TYPE: AUTO_CURSEFORGE
 
   portfolio:
     image: ghcr.io/legitcamper/portfolio-site
