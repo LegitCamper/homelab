@@ -162,6 +162,7 @@ services:
       - /mnt/homelab/transmission:/config:rw
       - /mnt/media:/data:rw
     environment:
+      - DOCKER_MODS=ghcr.io/michsior14/docker-mods:transmission-gluetun-port-update
       - PUID=1000
       - PGID=1000
       - TZ=${TZ}
