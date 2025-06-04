@@ -1,9 +1,11 @@
 version: "3.4"
 
 networks:
+  # exposed through traefik
   web:
     external: true
-  internal: # Not exposed via traefik (dbs & severices
+  # Not exposed via traefik (dbs & severices
+  internal: 
     external: false
   # This network exists just so adugard can have a static ip for tcp routing
   dns:
@@ -311,6 +313,44 @@ services:
       - 9705
     volumes:
       - /mnt/homelab/huntarr:/config:rw
+    environment:
+      - TZ=${TZ}
+
+  speakarr:
+    image: lscr.io/linuxserver/readarr:develop
+    container_name: speakarr
+    user: 1000:1000 
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TZ}
+    volumes:
+      - /mnt/homelab/speakarr:/config:rw
+      - /mnt/media:/data:rw
+    networks:
+      - web
+    expose:
+      - 8787
+    depends_on:
+      - transmission 
+    restart: always
+    healthcheck: 
+      test: curl -f http://localhost:9091 || exit 1
+      interval: 5m00s
+      timeout: 10s
+      retries: 2
+
+  audiobookshelf:
+    image: ghcr.io/advplyr/audiobookshelf:latest
+    container_name: audiobookshelf
+    networks:
+      - web
+    expose:
+      - 80
+    volumes:
+      - /mnt/media/audio_books:/audiobooks
+      - /mnt/homelab/audiobookshelf/config:/config
+      - /mnt/homelab/audiobookshelf/metadata:/metadata
     environment:
       - TZ=${TZ}
 

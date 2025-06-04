@@ -47,6 +47,7 @@ filename = "dynamic.toml"
 debugLogGeneratedTemplate = true
 
 [certificatesResolvers]
+[certificatesResolvers.tailscale.tailscale]
 [certificatesResolvers.cloudflare]
 [certificatesResolvers.cloudflare.acme]
 email = "email"

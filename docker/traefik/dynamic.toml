@@ -1,12 +1,12 @@
 [http.routers.traefik]
-service = "api@internal"
-rule = "Host(`traefik.internal.sawyer.services`)"
+service = "api@ts"
+rule = "Host(`traefik.ts.sawyer.services`)"
 [http.routers.traefik.tls]
 certResolver = "cloudflare"
 
 [http.routers.homenas]
 service = "homenas"
-rule = "Host(`homenas.internal.sawyer.services`)"
+rule = "Host(`homenas.ts.sawyer.services`)"
 [http.routers.homenas.tls]
 certResolver = "cloudflare"
 [http.services.homenas.loadBalancer]
@@ -15,7 +15,7 @@ url = "https://homenas/"
 
 [http.routers.grafana]
 service = "grafana"
-rule = "Host(`grafana.internal.sawyer.services`)"
+rule = "Host(`grafana.ts.sawyer.services`)"
 [http.routers.grafana.tls]
 certResolver = "cloudflare"
 [http.services.grafana.loadBalancer]
@@ -24,7 +24,7 @@ url = "http://grafana:3000"
 
 [http.routers.ollama]
 service = "ollama"
-rule = "Host(`ollama.internal.sawyer.services`)"
+rule = "Host(`ollama.ts.sawyer.services`)"
 [http.routers.ollama.tls]
 certResolver = "cloudflare"
 [http.services.ollama.loadBalancer]
@@ -33,7 +33,7 @@ url = "http://ollama:8080"
 
 [http.routers.ollama-api]
 service = "ollama-api"
-rule = "Host(`ollama-api.internal.sawyer.services`)"
+rule = "Host(`ollama-api.ts.sawyer.services`)"
 [http.routers.ollama-api.tls]
 certResolver = "cloudflare"
 [http.services.ollama-api.loadBalancer]
@@ -42,7 +42,7 @@ url = "http://ollama:11434"
 
 [http.routers.tdarr]
 service = "tdarr"
-rule = "Host(`tdarr.internal.sawyer.services`)"
+rule = "Host(`tdarr.ts.sawyer.services`)"
 [http.routers.tdarr.tls]
 certResolver = "cloudflare"
 [http.services.tdarr.loadBalancer]
@@ -51,7 +51,7 @@ url = "http://tdarr:8265"
 
 [http.routers.transmission]
 service = "transmission"
-rule = "Host(`transmission.internal.sawyer.services`) || Host(`torrent.internal.sawyer.services`)"
+rule = "Host(`transmission.ts.sawyer.services`) || Host(`torrent.ts.sawyer.services`)"
 [http.routers.transmission.tls]
 certResolver = "cloudflare"
 [http.services.transmission.loadBalancer]
@@ -60,7 +60,7 @@ url = "http://gluetun:9091"
 
 [http.routers.jackett]
 service = "jackett"
-rule = "Host(`jackett.internal.sawyer.services`)"
+rule = "Host(`jackett.ts.sawyer.services`)"
 [http.routers.jackett.tls]
 certResolver = "cloudflare"
 [http.services.jackett.loadBalancer]
@@ -69,7 +69,7 @@ url = "http://jackett:9117"
 
 [http.routers.prowlarr]
 service = "prowlarr"
-rule = "Host(`prowlarr.internal.sawyer.services`)"
+rule = "Host(`prowlarr.ts.sawyer.services`)"
 [http.routers.prowlarr.tls]
 certResolver = "cloudflare"
 [http.services.prowlarr.loadBalancer]
@@ -78,16 +78,25 @@ url = "http://prowlarr:9696"
 
 [http.routers.sonarr]
 service = "sonarr"
-rule = "Host(`sonarr.internal.sawyer.services`)"
+rule = "Host(`sonarr.ts.sawyer.services`)"
 [http.routers.sonarr.tls]
 certResolver = "cloudflare"
 [http.services.sonarr.loadBalancer]
 [[http.services.sonarr.loadBalancer.servers]]
 url = "http://sonarr:8989"
 
+[http.routers.speakarr]
+service = "speakarr"
+rule = "Host(`speakarr.ts.sawyer.services`)"
+[http.routers.speakarr.tls]
+certResolver = "cloudflare"
+[http.services.speakarr.loadBalancer]
+[[http.services.speakarr.loadBalancer.servers]]
+url = "http://speakarr:8787"
+
 [http.routers.readarr]
 service = "readarr"
-rule = "Host(`readarr.internal.sawyer.services`)"
+rule = "Host(`readarr.ts.sawyer.services`)"
 [http.routers.readarr.tls]
 certResolver = "cloudflare"
 [http.services.readarr.loadBalancer]
@@ -96,7 +105,7 @@ url = "http://readarr:8787"
 
 [http.routers.lidarr]
 service = "lidarr"
-rule = "Host(`lidarr.internal.sawyer.services`)"
+rule = "Host(`lidarr.ts.sawyer.services`)"
 [http.routers.lidarr.tls]
 certResolver = "cloudflare"
 [http.services.lidarr.loadBalancer]
@@ -105,7 +114,7 @@ url = "http://lidarr:8686"
 
 [http.routers.radarr]
 service = "radarr"
-rule = "Host(`radarr.internal.sawyer.services`)"
+rule = "Host(`radarr.ts.sawyer.services`)"
 [http.routers.radarr.tls]
 certResolver = "cloudflare"
 [http.services.radarr.loadBalancer]
@@ -114,7 +123,7 @@ url = "http://radarr:7878"
 
 [http.routers.huntarr]
 service = "huntarr"
-rule = "Host(`huntarr.internal.sawyer.services`)"
+rule = "Host(`huntarr.ts.sawyer.services`)"
 [http.routers.huntarr.tls]
 certResolver = "cloudflare"
 [http.services.huntarr.loadBalancer]
@@ -123,7 +132,7 @@ url = "http://huntarr:9705"
 
 [http.routers.lidatube]
 service = "lidatube"
-rule = "Host(`lidatube.internal.sawyer.services`)"
+rule = "Host(`lidatube.ts.sawyer.services`)"
 [http.routers.lidatube.tls]
 certResolver = "cloudflare"
 [http.services.lidatube.loadBalancer]
@@ -132,7 +141,7 @@ url = "http://lidatube:5000"
 
 [http.routers.smokeping]
 service = "smokeping"
-rule = "Host(`smokeping.internal.sawyer.services`)"
+rule = "Host(`smokeping.ts.sawyer.services`)"
 [http.routers.smokeping.tls]
 certResolver = "cloudflare"
 [http.services.smokeping.loadBalancer]
@@ -141,7 +150,7 @@ url = "http://smokeping:80"
 
 [http.routers.uptime-kuma]
 service = "uptime-kuma"
-rule = "Host(`uptime-kuma.internal.sawyer.services`)"
+rule = "Host(`uptime-kuma.ts.sawyer.services`)"
 [http.routers.uptime-kuma.tls]
 certResolver = "cloudflare"
 [http.services.uptime-kuma.loadBalancer]
@@ -157,9 +166,18 @@ certResolver = "cloudflare"
 [[http.services.jellyfin.loadBalancer.servers]]
 url = "http://jellyfin:8096"
 
+[http.routers.audiobookshelf]
+service = "audiobookshelf"
+rule = "Host(`audiobookshelf.sawyer.services`)"
+[http.routers.audiobookshelf.tls]
+certResolver = "cloudflare"
+[http.services.audiobookshelf.loadBalancer]
+[[http.services.audiobookshelf.loadBalancer.servers]]
+url = "http://audiobookshelf:80"
+
 [http.routers.calibre]
 service = "calibre"
-rule = "Host(`calibre.internal.sawyer.services`)"
+rule = "Host(`calibre.ts.sawyer.services`)"
 [http.routers.calibre.tls]
 certResolver = "cloudflare"
 [http.services.calibre.loadBalancer]
@@ -231,7 +249,7 @@ url = "http://languagetool:8010"
 
 [http.routers.adguard]
 service = "adguard"
-rule = "Host(`adguard.internal.sawyer.services`) || Host(`adguardhome.internal.sawyer.services`)"
+rule = "Host(`adguard.ts.sawyer.services`) || Host(`adguardhome.ts.sawyer.services`)"
 [http.routers.adguard.tls]
 certResolver = "cloudflare"
 [http.services.adguard.loadBalancer]
