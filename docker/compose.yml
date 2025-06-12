@@ -244,6 +244,7 @@ services:
       - /mnt/media:/data:rw
     networks:
       - web
+      - internal
     expose:
       - 8686
     depends_on:
@@ -268,6 +269,7 @@ services:
       - /mnt/media:/data:rw
     networks:
       - web
+      - internal
     expose:
       - 8989
     depends_on:
@@ -292,6 +294,7 @@ services:
       - /mnt/media:/data:rw   
     networks:
       - web
+      - internal
     expose:
       - 7878
     depends_on:
@@ -316,6 +319,109 @@ services:
     environment:
       - TZ=${TZ}
 
+  cleanuperr:
+    image: ghcr.io/flmorg/cleanuperr:latest
+    container_name: cleanuperr
+    restart: always 
+    networks:
+      - internal
+    volumes:
+      - /mnt/media/completed:/downloads
+    environment:
+      - TZ=${TZ}
+      - DRY_RUN=false
+      - HTTP_MAX_RETRIES=0
+      - HTTP_TIMEOUT=100
+           
+      - SEARCH_ENABLED=true
+      - SEARCH_DELAY=30
+      
+      - TRIGGERS__QUEUECLEANER=0 0/5 * * * ?
+      - QUEUECLEANER__ENABLED=true
+      - QUEUECLEANER__RUNSEQUENTIALLY=true
+      
+      - QUEUECLEANER__IMPORT_FAILED_MAX_STRIKES=5
+      - QUEUECLEANER__IMPORT_FAILED_IGNORE_PRIVATE=false
+      - QUEUECLEANER__IMPORT_FAILED_DELETE_PRIVATE=false
+      - QUEUECLEANER__IMPORT_FAILED_IGNORE_PATTERNS__0=title mismatch
+      - QUEUECLEANER__IMPORT_FAILED_IGNORE_PATTERNS__1=manual import required
+      
+      - QUEUECLEANER__STALLED_MAX_STRIKES=5
+      - QUEUECLEANER__STALLED_RESET_STRIKES_ON_PROGRESS=true
+      - QUEUECLEANER__STALLED_IGNORE_PRIVATE=false
+      - QUEUECLEANER__STALLED_DELETE_PRIVATE=false
+      - QUEUECLEANER__DOWNLOADING_METADATA_MAX_STRIKES=5
+      
+      - QUEUECLEANER__SLOW_MAX_STRIKES=5
+      - QUEUECLEANER__SLOW_RESET_STRIKES_ON_PROGRESS=true
+      - QUEUECLEANER__SLOW_IGNORE_PRIVATE=false
+      - QUEUECLEANER__SLOW_DELETE_PRIVATE=false
+      - QUEUECLEANER__SLOW_MIN_SPEED=1MB
+      - QUEUECLEANER__SLOW_MAX_TIME=20
+      - QUEUECLEANER__SLOW_IGNORE_ABOVE_SIZE=60GB
+      
+      - TRIGGERS__CONTENTBLOCKER=0 0/5 * * * ?
+      - CONTENTBLOCKER__ENABLED=true
+      - CONTENTBLOCKER__IGNORE_PRIVATE=false
+      - CONTENTBLOCKER__DELETE_PRIVATE=false
+      
+      - TRIGGERS__DOWNLOADCLEANER=0 0 * * * ?
+      - DOWNLOADCLEANER__ENABLED=true
+      - DOWNLOADCLEANER__DELETE_PRIVATE=false
+      
+      - DOWNLOADCLEANER__CATEGORIES__0__NAME=tv-sonarr
+      - DOWNLOADCLEANER__CATEGORIES__0__MAX_RATIO=2
+      - DOWNLOADCLEANER__CATEGORIES__0__MIN_SEED_TIME=0
+      - DOWNLOADCLEANER__CATEGORIES__0__MAX_SEED_TIME=240
+      - DOWNLOADCLEANER__CATEGORIES__1__NAME=radarr
+      - DOWNLOADCLEANER__CATEGORIES__1__MAX_RATIO=2
+      - DOWNLOADCLEANER__CATEGORIES__1__MIN_SEED_TIME=0
+      - DOWNLOADCLEANER__CATEGORIES__1__MAX_SEED_TIME=240
+      - DOWNLOADCLEANER__CATEGORIES__2__NAME=lidarr
+      - DOWNLOADCLEANER__CATEGORIES__2__MAX_RATIO=2
+      - DOWNLOADCLEANER__CATEGORIES__2__MIN_SEED_TIME=0
+      - DOWNLOADCLEANER__CATEGORIES__2__MAX_SEED_TIME=240
+      - DOWNLOADCLEANER__CATEGORIES__3__NAME=readarr
+      - DOWNLOADCLEANER__CATEGORIES__3__MAX_RATIO=2
+      - DOWNLOADCLEANER__CATEGORIES__3__MIN_SEED_TIME=0
+      - DOWNLOADCLEANER__CATEGORIES__3__MAX_SEED_TIME=240
+      - DOWNLOADCLEANER__CATEGORIES__4__NAME=speakarr
+      - DOWNLOADCLEANER__CATEGORIES__4__MAX_RATIO=2
+      - DOWNLOADCLEANER__CATEGORIES__4__MIN_SEED_TIME=0
+      - DOWNLOADCLEANER__CATEGORIES__4__MAX_SEED_TIME=240
+      - DOWNLOADCLEANER__CATEGORIES__5__NAME=cleanuperr-unlinked
+      - DOWNLOADCLEANER__CATEGORIES__5__MAX_RATIO=1
+      - DOWNLOADCLEANER__CATEGORIES__5__MIN_SEED_TIME=0
+      - DOWNLOADCLEANER__CATEGORIES__5__MAX_SEED_TIME=240
+      
+      - DOWNLOADCLEANER__UNLINKED_TARGET_CATEGORY=cleanuperr-unlinked
+      - DOWNLOADCLEANER__UNLINKED_USE_TAG=false
+      - DOWNLOADCLEANER__UNLINKED_IGNORED_ROOT_DIR=/downloads
+      - DOWNLOADCLEANER__UNLINKED_CATEGORIES__0=tv-sonarr
+      - DOWNLOADCLEANER__UNLINKED_CATEGORIES__1=radarr
+      - DOWNLOADCLEANER__UNLINKED_CATEGORIES__2=lidarr
+      - DOWNLOADCLEANER__UNLINKED_CATEGORIES__3=readarr
+      - DOWNLOADCLEANER__UNLINKED_CATEGORIES__4=speakarr
+      
+      - DOWNLOAD_CLIENT=transmission
+      - TRANSMISSION__URL=http://gluetun:9091
+      
+      - SONARR__ENABLED=true
+      - SONARR__IMPORT_FAILED_MAX_STRIKES=-1
+      - SONARR__SEARCHTYPE=Episode
+      - SONARR__INSTANCES__0__URL=http://sonarr:8989
+      - SONARR__INSTANCES__0__APIKEY=${SONARR_API_KEY}
+      
+      - RADARR__ENABLED=true
+      - RADARR__IMPORT_FAILED_MAX_STRIKES=-1
+      - RADARR__INSTANCES__0__URL=http://radarr:7878
+      - RADARR__INSTANCES__0__APIKEY=${RADARR_API_KEY}
+      
+      - LIDARR__ENABLED=true
+      - LIDARR__IMPORT_FAILED_MAX_STRIKES=-1
+      - LIDARR__INSTANCES__0__URL=http://lidarr:8686
+      - LIDARR__INSTANCES__0__APIKEY=${LIDARR_API_KEY}
+
   speakarr:
     image: lscr.io/linuxserver/readarr:develop
     container_name: speakarr
@@ -329,6 +435,7 @@ services:
       - /mnt/media:/data:rw
     networks:
       - web
+      - internal
     expose:
       - 8787
     depends_on:
@@ -367,6 +474,7 @@ services:
       - /mnt/media:/data:rw
     networks:
       - web
+      - internal
     expose:
       - 8787
     depends_on:
