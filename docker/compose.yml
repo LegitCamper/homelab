@@ -232,7 +232,7 @@ services:
       retries: 2
 
   lidarr:
-    image: lscr.io/linuxserver/lidarr
+    image: blampe/lidarr
     container_name: lidarr
     user: 1000:1000 
     environment:
