@@ -16,66 +16,33 @@ networks:
 volumes:
   logs:
   uptimekuma:
-  ollama-open-webui:
   jellyfin-config:
   jellyfin-cache:
   adguard-work:
-  tdarr_cache:
+  fileflows-temp:
 
 services:
-  ollama:
-    image: ghcr.io/open-webui/open-webui:ollama
-    container_name: ollama
-    restart: always
-    environment:
-      - TZ=${TZ}
-    networks:
-      - web
-    expose:
-      - 8080 # ui
-      - 11434 # api
-    volumes:
-      - /mnt/homelab/ollama:/root/.ollama:rw
-      - ollama-open-webui:/app/backend/data:rw
-    security_opt:
-      - label=type:nvidia_container_t
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              capabilities: [gpu]
-              count: all
-  tdarr:
-    container_name: tdarr
-    image: ghcr.io/haveagitgat/tdarr:latest
+  fileflows:
+    container_name: fileflows
+    image: revenz/fileflows
     restart: always
     networks:
       - web
     expose:
-      - 8265 # webUI port
-      - 8266 # server port
+      - 5000
     environment:
       - TZ=${TZ}
       - PUID=1000
       - PGID=1000
-      - UMASK_SET=002
-      - serverIP=0.0.0.0
-      - serverPort=8266
-      - webUIPort=8265
-      - internalNode=true
-      - inContainer=true
-      - ffmpegVersion=7
-      - nodeName=InternalNode
       - NVIDIA_DRIVER_CAPABILITIES=all
       - NVIDIA_VISIBLE_DEVICES=all
     volumes:
-      - /mnt/homelab/tdarr/server:/app/server:rw
-      - /mnt/homelab/tdarr/configs:/app/configs:rw
-      - /mnt/homelab/tdarr/logs:/app/logs:rw
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - fileflows-temp:/temp:rw
+      - /mnt/homelab/fileflows/configs:/app/Data:rw
       - /mnt/media/movies:/media/movies:rw
       - /mnt/media/shows:/media/shows:rw
-      - tdarr_cache:/temp:rw
+      - /mnt/media/music:/media/music:rw
     security_opt:
       - label=type:nvidia_container_t
     deploy:

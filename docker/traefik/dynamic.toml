@@ -22,32 +22,14 @@ certResolver = "cloudflare"
 [[http.services.grafana.loadBalancer.servers]]
 url = "http://grafana:3000"
 
-[http.routers.ollama]
-service = "ollama"
-rule = "Host(`ollama.ts.sawyer.services`)"
-[http.routers.ollama.tls]
+[http.routers.fileflows]
+service = "fileflows"
+rule = "Host(`fileflows.ts.sawyer.services`)"
+[http.routers.fileflows.tls]
 certResolver = "cloudflare"
-[http.services.ollama.loadBalancer]
-[[http.services.ollama.loadBalancer.servers]]
-url = "http://ollama:8080"
-
-[http.routers.ollama-api]
-service = "ollama-api"
-rule = "Host(`ollama-api.ts.sawyer.services`)"
-[http.routers.ollama-api.tls]
-certResolver = "cloudflare"
-[http.services.ollama-api.loadBalancer]
-[[http.services.ollama-api.loadBalancer.servers]]
-url = "http://ollama:11434"
-
-[http.routers.tdarr]
-service = "tdarr"
-rule = "Host(`tdarr.ts.sawyer.services`)"
-[http.routers.tdarr.tls]
-certResolver = "cloudflare"
-[http.services.tdarr.loadBalancer]
-[[http.services.tdarr.loadBalancer.servers]]
-url = "http://tdarr:8265"
+[http.services.fileflows.loadBalancer]
+[[http.services.fileflows.loadBalancer.servers]]
+url = "http://fileflows:5000"
 
 [http.routers.transmission]
 service = "transmission"
