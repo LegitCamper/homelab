@@ -1,12 +1,18 @@
+[http.middlewares]
+[http.middlewares.tailscale-allowlist.ipWhiteList]
+sourceRange = ["100.64.0.0/10"]
+
 [http.routers.traefik]
-service = "api@ts"
+service = "api@internal"
 rule = "Host(`traefik.ts.sawyer.services`)"
+middlewares = ["tailscale-allowlist"]
 [http.routers.traefik.tls]
 certResolver = "cloudflare"
 
 [http.routers.homenas]
 service = "homenas"
 rule = "Host(`homenas.ts.sawyer.services`)"
+middlewares = ["tailscale-allowlist"]
 [http.routers.homenas.tls]
 certResolver = "cloudflare"
 [http.services.homenas.loadBalancer]
@@ -16,6 +22,7 @@ url = "https://homenas/"
 [http.routers.grafana]
 service = "grafana"
 rule = "Host(`grafana.ts.sawyer.services`)"
+middlewares = ["tailscale-allowlist"]
 [http.routers.grafana.tls]
 certResolver = "cloudflare"
 [http.services.grafana.loadBalancer]
@@ -25,6 +32,7 @@ url = "http://grafana:3000"
 [http.routers.fileflows]
 service = "fileflows"
 rule = "Host(`fileflows.ts.sawyer.services`)"
+middlewares = ["tailscale-allowlist"]
 [http.routers.fileflows.tls]
 certResolver = "cloudflare"
 [http.services.fileflows.loadBalancer]
@@ -34,6 +42,7 @@ url = "http://fileflows:5000"
 [http.routers.transmission]
 service = "transmission"
 rule = "Host(`transmission.ts.sawyer.services`) || Host(`torrent.ts.sawyer.services`)"
+middlewares = ["tailscale-allowlist"]
 [http.routers.transmission.tls]
 certResolver = "cloudflare"
 [http.services.transmission.loadBalancer]
@@ -43,6 +52,7 @@ url = "http://gluetun:9091"
 [http.routers.jackett]
 service = "jackett"
 rule = "Host(`jackett.ts.sawyer.services`)"
+middlewares = ["tailscale-allowlist"]
 [http.routers.jackett.tls]
 certResolver = "cloudflare"
 [http.services.jackett.loadBalancer]
@@ -52,6 +62,7 @@ url = "http://jackett:9117"
 [http.routers.prowlarr]
 service = "prowlarr"
 rule = "Host(`prowlarr.ts.sawyer.services`)"
+middlewares = ["tailscale-allowlist"]
 [http.routers.prowlarr.tls]
 certResolver = "cloudflare"
 [http.services.prowlarr.loadBalancer]
@@ -61,6 +72,7 @@ url = "http://prowlarr:9696"
 [http.routers.sonarr]
 service = "sonarr"
 rule = "Host(`sonarr.ts.sawyer.services`)"
+middlewares = ["tailscale-allowlist"]
 [http.routers.sonarr.tls]
 certResolver = "cloudflare"
 [http.services.sonarr.loadBalancer]
@@ -70,6 +82,7 @@ url = "http://sonarr:8989"
 [http.routers.speakarr]
 service = "speakarr"
 rule = "Host(`speakarr.ts.sawyer.services`)"
+middlewares = ["tailscale-allowlist"]
 [http.routers.speakarr.tls]
 certResolver = "cloudflare"
 [http.services.speakarr.loadBalancer]
@@ -79,6 +92,7 @@ url = "http://speakarr:8787"
 [http.routers.readarr]
 service = "readarr"
 rule = "Host(`readarr.ts.sawyer.services`)"
+middlewares = ["tailscale-allowlist"]
 [http.routers.readarr.tls]
 certResolver = "cloudflare"
 [http.services.readarr.loadBalancer]
@@ -88,6 +102,7 @@ url = "http://readarr:8787"
 [http.routers.lidarr]
 service = "lidarr"
 rule = "Host(`lidarr.ts.sawyer.services`)"
+middlewares = ["tailscale-allowlist"]
 [http.routers.lidarr.tls]
 certResolver = "cloudflare"
 [http.services.lidarr.loadBalancer]
@@ -97,6 +112,7 @@ url = "http://lidarr:8686"
 [http.routers.radarr]
 service = "radarr"
 rule = "Host(`radarr.ts.sawyer.services`)"
+middlewares = ["tailscale-allowlist"]
 [http.routers.radarr.tls]
 certResolver = "cloudflare"
 [http.services.radarr.loadBalancer]
@@ -106,6 +122,7 @@ url = "http://radarr:7878"
 [http.routers.huntarr]
 service = "huntarr"
 rule = "Host(`huntarr.ts.sawyer.services`)"
+middlewares = ["tailscale-allowlist"]
 [http.routers.huntarr.tls]
 certResolver = "cloudflare"
 [http.services.huntarr.loadBalancer]
@@ -115,6 +132,7 @@ url = "http://huntarr:9705"
 [http.routers.lidatube]
 service = "lidatube"
 rule = "Host(`lidatube.ts.sawyer.services`)"
+middlewares = ["tailscale-allowlist"]
 [http.routers.lidatube.tls]
 certResolver = "cloudflare"
 [http.services.lidatube.loadBalancer]
@@ -124,6 +142,7 @@ url = "http://lidatube:5000"
 [http.routers.smokeping]
 service = "smokeping"
 rule = "Host(`smokeping.ts.sawyer.services`)"
+middlewares = ["tailscale-allowlist"]
 [http.routers.smokeping.tls]
 certResolver = "cloudflare"
 [http.services.smokeping.loadBalancer]
@@ -133,6 +152,7 @@ url = "http://smokeping:80"
 [http.routers.uptime-kuma]
 service = "uptime-kuma"
 rule = "Host(`uptime-kuma.ts.sawyer.services`)"
+middlewares = ["tailscale-allowlist"]
 [http.routers.uptime-kuma.tls]
 certResolver = "cloudflare"
 [http.services.uptime-kuma.loadBalancer]
@@ -160,6 +180,7 @@ url = "http://audiobookshelf:80"
 [http.routers.calibre]
 service = "calibre"
 rule = "Host(`calibre.ts.sawyer.services`)"
+middlewares = ["tailscale-allowlist"]
 [http.routers.calibre.tls]
 certResolver = "cloudflare"
 [http.services.calibre.loadBalancer]
@@ -232,6 +253,7 @@ url = "http://languagetool:8010"
 [http.routers.adguard]
 service = "adguard"
 rule = "Host(`adguard.ts.sawyer.services`) || Host(`adguardhome.ts.sawyer.services`)"
+middlewares = ["tailscale-allowlist"]
 [http.routers.adguard.tls]
 certResolver = "cloudflare"
 [http.services.adguard.loadBalancer]
