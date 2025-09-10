@@ -1,5 +1,5 @@
 [http.middlewares]
-[http.middlewares.tailscale-allowlist.ipWhiteList]
+[http.middlewares.tailscale-allowlist.IPAllowList]
 sourceRange = ["100.64.0.0/10"]
 
 [http.routers.traefik]

@@ -45,6 +45,8 @@ services:
       - label=type:nvidia_container_t
     deploy:
       resources:
+        limits:
+          memory: 25G
         reservations:
           devices:
           - driver: nvidia
@@ -490,27 +492,6 @@ services:
     restart: always
     depends_on: 
       - calibre
-
-  # lidatube:
-  #   image: thewicklowwolf/lidatube
-  #   container_name: lidatube
-  #   environment:
-  #     - PUID=1000
-  #     - PGID=1000
-  #     - TZ=${TZ}
-  #     - thread_limit=2
-  #   volumes:
-  #     - /mnt/homelab/lidatube:/lidatube/config
-  #     - /mnt/media/lidatube:/lidatube/downloads
-  #   networks:
-  #     - web
-  #   expose:
-  #     - 5000
-  #   restart: always
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         memory: 10G
 
   rathole:
     image: rapiz1/rathole
