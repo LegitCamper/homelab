@@ -46,7 +46,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 25G
+          memory: 15G
         reservations:
           devices:
           - driver: nvidia
@@ -138,20 +138,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 25G
-
-  transmission-exporter:
-    image: metalmatze/transmission-exporter
-    container_name: transmission-exporter
-    restart: always
-    networks:
-      - internal
-    expose:
-      - 19091
-    environment:
-      TRANSMISSION_ADDR: http://gluetun:9091
-    depends_on:
-      - transmission
+          memory: 15G
 
   jackett:
     image: lscr.io/linuxserver/jackett
@@ -704,7 +691,6 @@ services:
       - host.docker.internal:host-gateway
     depends_on:
       - node_exporter
-      - transmission-exporter
 
   node_exporter:
     image: quay.io/prometheus/node-exporter
