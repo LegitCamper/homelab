@@ -13,7 +13,6 @@ networks:
 
 volumes:
   logs:
-  uptimekuma:
   jellyfin-config:
   jellyfin-cache:
   adguard-work:
@@ -519,6 +518,17 @@ services:
       - "8080:8080"
     depends_on:
       - loki
+
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: uptime-kuma
+    restart: always
+    volumes:
+      - /mnt/homelab/uptimekuma:/app/data
+    networks:
+      - web
+    expose:
+      - 3001
 
   adguardhome:
     image: adguard/adguardhome
