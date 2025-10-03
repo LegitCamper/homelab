@@ -129,16 +129,6 @@ certResolver = "cloudflare"
 [[http.services.huntarr.loadBalancer.servers]]
 url = "http://huntarr:9705"
 
-[http.routers.lidatube]
-service = "lidatube"
-rule = "Host(`lidatube.ts.sawyer.services`)"
-middlewares = ["tailscale-allowlist"]
-[http.routers.lidatube.tls]
-certResolver = "cloudflare"
-[http.services.lidatube.loadBalancer]
-[[http.services.lidatube.loadBalancer.servers]]
-url = "http://lidatube:5000"
-
 [http.routers.smokeping]
 service = "smokeping"
 rule = "Host(`smokeping.ts.sawyer.services`)"
