@@ -156,6 +156,7 @@ services:
       - /mnt/media/completed:/downloads
     networks:
       - web
+      - internal
     expose:
       - 9117
     sysctls:
@@ -269,6 +270,7 @@ services:
     restart: always
     networks:
       - web
+      - internal
     expose:
       - 9705
     volumes:
@@ -531,6 +533,7 @@ services:
       - /mnt/homelab/uptimekuma:/app/data
     networks:
       - web
+      - internal
     expose:
       - 3001
 
@@ -614,7 +617,7 @@ services:
     networks:
       - web
     expose:
-      - 8010
+      - 8081
     environment:
       TZ: ${TZ}
       download_ngrams_for_langs: en

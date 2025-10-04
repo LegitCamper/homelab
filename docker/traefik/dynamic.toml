@@ -238,7 +238,7 @@ rule = "Host(`languagetool.sawyer.services`)"
 certResolver = "cloudflare"
 [http.services.languagetool.loadBalancer]
 [[http.services.languagetool.loadBalancer.servers]]
-url = "http://languagetool:8010"
+url = "http://languagetool:8081"
 
 [http.routers.adguard]
 service = "adguard"
