@@ -268,6 +268,7 @@ services:
     image: huntarr/huntarr
     container_name: huntarr
     restart: always
+    user: 1000:1000 
     networks:
       - web
       - internal
@@ -278,9 +279,9 @@ services:
     environment:
       - TZ=${TZ}
 
-  cleanuperr:
-    image: ghcr.io/flmorg/cleanuperr:latest
-    container_name: cleanuperr
+  cleanuparr:
+    image: ghcr.io/cleanuparr/cleanuparr
+    container_name: cleanuparr
     restart: always 
     networks:
       - internal
