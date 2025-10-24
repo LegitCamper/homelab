@@ -488,17 +488,6 @@ services:
     depends_on: 
       - calibre
 
-  rathole:
-    image: rapiz1/rathole
-    container_name: rathole
-    restart: always
-    network_mode: host
-    environment:
-      - TZ=${TZ}
-    volumes:
-      - /home/core/compose-files/docker/rathole/rathole.toml:/app/config.toml:ro
-    command: --client /app/config.toml
-
   traefik:
     image: traefik
     container_name: traefik
@@ -517,14 +506,16 @@ services:
       - /home/core/compose-files/docker/traefik/captcha.html:/captcha.html:ro
       - logs:/var/log/traefik:rw
     networks:
+      - internal
       - web
       - dns
+    # traffic ingress via tailscale from vps nginx
     ports:
       - "80:80"
       - "443:443"
       - "853:853"
     expose:
-      - "8080:8080"
+      - 8080 # dashboard
 
   crowdsec:
     image: crowdsecurity/crowdsec
@@ -533,18 +524,16 @@ services:
     environment:
       COLLECTIONS: "crowdsecurity/traefik crowdsecurity/http-cve crowdsecurity/http-dos"
       GID: "${GID-1000}"
-    depends_on:
-      - "traefik"
+    ports:
+      - 8080:8080 # LAPI
     expose:
-      - 8080 # LAPI 
       - 6060 # prometheus port
     volumes:      
       - /home/core/compose-files/docker/crowdsec/acquis.yaml:/etc/crowdsec/acquis.yaml:ro
-      - logs:/var/log/traefik:ro
       - crowdsec-db:/var/lib/crowdsec/data/:rw
       - crowdsec-config:/etc/crowdsec/:rw
+      - logs:/var/log/traefik:ro
     networks:
-      - web # allows vps crowdsec firewall to connect with LAPI
       - internal # prometheus
   
   uptime-kuma:

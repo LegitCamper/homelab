@@ -16,7 +16,6 @@ disableDashboardAd = true
 
 [serversTransport]
 insecureSkipVerify = true
-[tcpServersTransport]
 [tcpServersTransport.tls]
 insecureSkipVerify = true
 
@@ -25,6 +24,8 @@ insecureSkipVerify = true
 address = ":80"
 reusePort = true
 asDefault = false
+[entryPoints.web.proxyProtocol]
+insecure = true
 [entryPoints.web.http.redirections.entryPoint]
 to = "websecure"
 scheme = "https"
@@ -34,11 +35,15 @@ permanent = true
 address = ":443"
 reusePort = true
 asDefault = true
+[entryPoints.websecure.proxyProtocol]
+insecure = true
 
 [entryPoints.dot]
 address = ":853"
 reusePort = true
 asDefault = false
+[entryPoints.dot.proxyProtocol]
+insecure = true
 
 [providers.file]
 directory = "/etc/traefik/"

@@ -52,19 +52,6 @@
         src: docker
         dest: /home/core/compose-files
 
-    - name: Get rathole token
-      ansible.builtin.shell:
-        cat /home/core/compose-files/secrets.env | grep RATHOLE_TOKEN | sed 's/^.*RATHOLE_TOKEN=//'
-      register: rathole_token
-      ignore_errors: true
-      changed_when: false
-
-    - name: Replace rathole tokens with secret
-      ansible.builtin.replace:
-        path: /home/core/compose-files/docker/rathole/rathole.toml
-        regexp: '"token"'
-        replace: '"{{ rathole_token.stdout }}"'
-
     - name: Get cf email
       ansible.builtin.shell:
         cat /home/core/compose-files/secrets.env | grep CF_API_EMAIL | sed 's/^.*CF_API_EMAIL=//'
