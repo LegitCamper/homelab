@@ -2,8 +2,18 @@
 checkNewVersion = true
 sendAnonymousUsage = false
 
-[log]
+[logs]
+[logs.general]
 level = "INFO"
+[logs.access]
+enabled = true
+format = "json"
+[logs.access.fields]
+[logs.access.fields.headers]
+defaultMode = "keep"
+[logs.access.fields.headers.names]
+X-Forwarded-Tls-Client-Cert-Info = "keep"
+X-Real-IP = "keep"
 
 [accesslog]
 filepath = "/var/log/traefik/access.log"
@@ -24,8 +34,18 @@ insecureSkipVerify = true
 address = ":80"
 reusePort = true
 asDefault = false
-[entryPoints.web.proxyProtocol]
-insecure = true
+proxyProtocol.trustedIPs = [
+  "24.199.78.82",
+  "172.16.0.0/16",
+  "100.64.0.0/10",
+  "127.0.0.1/32",
+]
+forwardedHeaders.trustedIPs = [
+  "24.199.78.82",
+  "172.16.0.0/16",
+  "100.64.0.0/10",
+  "127.0.0.1/32",
+]
 [entryPoints.web.http.redirections.entryPoint]
 to = "websecure"
 scheme = "https"
@@ -35,15 +55,35 @@ permanent = true
 address = ":443"
 reusePort = true
 asDefault = true
-[entryPoints.websecure.proxyProtocol]
-insecure = true
+proxyProtocol.trustedIPs = [
+  "24.199.78.82",
+  "172.16.0.0/16",
+  "100.64.0.0/10",
+  "127.0.0.1/32",
+]
+forwardedHeaders.trustedIPs = [
+  "24.199.78.82",
+  "172.16.0.0/16",
+  "100.64.0.0/10",
+  "127.0.0.1/32",
+]
 
 [entryPoints.dot]
 address = ":853"
 reusePort = true
 asDefault = false
-[entryPoints.dot.proxyProtocol]
-insecure = true
+proxyProtocol.trustedIPs = [
+  "24.199.78.82",
+  "172.16.0.0/16",
+  "100.64.0.0/10",
+  "127.0.0.1/32",
+]
+forwardedHeaders.trustedIPs = [
+  "24.199.78.82",
+  "172.16.0.0/16",
+  "100.64.0.0/10",
+  "127.0.0.1/32",
+]
 
 [providers.file]
 directory = "/etc/traefik/"
