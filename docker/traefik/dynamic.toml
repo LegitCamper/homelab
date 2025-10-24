@@ -9,6 +9,16 @@ middlewares = ["tailscale-allowlist"]
 [http.routers.traefik.tls]
 certResolver = "cloudflare"
 
+[http.routers.crowdsec-lapi]
+service = "crowdsec-lapi"
+rule = "Host(`crowdsec-lapi.ts.sawyer.services`)"
+middlewares = ["tailscale-allowlist"]
+[http.routers.crowdsec-lapi.tls]
+certResolver = "cloudflare"
+[http.services.crowdsec-lapi.loadBalancer]
+[[http.services.crowdsec-lapi.loadBalancer.servers]]
+url = "http://crowdsec:8080"
+
 [http.routers.homenas]
 service = "homenas"
 rule = "Host(`homenas.ts.sawyer.services`)"
@@ -18,6 +28,16 @@ certResolver = "cloudflare"
 [http.services.homenas.loadBalancer]
 [[http.services.homenas.loadBalancer.servers]]
 url = "https://homenas/"
+
+[http.routers.prometheus]
+service = "prometheus"
+rule = "Host(`prometheus.ts.sawyer.services`)"
+middlewares = ["tailscale-allowlist"]
+[http.routers.prometheus.tls]
+certResolver = "cloudflare"
+[http.services.prometheus.loadBalancer]
+[[http.services.prometheus.loadBalancer.servers]]
+url = "http://prometheus:9090"
 
 [http.routers.grafana]
 service = "grafana"

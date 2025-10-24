@@ -2,7 +2,7 @@ networks:
   # exposed through traefik
   web:
     external: true
-  # Not exposed via traefik (dbs & severices
+  # Not exposed via traefik - backend services
   internal: 
     external: false
   # This network exists just so adugard can have a static ip for tcp routing
@@ -13,6 +13,8 @@ networks:
 
 volumes:
   logs:
+  crowdsec-db:
+  crowdsec-config:
   jellyfin-config:
   jellyfin-cache:
   adguard-work:
@@ -513,7 +515,7 @@ services:
       - /home/core/compose-files/docker/traefik/static.toml:/etc/traefik/traefik.toml:ro
       - /home/core/compose-files/docker/traefik/dynamic.toml:/etc/traefik/dynamic.toml:ro
       - /home/core/compose-files/docker/traefik/captcha.html:/captcha.html:ro
-      - logs:/var/log/traefik
+      - logs:/var/log/traefik:rw
     networks:
       - web
       - dns
@@ -523,9 +525,28 @@ services:
       - "853:853"
     expose:
       - "8080:8080"
-    depends_on:
-      - loki
 
+  crowdsec:
+    image: crowdsecurity/crowdsec
+    container_name: crowdsec
+    restart: always
+    environment:
+      COLLECTIONS: "crowdsecurity/traefik crowdsecurity/http-cve crowdsecurity/http-dos"
+      GID: "${GID-1000}"
+    depends_on:
+      - "traefik"
+    expose:
+      - 8080 # LAPI 
+      - 6060 # prometheus port
+    volumes:      
+      - /home/core/compose-files/docker/crowdsec/acquis.yaml:/etc/crowdsec/acquis.yaml:ro
+      - logs:/var/log/traefik:ro
+      - crowdsec-db:/var/lib/crowdsec/data/:rw
+      - crowdsec-config:/etc/crowdsec/:rw
+    networks:
+      - web # allows vps crowdsec firewall to connect with LAPI
+      - internal # prometheus
+  
   uptime-kuma:
     image: louislam/uptime-kuma:1
     container_name: uptime-kuma
@@ -696,6 +717,7 @@ services:
     environment:
       TZ: ${TZ}
     networks:
+      - web
       - internal
     expose:
       - 9090
@@ -709,6 +731,8 @@ services:
       - host.docker.internal:host-gateway
     depends_on:
       - node_exporter
+      - dcgm-exporter
+      - crowdsec
 
   node_exporter:
     image: quay.io/prometheus/node-exporter
