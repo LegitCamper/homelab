@@ -21,6 +21,23 @@ volumes:
   fileflows-temp:
 
 services:
+  gitea:
+    image: docker.gitea.com/gitea
+    container_name: gitea
+    restart: always
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+    networks:
+      - web
+    volumes:
+      - /mnt/homelab/gitea:/data:rw
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    expose:
+      - 3000
+      - 22
+
   fileflows:
     container_name: fileflows
     image: revenz/fileflows
@@ -511,6 +528,7 @@ services:
       - dns
     # traffic ingress via tailscale from vps nginx
     ports:
+      - "222:22" # avoids collision with openssh
       - "80:80"
       - "443:443"
       - "853:853"

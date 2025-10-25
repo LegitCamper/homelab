@@ -223,6 +223,15 @@ certResolver = "cloudflare"
 [[http.services.mom-contact.loadBalancer.servers]]
 url = "http://mom-contact:8000"
 
+[http.routers.gitea]
+service = "gitea"
+rule = "Host(`gitea.sawyer.services`)"
+[http.routers.gitea.tls]
+certResolver = "cloudflare"
+[http.services.gitea.loadBalancer]
+[[http.services.gitea.loadBalancer.servers]]
+url = "http://gitea:3000"
+
 [http.routers.unduck]
 service = "unduck"
 rule = "Host(`unduck.sawyer.services`)"
