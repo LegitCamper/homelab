@@ -510,10 +510,9 @@ services:
     container_name: traefik
     restart: always
     environment:
-      - CF_API_KEY=${CF_API_KEY}
-      - CF_API_EMAIL=${CF_API_EMAIL}
+      - CF_DNS_API_TOKEN=${CF_API_KEY}
+      #- CF_API_EMAIL=${CF_API_EMAIL}
       - DNS=${DNS}
-      - LEGO_DISABLE_CNAME_SUPPORT=true
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -529,7 +528,6 @@ services:
     # traffic ingress via tailscale from vps nginx
     ports:
       - "222:22" # avoids collision with openssh
-      - "80:80"
       - "443:443"
       - "853:853"
     expose:

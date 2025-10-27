@@ -29,15 +29,6 @@ insecureSkipVerify = true
 [tcpServersTransport.tls]
 insecureSkipVerify = true
 
-[entryPoints]
-[entryPoints.web]
-address = ":80"
-asDefault = false
-[entryPoints.web.http.redirections.entryPoint]
-to = "websecure"
-scheme = "https"
-permanent = true
-
 [entryPoints.websecure]
 address = ":443"
 asDefault = true
@@ -53,6 +44,10 @@ forwardedHeaders.trustedIPs = [
   "100.64.0.0/10",
   "127.0.0.1/32",
 ]
+[entryPoints.websecure.http.tls]
+[[entryPoints.websecure.http.tls.domains]]
+main = "sawyer.services"
+sans = ["*.sawyer.services"]
 
 [entryPoints.ssh]
 address = ":22"
@@ -93,7 +88,6 @@ filename = "dynamic.toml"
 debugLogGeneratedTemplate = true
 
 [certificatesResolvers]
-[certificatesResolvers.tailscale.tailscale]
 [certificatesResolvers.cloudflare]
 [certificatesResolvers.cloudflare.acme]
 email = "email"
@@ -103,5 +97,3 @@ provider = "cloudflare"
 resolvers = ["1.1.1.1:53", "8.8.8.8:53"]
 [propogation]
 disableCheck = true
-[certificatesResolvers.cloudflare.acme.httpChallenge]
-entryPoint = "web"
