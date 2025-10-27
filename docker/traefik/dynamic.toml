@@ -15,8 +15,6 @@ entryPoints = ["websecure"]
 service = "homenas"
 rule = "Host(`homenas.ts.sawyer.services`)"
 middlewares = ["tailscale-allowlist"]
-[http.routers.homenas.tls]
-certResolver = "cloudflare"
 [http.services.homenas.loadBalancer]
 [[http.services.homenas.loadBalancer.servers]]
 url = "https://homenas/"
@@ -26,8 +24,6 @@ entryPoints = ["websecure"]
 service = "prometheus"
 rule = "Host(`prometheus.ts.sawyer.services`)"
 middlewares = ["tailscale-allowlist"]
-[http.routers.prometheus.tls]
-certResolver = "cloudflare"
 [http.services.prometheus.loadBalancer]
 [[http.services.prometheus.loadBalancer.servers]]
 url = "http://prometheus:9090"
@@ -37,8 +33,6 @@ entryPoints = ["websecure"]
 service = "grafana"
 rule = "Host(`grafana.ts.sawyer.services`)"
 middlewares = ["tailscale-allowlist"]
-[http.routers.grafana.tls]
-certResolver = "cloudflare"
 [http.services.grafana.loadBalancer]
 [[http.services.grafana.loadBalancer.servers]]
 url = "http://grafana:3000"
@@ -48,8 +42,6 @@ entryPoints = ["websecure"]
 service = "fileflows"
 rule = "Host(`fileflows.ts.sawyer.services`)"
 middlewares = ["tailscale-allowlist"]
-[http.routers.fileflows.tls]
-certResolver = "cloudflare"
 [http.services.fileflows.loadBalancer]
 [[http.services.fileflows.loadBalancer.servers]]
 url = "http://fileflows:5000"
@@ -59,8 +51,6 @@ entryPoints = ["websecure"]
 service = "transmission"
 rule = "Host(`transmission.ts.sawyer.services`) || Host(`torrent.ts.sawyer.services`)"
 middlewares = ["tailscale-allowlist"]
-[http.routers.transmission.tls]
-certResolver = "cloudflare"
 [http.services.transmission.loadBalancer]
 [[http.services.transmission.loadBalancer.servers]]
 url = "http://gluetun:9091"
@@ -70,8 +60,6 @@ entryPoints = ["websecure"]
 service = "jackett"
 rule = "Host(`jackett.ts.sawyer.services`)"
 middlewares = ["tailscale-allowlist"]
-[http.routers.jackett.tls]
-certResolver = "cloudflare"
 [http.services.jackett.loadBalancer]
 [[http.services.jackett.loadBalancer.servers]]
 url = "http://jackett:9117"
@@ -81,8 +69,6 @@ entryPoints = ["websecure"]
 service = "prowlarr"
 rule = "Host(`prowlarr.ts.sawyer.services`)"
 middlewares = ["tailscale-allowlist"]
-[http.routers.prowlarr.tls]
-certResolver = "cloudflare"
 [http.services.prowlarr.loadBalancer]
 [[http.services.prowlarr.loadBalancer.servers]]
 url = "http://prowlarr:9696"
@@ -92,8 +78,6 @@ entryPoints = ["websecure"]
 service = "sonarr"
 rule = "Host(`sonarr.ts.sawyer.services`)"
 middlewares = ["tailscale-allowlist"]
-[http.routers.sonarr.tls]
-certResolver = "cloudflare"
 [http.services.sonarr.loadBalancer]
 [[http.services.sonarr.loadBalancer.servers]]
 url = "http://sonarr:8989"
@@ -103,8 +87,6 @@ entryPoints = ["websecure"]
 service = "speakarr"
 rule = "Host(`speakarr.ts.sawyer.services`)"
 middlewares = ["tailscale-allowlist"]
-[http.routers.speakarr.tls]
-certResolver = "cloudflare"
 [http.services.speakarr.loadBalancer]
 [[http.services.speakarr.loadBalancer.servers]]
 url = "http://speakarr:8787"
@@ -114,8 +96,6 @@ entryPoints = ["websecure"]
 service = "readarr"
 rule = "Host(`readarr.ts.sawyer.services`)"
 middlewares = ["tailscale-allowlist"]
-[http.routers.readarr.tls]
-certResolver = "cloudflare"
 [http.services.readarr.loadBalancer]
 [[http.services.readarr.loadBalancer.servers]]
 url = "http://readarr:8787"
@@ -125,8 +105,6 @@ entryPoints = ["websecure"]
 service = "lidarr"
 rule = "Host(`lidarr.ts.sawyer.services`)"
 middlewares = ["tailscale-allowlist"]
-[http.routers.lidarr.tls]
-certResolver = "cloudflare"
 [http.services.lidarr.loadBalancer]
 [[http.services.lidarr.loadBalancer.servers]]
 url = "http://lidarr:8686"
@@ -136,8 +114,6 @@ entryPoints = ["websecure"]
 service = "radarr"
 rule = "Host(`radarr.ts.sawyer.services`)"
 middlewares = ["tailscale-allowlist"]
-[http.routers.radarr.tls]
-certResolver = "cloudflare"
 [http.services.radarr.loadBalancer]
 [[http.services.radarr.loadBalancer.servers]]
 url = "http://radarr:7878"
@@ -147,8 +123,6 @@ entryPoints = ["websecure"]
 service = "huntarr"
 rule = "Host(`huntarr.ts.sawyer.services`)"
 middlewares = ["tailscale-allowlist"]
-[http.routers.huntarr.tls]
-certResolver = "cloudflare"
 [http.services.huntarr.loadBalancer]
 [[http.services.huntarr.loadBalancer.servers]]
 url = "http://huntarr:9705"
@@ -158,8 +132,6 @@ entryPoints = ["websecure"]
 service = "smokeping"
 rule = "Host(`smokeping.ts.sawyer.services`)"
 middlewares = ["tailscale-allowlist"]
-[http.routers.smokeping.tls]
-certResolver = "cloudflare"
 [http.services.smokeping.loadBalancer]
 [[http.services.smokeping.loadBalancer.servers]]
 url = "http://smokeping:80"
@@ -169,8 +141,6 @@ entryPoints = ["websecure"]
 service = "uptime-kuma"
 rule = "Host(`uptime-kuma.ts.sawyer.services`)"
 middlewares = ["tailscale-allowlist"]
-[http.routers.uptime-kuma.tls]
-certResolver = "cloudflare"
 [http.services.uptime-kuma.loadBalancer]
 [[http.services.uptime-kuma.loadBalancer.servers]]
 url = "http://uptime-kuma:3001"
@@ -200,8 +170,6 @@ entryPoints = ["websecure"]
 service = "calibre"
 rule = "Host(`calibre.ts.sawyer.services`)"
 middlewares = ["tailscale-allowlist"]
-[http.routers.calibre.tls]
-certResolver = "cloudflare"
 [http.services.calibre.loadBalancer]
 [[http.services.calibre.loadBalancer.servers]]
 url = "http://calibre:8080"
@@ -290,8 +258,6 @@ entryPoints = ["websecure"]
 service = "adguard"
 rule = "Host(`adguard.ts.sawyer.services`) || Host(`adguardhome.ts.sawyer.services`)"
 middlewares = ["tailscale-allowlist"]
-[http.routers.adguard.tls]
-certResolver = "cloudflare"
 [http.services.adguard.loadBalancer]
 [[http.services.adguard.loadBalancer.servers]]
 url = "http://adguardhome:80"

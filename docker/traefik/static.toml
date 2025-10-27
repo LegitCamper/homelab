@@ -32,20 +32,7 @@ insecureSkipVerify = true
 [entryPoints]
 [entryPoints.web]
 address = ":80"
-reusePort = true
 asDefault = false
-proxyProtocol.trustedIPs = [
-  "24.199.78.82",
-  "172.16.0.0/16",
-  "100.64.0.0/10",
-  "127.0.0.1/32",
-]
-forwardedHeaders.trustedIPs = [
-  "24.199.78.82",
-  "172.16.0.0/16",
-  "100.64.0.0/10",
-  "127.0.0.1/32",
-]
 [entryPoints.web.http.redirections.entryPoint]
 to = "websecure"
 scheme = "https"
@@ -53,7 +40,6 @@ permanent = true
 
 [entryPoints.websecure]
 address = ":443"
-reusePort = true
 asDefault = true
 proxyProtocol.trustedIPs = [
   "24.199.78.82",
@@ -70,7 +56,6 @@ forwardedHeaders.trustedIPs = [
 
 [entryPoints.ssh]
 address = ":22"
-reusePort = true
 asDefault = false
 proxyProtocol.trustedIPs = [
   "24.199.78.82",
@@ -87,7 +72,6 @@ forwardedHeaders.trustedIPs = [
 
 [entryPoints.dot]
 address = ":853"
-reusePort = true
 asDefault = false
 proxyProtocol.trustedIPs = [
   "24.199.78.82",
