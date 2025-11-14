@@ -92,11 +92,11 @@
       community.docker.docker_network:
         name: internal
 
-    - name: Create acme dir
-      ansible.builtin.file:
-        path: /home/core/acme/
-        state: "directory"
-        mode: '0700'
+    # - name: Create acme dir
+    #   ansible.builtin.file:
+    #     path: /home/core/acme/
+    #     state: "directory"
+    #     mode: '0700'
 
     - name: Setup containers
       community.docker.docker_compose_v2:

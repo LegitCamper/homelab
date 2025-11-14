@@ -18,6 +18,7 @@ volumes:
   jellyfin-config:
   jellyfin-cache:
   adguard-work:
+  huntarr:
   fileflows-temp:
 
 services:
@@ -294,7 +295,7 @@ services:
     expose:
       - 9705
     volumes:
-      - /mnt/homelab/huntarr:/config:rw
+      - huntarr:/config:Z
     environment:
       - TZ=${TZ}
 
@@ -653,18 +654,6 @@ services:
     volumes:
       - /mnt/homelab/languagetool/ngrams:/ngrams:rw
       - /mnt/homelab/languagetool/fasttext:/fasttext:rw
-
-  watchtower:
-    image: ghcr.io/beatkind/watchtower:latest-dev
-    container_name: watchtower
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:rw
-    environment:
-      TZ: ${TZ}
-      WATCHTOWER_CLEANUP: true
-      WATCHTOWER_REVIVE_STOPPED: true
-      WATCHTOWER_POLL_INTERVAL: 604800 # every 7 days
-    restart: always
 
   loki:
     image: grafana/loki:3.3.2
