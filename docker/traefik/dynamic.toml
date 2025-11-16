@@ -153,17 +153,6 @@ certResolver = "cloudflare"
 [[http.services.huntarr.loadBalancer.servers]]
 url = "http://huntarr:9705"
 
-[http.routers.smokeping]
-entryPoints = ["websecure"]
-service = "smokeping"
-rule = "Host(`smokeping.ts.sawyer.services`)"
-middlewares = ["tailscale-allowlist"]
-[http.routers.smokeping.tls]
-certResolver = "cloudflare"
-[http.services.smokeping.loadBalancer]
-[[http.services.smokeping.loadBalancer.servers]]
-url = "http://smokeping:80"
-
 [http.routers.uptime-kuma]
 entryPoints = ["websecure"]
 service = "uptime-kuma"
@@ -184,6 +173,16 @@ certResolver = "cloudflare"
 [http.services.jellyfin.loadBalancer]
 [[http.services.jellyfin.loadBalancer.servers]]
 url = "http://jellyfin:8096"
+
+[http.routers.immich]
+entryPoints = ["websecure"]
+service = "immich"
+rule = "Host(`immich.sawyer.services`)"
+[http.routers.immich.tls]
+certResolver = "cloudflare"
+[http.services.immich.loadBalancer]
+[[http.services.immich.loadBalancer.servers]]
+url = "http://immich_server:2283"
 
 [http.routers.audiobookshelf]
 entryPoints = ["websecure"]

@@ -20,6 +20,8 @@ volumes:
   adguard-work:
   huntarr:
   fileflows-temp:
+  immich-model-cache:
+  immich-db:
 
 services:
   gitea:
@@ -70,7 +72,7 @@ services:
           devices:
           - driver: nvidia
             capabilities: [gpu]
-            count: all          
+            count: -1
 
   jellyfin:
     image: jellyfin/jellyfin
@@ -98,7 +100,7 @@ services:
           devices:
             - driver: nvidia
               capabilities: [gpu]
-              count: all
+              count: -1
 
   flaresolverr:
     # use fork as flaresolverr is not working
@@ -626,16 +628,87 @@ services:
     volumes:
       - /home/core/compose-files/docker/searxng:/etc/searxng:rw
 
-  smokeping:
-    image: lscr.io/linuxserver/smokeping
-    container_name: smokeping
+  immich_server:
+    container_name: immich_server
+    image: ghcr.io/immich-app/immich-server:release
+    volumes:
+      - /mnt/homelab/immich/server:/data:rw
+      - /etc/localtime:/etc/localtime:ro
+    user: 1000:1000 
     environment:
-      - TZ=${TZ}
-    restart: always
-    networks:
-      - web
+      - PUID=1000
+      - PGID=1000
+      - DB_USER=${IMMICH_DB_USERNAME}
+      - DB_PASSWORD=${IMMICH_DB_PASSWORD}
+      - DB_DATABASE_NAME=${IMMICH_DB_DATABASE_NAME}
+      - DB_HOSTNAME=immich_postgres
+      - REDIS_HOSTNAME=immich_redis
     expose:
-      - 80
+      - 2283
+    networks:
+      - internal
+      - web
+    depends_on:
+      - immich_redis
+      - immich_postgres
+    restart: always
+    healthcheck:
+      disable: false
+
+  immich_redis:
+    container_name: immich_redis
+    image: docker.io/valkey/valkey:8@sha256:81db6d39e1bba3b3ff32bd3a1b19a6d69690f94a3954ec131277b9a26b95b3aa
+    networks:
+      - internal
+    expose:
+      - 6379
+    healthcheck:
+      test: redis-cli ping || exit 1
+    restart: always
+
+  immich_postgres:
+    container_name: immich_postgres
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23
+    environment:
+      - POSTGRES_PASSWORD=${IMMICH_DB_PASSWORD}
+      - POSTGRES_USER=${IMMICH_DB_USERNAME}
+      - POSTGRES_DB=${IMMICH_DB_DATABASE_NAME}
+      - POSTGRES_INITDB_ARGS='--data-checksums'
+    volumes:
+      - immich-db:/var/lib/postgresql/data:rw
+    expose:
+      - 5432
+    networks:
+      - internal
+    shm_size: 128mb
+    restart: always
+
+  immich_machine_learning:
+    container_name: immich_machine_learning
+    image: ghcr.io/immich-app/immich-machine-learning:release-cuda
+    expose:
+      - 3003
+    networks:
+      - internal
+    volumes:
+      - immich-model-cache:/cache
+    restart: always
+    healthcheck:
+      disable: false
+    environment:
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - NVIDIA_VISIBLE_DEVICES=all
+    security_opt:
+      - label=type:nvidia_container_t
+    deploy:
+      resources:
+        limits:
+          memory: 15G
+        reservations:
+          devices:
+          - driver: nvidia
+            capabilities: [gpu]
+            count: -1
 
   languagetool:
     image: meyay/languagetool
@@ -761,7 +834,7 @@ services:
           devices:
             - driver: nvidia
               capabilities: [gpu]
-              count: all
+              count: -1
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor
