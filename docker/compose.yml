@@ -161,6 +161,12 @@ services:
     depends_on:
       - gluetun
     network_mode: "service:gluetun"
+    healthcheck:
+      test: ["CMD", "curl", "http://localhost:8000/v1/vpn/status", "|", "grep", "-q", '{"status":"running"}']
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 3
     volumes:
       - /mnt/homelab/transmission:/config:rw
       - /mnt/media:/data:rw
