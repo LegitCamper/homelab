@@ -706,7 +706,7 @@ services:
     shm_size: 128mb
     restart: always
 
-  immich_machine_learning:
+  immich-machine-learning:
     container_name: immich_machine_learning
     image: ghcr.io/immich-app/immich-machine-learning:release-cuda
     expose:
