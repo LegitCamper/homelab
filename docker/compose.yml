@@ -126,12 +126,16 @@ services:
     container_name: gluetun
     restart: always
     environment:
+      - HTTP_CONTROL_SERVER_AUTH_DEFAULT_ROLE='{"auth":"basic","username":"${VPN_CONTROL_USERNAME}","password":"${VPN_CONTROL_PASSWORD}"}'
       - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER}
       - VPN_TYPE=${VPN_TYPE}
       - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
       - SERVER_COUNTRIES=${SERVER_COUNTRIES}
-      - PORT_FORWARD_ONLY=${PORT_FORWARD_ONLY}
-      - VPN_PORT_FORWARDING=${VPN_PORT_FORWARDING}
+      - PORT_FORWARD_ONLY=on
+      - VPN_PORT_FORWARDING=on
+      - UPDATER_PERIOD="6h"
+      - UPDATER_PROTONVPN_EMAIL=${UPDATER_PROTONVPN_EMAIL}
+      - UPDATER_PROTONVPN_PASSWORD=${UPDATER_PROTONVPN_PASSWORD}
       - TZ=${TZ}
     volumes:
       - /mnt/homelab/gluetun:/gluetun
@@ -144,8 +148,7 @@ services:
       - internal
     expose:
       - 8888:8888/tcp # HTTP proxy
-      - 8388:8388/tcp # Shadowsocks
-      - 8388:8388/udp # Shadowsocks
+      - 8000 # control server
       - 9091 # transmission
     healthcheck:
       test: ["CMD", "curl", "-f", "http://127.0.0.1:9999"]
@@ -175,6 +178,8 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=${TZ}
+      - GLUETUN_AUTH_USERNAME=${VPN_CONTROL_USERNAME}
+      - GLUETUN_AUTH_PASSWORD=${VPN_CONTROL_PASSWORD}
     deploy:
       resources:
         limits:
