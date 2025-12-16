@@ -316,7 +316,7 @@ services:
     expose:
       - 9705
     volumes:
-      - huntarr:/config:Z
+      - /mnt/homelab/huntarr:/config:rw
     environment:
       - TZ=${TZ}
 
