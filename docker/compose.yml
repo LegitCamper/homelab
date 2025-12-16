@@ -126,7 +126,7 @@ services:
     container_name: gluetun
     restart: always
     environment:
-      - HTTP_CONTROL_SERVER_AUTH_DEFAULT_ROLE='{"auth":"basic","username":"${VPN_CONTROL_USERNAME}","password":"${VPN_CONTROL_PASSWORD}"}'
+      - HTTP_CONTROL_SERVER_AUTH_DEFAULT_ROLE='{"auth":"none"}'
       - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER}
       - VPN_TYPE=${VPN_TYPE}
       - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
@@ -178,8 +178,7 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=${TZ}
-      - GLUETUN_AUTH_USERNAME=${VPN_CONTROL_USERNAME}
-      - GLUETUN_AUTH_PASSWORD=${VPN_CONTROL_PASSWORD}
+      - GLUETUN_ENDPOINT=/v1/portforward
     deploy:
       resources:
         limits:
