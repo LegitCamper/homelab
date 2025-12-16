@@ -451,6 +451,7 @@ services:
   audiobookshelf:
     image: ghcr.io/advplyr/audiobookshelf:latest
     container_name: audiobookshelf
+    restart: always
     networks:
       - web
     expose:
