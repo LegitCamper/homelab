@@ -648,6 +648,18 @@ services:
     volumes:
       - /home/core/compose-files/docker/searxng:/etc/searxng:rw
 
+  private-search:
+    image: ghcr.io/legitcamper/private-search
+    container_name: private-search
+    restart: always
+    user: 1000:1000 
+    volumes:
+      - /mnt/homelab/private-search:/app/data:rw
+    networks:
+      - web
+    expose:
+      - 8080
+
   immich_server:
     container_name: immich_server
     image: ghcr.io/immich-app/immich-server:release
