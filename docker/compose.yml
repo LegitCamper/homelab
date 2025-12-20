@@ -25,7 +25,7 @@ volumes:
 
 services:
   backup:
-    image: mazzolino/restic
+    image: mazzolino/restic:1.8.2
     container_name: restic-backup
     restart: always
     hostname: homeserver
@@ -53,7 +53,7 @@ services:
       - /mnt/homelab:/mnt/homelab:ro
 
   prune:
-    image: mazzolino/restic
+    image: mazzolino/restic:1.8.2
     container_name: restic-prune
     restart: always
     hostname: homeserver
@@ -68,7 +68,7 @@ services:
       TZ: ${TZ}
 
   check:
-    image: mazzolino/restic
+    image: mazzolino/restic:1.8.2
     container_name: restic-check
     restart: always
     hostname: homeserver
@@ -85,7 +85,7 @@ services:
       TZ: ${TZ}
 
   gitea:
-    image: docker.gitea.com/gitea
+    image: docker.gitea.com/gitea:1.25.3
     container_name: gitea
     restart: always
     environment:
@@ -103,7 +103,7 @@ services:
 
   fileflows:
     container_name: fileflows
-    image: revenz/fileflows
+    image: revenz/fileflows:25.12
     restart: always
     networks:
       - web
@@ -135,7 +135,7 @@ services:
             count: -1
 
   jellyfin:
-    image: jellyfin/jellyfin
+    image: jellyfin/jellyfin:10.11
     container_name: jellyfin
     restart: always
     user: "1000:1000"
@@ -164,7 +164,7 @@ services:
 
   flaresolverr:
     # use fork as flaresolverr is not working
-    image: ghcr.io/yoori/flare-bypasser
+    image: ghcr.io/yoori/flare-bypasser:main
     container_name: flaresolverr
     networks:
       - internal
@@ -182,7 +182,7 @@ services:
           memory: 8G # has memory leak :(
 
   gluetun:
-    image: qmcgaw/gluetun
+    image: qmcgaw/gluetun:v3.40.3
     container_name: gluetun
     restart: always
     environment:
@@ -218,7 +218,7 @@ services:
       start_period: 2m
 
   transmission:
-    image: lscr.io/linuxserver/transmission
+    image: lscr.io/linuxserver/transmission:4.0.6-r5-ls322
     container_name: transmission
     restart: always
     depends_on:
@@ -245,7 +245,7 @@ services:
           memory: 15G
 
   jackett:
-    image: lscr.io/linuxserver/jackett
+    image: ghcr.io/linuxserver/jackett:0.24.488
     container_name: jackett
     user: 1000:1000 
     environment:
@@ -267,7 +267,7 @@ services:
     restart: always
 
   prowlarr:
-    image: lscr.io/linuxserver/prowlarr
+    image: ghcr.io/linuxserver/prowlarr:2.3.0
     container_name: prowlarr
     user: 1000:1000 
     environment:
@@ -291,7 +291,7 @@ services:
       retries: 2
 
   lidarr:
-    image: lscr.io/linuxserver/lidarr
+    image: ghcr.io/linuxserver/lidarr:3.1.0
     container_name: lidarr
     user: 1000:1000 
     environment:
@@ -316,7 +316,7 @@ services:
       retries: 2
 
   sonarr:
-    image: lscr.io/linuxserver/sonarr
+    image: ghcr.io/linuxserver/sonarr:4.0.16
     container_name: sonarr
     user: 1000:1000 
     environment:
@@ -341,7 +341,7 @@ services:
       retries: 2
 
   radarr:
-    image: lscr.io/linuxserver/radarr
+    image: ghcr.io/linuxserver/radarr:6.0.4
     container_name: radarr
     user: 1000:1000 
     environment:
@@ -366,7 +366,7 @@ services:
       retries: 2
 
   huntarr:
-    image: huntarr/huntarr
+    image: ghcr.io/plexguide/huntarr:8.2.10
     container_name: huntarr
     restart: always
     user: 1000:1000 
@@ -381,7 +381,7 @@ services:
       - TZ=${TZ}
 
   cleanuparr:
-    image: ghcr.io/cleanuparr/cleanuparr
+    image: ghcr.io/cleanuparr/cleanuparr:2.4.7
     container_name: cleanuparr
     restart: always 
     networks:
@@ -509,7 +509,7 @@ services:
       retries: 2
 
   audiobookshelf:
-    image: ghcr.io/advplyr/audiobookshelf:latest
+    image: ghcr.io/advplyr/audiobookshelf:2.31.0
     container_name: audiobookshelf
     restart: always
     networks:
@@ -549,7 +549,7 @@ services:
       retries: 2
 
   calibre:
-    image: lscr.io/linuxserver/calibre
+    image: ghcr.io/linuxserver/calibre:8.16.2
     container_name: calibre
     security_opt:
       - seccomp:unconfined #optional
@@ -568,7 +568,7 @@ services:
     restart: always
 
   calibre-web:
-    image: lscr.io/linuxserver/calibre-web
+    image: ghcr.io/linuxserver/calibre-web:0.6.25
     container_name: calibre-web
     environment:
       - PUID=1000
@@ -589,7 +589,7 @@ services:
       - calibre
 
   traefik:
-    image: traefik
+    image: traefik:v3.6
     container_name: traefik
     restart: always
     environment:
@@ -617,7 +617,7 @@ services:
       - 8080 # dashboard
 
   crowdsec:
-    image: crowdsecurity/crowdsec
+    image: crowdsecurity/crowdsec:v1.7.4
     container_name: crowdsec
     restart: always
     environment:
@@ -636,7 +636,7 @@ services:
       - internal # prometheus
   
   uptime-kuma:
-    image: louislam/uptime-kuma:1
+    image: louislam/uptime-kuma:2.0.2
     container_name: uptime-kuma
     restart: always
     volumes:
@@ -648,7 +648,7 @@ services:
       - 3001
 
   adguardhome:
-    image: adguard/adguardhome
+    image: adguard/adguardhome:v0.107.71
     container_name: adguardhome
     restart: always
     environment:
@@ -668,7 +668,7 @@ services:
       - 443 # doh
 
   lego:
-    image: goacme/lego
+    image: goacme/lego:v4.30.1
     container_name: lego-certbot
     restart: always
     user: "1000:1000"
@@ -685,7 +685,7 @@ services:
       - /mnt/homelab/letsencrypt:/etc/letsencrypt:rw
 
   unduck:
-    image: ghcr.io/legitcamper/unduck
+    image: ghcr.io/legitcamper/unduck:latest
     container_name: unduck
     restart: always
     networks:
@@ -694,7 +694,7 @@ services:
       - 3000
 
   searxng:
-    image: searxng/searxng
+    image: searxng/searxng:2025.12.19-8bf600cc6
     container_name: searxng
     restart: always
     user: "1000:1000"
@@ -709,7 +709,7 @@ services:
       - /home/core/compose-files/docker/searxng:/etc/searxng:rw
 
   private-search:
-    image: ghcr.io/legitcamper/private-search
+    image: ghcr.io/legitcamper/private-search:latest
     container_name: private-search
     restart: always
     user: 1000:1000 
@@ -722,7 +722,7 @@ services:
 
   immich_server:
     container_name: immich_server
-    image: ghcr.io/immich-app/immich-server:release
+    image: ghcr.io/immich-app/immich-server:v2.4.0
     volumes:
       - /mnt/homelab/immich/server:/data:rw
       - /etc/localtime:/etc/localtime:ro
@@ -781,7 +781,7 @@ services:
 
   immich-machine-learning:
     container_name: immich_machine_learning
-    image: ghcr.io/immich-app/immich-machine-learning:release-cuda
+    image: ghcr.io/immich-app/immich-machine-learning:v2.4.0-cuda
     expose:
       - 3003
     networks:
@@ -807,7 +807,7 @@ services:
             count: -1
 
   languagetool:
-    image: meyay/languagetool
+    image: meyay/languagetool:6.7-3
     container_name: languagetool
     restart: always
     user: "1000:1000"
@@ -857,7 +857,7 @@ services:
 
   grafana:
     container_name: grafana
-    image: grafana/grafana-enterprise 
+    image: grafana/grafana-enterprise:12.3 
     user: "1000:1000"
     environment:
       TZ: ${TZ}
@@ -875,7 +875,7 @@ services:
 
   prometheus:
     container_name: prometheus
-    image: prom/prometheus
+    image: prom/prometheus:v3.8.1
     user: "1000:1000"
     environment:
       TZ: ${TZ}
@@ -898,7 +898,7 @@ services:
       - crowdsec
 
   node_exporter:
-    image: quay.io/prometheus/node-exporter
+    image: quay.io/prometheus/node-exporter:v1.10.2
     container_name: node_exporter
     environment:
       TZ: ${TZ}
@@ -913,7 +913,7 @@ services:
       - /:/host:ro,rslave
 
   dcgm-exporter:
-    image: nvcr.io/nvidia/k8s/dcgm-exporter
+    image: nvcr.io/nvidia/k8s/dcgm-exporter:4.4.2-4.7.1-distroless
     container_name: dcgm-exporter
     environment:
       TZ: ${TZ}
@@ -933,7 +933,7 @@ services:
               count: -1
 
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor
+    image: gcr.io/cadvisor/cadvisor:v0.52.0
     container_name: cadvisor
     privileged: true
     restart: always
@@ -953,7 +953,7 @@ services:
       - /dev/kmsg:/dev/kmsg
 
   portfolio:
-    image: ghcr.io/legitcamper/portfolio-site
+    image: ghcr.io/legitcamper/portfolio-site:latest
     container_name: portfolio
     restart: always
     networks:
@@ -962,7 +962,7 @@ services:
         - 8000
 
   mom-contact:
-    image: ghcr.io/legitcamper/mom-contact
+    image: ghcr.io/legitcamper/mom-contact:latest
     container_name: mom-contact
     restart: always
     networks:
