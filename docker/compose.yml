@@ -933,7 +933,7 @@ services:
               count: -1
 
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:v0.52.0
+    image: gcr.io/cadvisor/cadvisor:v0.52.1
     container_name: cadvisor
     privileged: true
     restart: always
