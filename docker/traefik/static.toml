@@ -15,6 +15,10 @@ defaultMode = "keep"
 X-Forwarded-Tls-Client-Cert-Info = "keep"
 X-Real-IP = "keep"
 
+[metrics]
+[metrics.prometheus]
+buckets = [0.1, 0.3, 1.2, 5.0]
+
 [accesslog]
 filepath = "/var/log/traefik/access.log"
 
