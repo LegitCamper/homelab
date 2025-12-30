@@ -242,7 +242,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 15G
+          memory: 5G
 
   jackett:
     image: ghcr.io/linuxserver/jackett:0.24.488
