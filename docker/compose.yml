@@ -242,7 +242,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 5G
+          memory: 10G
 
   jackett:
     image: ghcr.io/linuxserver/jackett:0.24.488
@@ -823,6 +823,10 @@ services:
     volumes:
       - /mnt/homelab/languagetool/ngrams:/ngrams:rw
       - /mnt/homelab/languagetool/fasttext:/fasttext:rw
+    deploy:
+      resources:
+        limits:
+          memory: 5G
 
   loki:
     image: grafana/loki:3.3.2
