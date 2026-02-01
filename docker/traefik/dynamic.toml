@@ -294,17 +294,6 @@ certResolver = "cloudflare"
 [[http.services.languagetool.loadBalancer.servers]]
 url = "http://languagetool:8081"
 
-[http.routers.adguard]
-entryPoints = ["websecure"]
-service = "adguard"
-rule = "Host(`adguard.ts.sawyer.services`) || Host(`adguardhome.ts.sawyer.services`)"
-middlewares = ["tailscale-allowlist"]
-[http.routers.adguard.tls]
-certResolver = "cloudflare"
-[http.services.adguard.loadBalancer]
-[[http.services.adguard.loadBalancer.servers]]
-url = "http://adguardhome:80"
-
 [http.routers.doh]
 entryPoints = ["websecure"]
 service = "doh"
@@ -313,7 +302,7 @@ rule = "Host(`dns.sawyer.services`)"
 certResolver = "cloudflare"
 [http.services.doh.loadBalancer]
 [[http.services.doh.loadBalancer.servers]]
-url = "https://adguardhome:443"
+url = "https://blocky:443"
 
 # not terminating tls and instead pass directly to adguard
 [tcp.routers.dot]

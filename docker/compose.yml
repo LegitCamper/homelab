@@ -647,25 +647,23 @@ services:
     expose:
       - 3001
 
-  adguardhome:
-    image: adguard/adguardhome:v0.107.71
-    container_name: adguardhome
+  blocky:
+    image: spx01/blocky
+    container_name: blocky
     restart: always
-    environment:
-      - TZ=${TZ}
-    # user: "1000:1000"
+    hostname: blocky-homeserver
     networks:
       dns: 
         ipv4_address: 172.55.0.10 
-    volumes:
-      - /mnt/homelab/adgaurd:/opt/adguardhome/conf:rw
-      - adguard-work:/opt/adguardhome/work:Z
-      - /mnt/homelab/letsencrypt:/opt/adguardhome/certs/:ro
     expose:
-      - 80 # webui
-      - 53 # dns - not used
-      - 853 # dot
-      - 443 # doh
+      - 853 # DoT
+      - 443 # DoH
+    environment:
+      - TZ=${TZ} 
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /home/core/compose-files/docker/blocky/config.yml:/app/config.yml:ro
+      - /mnt/homelab/letsencrypt:/etc/letsencrypt:ro
 
   lego:
     image: goacme/lego:v4.30.1
