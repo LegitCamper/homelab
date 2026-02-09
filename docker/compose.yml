@@ -617,7 +617,7 @@ services:
       - 8080 # dashboard
 
   crowdsec:
-    image: crowdsecurity/crowdsec:v1.7.4
+    image: crowdsecurity/crowdsec:v1.7.6
     container_name: crowdsec
     restart: always
     environment:
