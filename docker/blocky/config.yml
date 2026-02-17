@@ -69,7 +69,6 @@ bootstrapDns:
 fqdnOnly:
   enable: true
 
-# optional: ports configuration
 ports:
   tls: 853
   https: 443
