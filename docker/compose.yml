@@ -594,7 +594,6 @@ services:
     restart: always
     environment:
       - CF_DNS_API_TOKEN=${CF_API_KEY}
-      #- CF_API_EMAIL=${CF_API_EMAIL}
       - DNS=${DNS}
     volumes:
       - /etc/localtime:/etc/localtime:ro
@@ -672,8 +671,7 @@ services:
     user: "1000:1000"
     environment:
       - TZ=${TZ}
-      - CLOUDFLARE_EMAIL=${CF_API_EMAIL}
-      - CLOUDFLARE_API_KEY=${CF_API_KEY}
+      - CLOUDFLARE_DNS_API_TOKEN=${CF_API_KEY}
     command:
       --accept-tos
       --email ${CF_API_EMAIL} --dns cloudflare 
