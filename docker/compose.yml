@@ -13,8 +13,6 @@ networks:
 
 volumes:
   logs:
-  crowdsec-db:
-  crowdsec-config:
   jellyfin-config:
   jellyfin-cache:
   adguard-work:
@@ -83,6 +81,17 @@ services:
       B2_ACCOUNT_ID: ${B2_ACCOUNT_ID}
       B2_ACCOUNT_KEY: ${B2_ACCOUNT_KEY}
       TZ: ${TZ}
+
+  newt:
+    image: fosrl/newt:1.9.0
+    container_name: newt
+    restart: always
+    networks:
+      - web
+    environment:
+      - PANGOLIN_ENDPOINT=https://pangolin.${DOMAIN}
+      - NEWT_ID=${NEWT_ID}
+      - NEWT_SECRET=${NEWT_SECRET}
 
   gitea:
     image: docker.gitea.com/gitea:1.25.3
@@ -614,25 +623,6 @@ services:
       - "853:853"
     expose:
       - 8080 # dashboard
-
-  crowdsec:
-    image: crowdsecurity/crowdsec:v1.7.4
-    container_name: crowdsec
-    restart: always
-    environment:
-      COLLECTIONS: "crowdsecurity/traefik crowdsecurity/http-cve crowdsecurity/http-dos"
-      GID: "${GID-1000}"
-    ports:
-      - 8080:8080 # LAPI
-    expose:
-      - 6060 # prometheus port
-    volumes:      
-      - /home/core/compose-files/docker/crowdsec/acquis.yaml:/etc/crowdsec/acquis.yaml:ro
-      - crowdsec-db:/var/lib/crowdsec/data/:rw
-      - crowdsec-config:/etc/crowdsec/:rw
-      - logs:/var/log/traefik:ro
-    networks:
-      - internal # prometheus
   
   uptime-kuma:
     image: louislam/uptime-kuma:2.0.2
@@ -896,7 +886,6 @@ services:
     depends_on:
       - node_exporter
       - dcgm-exporter
-      - crowdsec
 
   node_exporter:
     image: quay.io/prometheus/node-exporter:v1.10.2
