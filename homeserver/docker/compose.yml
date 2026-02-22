@@ -15,7 +15,6 @@ volumes:
   logs:
   jellyfin-config:
   jellyfin-cache:
-  adguard-work:
   huntarr:
   fileflows-temp:
   immich-model-cache:
@@ -82,6 +81,7 @@ services:
       B2_ACCOUNT_KEY: ${B2_ACCOUNT_KEY}
       TZ: ${TZ}
 
+  # traffic ingress from pangolin
   newt:
     image: fosrl/newt:1.9.0
     container_name: newt
@@ -596,33 +596,6 @@ services:
     restart: always
     depends_on: 
       - calibre
-
-  traefik:
-    image: traefik:v3.6
-    container_name: traefik
-    restart: always
-    environment:
-      - CF_DNS_API_TOKEN=${CF_API_KEY}
-      - DNS=${DNS}
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /home/core/acme/:/etc/traefik/acme:rw
-      - /home/core/compose-files/docker/traefik/static.toml:/etc/traefik/traefik.toml:ro
-      - /home/core/compose-files/docker/traefik/dynamic.toml:/etc/traefik/dynamic.toml:ro
-      - /home/core/compose-files/docker/traefik/captcha.html:/captcha.html:ro
-      - logs:/var/log/traefik:rw
-    networks:
-      - internal
-      - web
-      - dns
-    # traffic ingress via tailscale from vps nginx
-    ports:
-      - "222:22" # avoids collision with openssh
-      - "443:443"
-      - "853:853"
-    expose:
-      - 8080 # dashboard
   
   uptime-kuma:
     image: louislam/uptime-kuma:2.0.2
