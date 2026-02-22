@@ -577,7 +577,7 @@ services:
     restart: always
 
   calibre-web:
-    image: ghcr.io/linuxserver/calibre-web:0.6.26
+    image: ghcr.io/linuxserver/calibre-web:5.33.2
     container_name: calibre-web
     environment:
       - PUID=1000
