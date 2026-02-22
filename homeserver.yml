@@ -52,19 +52,6 @@
         src: homeserver/docker
         dest: /home/core/compose-files
 
-    - name: Get cf email
-      ansible.builtin.shell:
-        cat /home/core/compose-files/secrets.env | grep CF_API_EMAIL | sed 's/^.*CF_API_EMAIL=//'
-      register: cf_email
-      ignore_errors: true
-      changed_when: false
-
-    - name: Replace cf_email with email
-      ansible.builtin.replace:
-        path: /home/core/compose-files/docker/traefik/static.toml
-        regexp: '"email"'
-        replace: '"{{ cf_email.stdout }}"'
-
     - name: Is core user in docker group 
       ansible.builtin.shell:
         grep 'docker' /etc/group | grep core

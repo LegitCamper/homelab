@@ -1,0 +1,35 @@
+---
+- name: Configure dns server (ubuntu vps)
+  hosts: "*"
+  remote_user: root
+    
+  tasks:  
+    - name: Copy secrets file
+      ansible.builtin.copy:
+        decrypt: true
+        src: secrets.env
+        dest: /root/
+
+    - name: Crate letsencrypt dir
+      ansible.builtin.file:
+        path: /root/letsencrypt/
+        state: directory
+
+    - name: enable docker sock
+      ansible.builtin.systemd_service:
+          name: docker.socket
+          state: started
+          enabled: true
+
+    - name: Copy compose files
+      ansible.builtin.copy:
+        src: dns
+        dest: /root/
+
+    - name: Setup containers
+      community.docker.docker_compose_v2:
+        project_name: dns
+        env_files: /root/secrets.env
+        project_src: ./
+        files: /root/dns/compose.yml
+        remove_orphans: true

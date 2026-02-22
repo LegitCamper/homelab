@@ -3,6 +3,7 @@ upstreams:
     strategy: fast
   groups:
     default:
+      - 9.9.9.9
       - tcp-tls:dns10.quad9.net:853
       - https://dns10.quad9.net/dns-query
       - tcp-tls:one.one.one.one:853
