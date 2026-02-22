@@ -781,7 +781,7 @@ services:
           memory: 5G
 
   loki:
-    image: grafana/loki:3.3.2
+    image: grafana/loki:3.6.6
     container_name: loki
     environment:
       TZ: ${TZ}
