@@ -1,9 +1,7 @@
 # Overview
 ## Servers
-- Gateway: A server with a public ip running on a vps like Digital Ocean
+- Gateway: A Pangolin server running on a vps like Digital Ocean
 - Homeserver: A server behind a nat
-## Networking
-- The gateway server running Pangolin proxy and Crowdsec
 ## Playbooks
 - `homeserver.yml` configures homeserver with the compose files
 
