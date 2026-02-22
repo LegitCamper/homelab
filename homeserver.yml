@@ -45,11 +45,11 @@
 
     - name: install and configure tailscale
       ansible.builtin.include_tasks:
-        file: tasks/cifs.yml
+        file: homeserver/tasks/cifs.yml
 
     - name: Copy compose files
       ansible.builtin.copy:
-        src: docker
+        src: homeserver/docker
         dest: /home/core/compose-files
 
     - name: Get cf email
@@ -91,12 +91,6 @@
     - name: Create 'internal' network
       community.docker.docker_network:
         name: internal
-
-    # - name: Create acme dir
-    #   ansible.builtin.file:
-    #     path: /home/core/acme/
-    #     state: "directory"
-    #     mode: '0700'
 
     - name: Setup containers
       community.docker.docker_compose_v2:

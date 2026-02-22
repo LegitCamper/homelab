@@ -1,0 +1,41 @@
+networks:
+  dns:
+    ipam:
+      config:
+        - subnet: 172.55.0.0/24
+
+services:
+  blocky:
+    image: spx01/blocky:v0.28.2
+    container_name: blocky
+    restart: always
+    hostname: blocky-homeserver
+    networks:
+      dns: 
+        ipv4_address: 172.55.0.10 
+    expose:
+      - 853 # DoT
+      - 443 # DoH
+    environment:
+      - TZ=${TZ} 
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /root/blocky/config.yml:/app/config.yml:ro
+      - /root/letsencrypt:/etc/letsencrypt:ro
+
+  lego:
+    image: goacme/lego:v4.30.1
+    container_name: lego-certbot
+    restart: unless-stopped
+    user: "1000:1000"
+    environment:
+      - TZ=${TZ}
+      - CLOUDFLARE_DNS_API_TOKEN=${CF_API_KEY}
+    command:
+      --accept-tos
+      --email ${CF_API_EMAIL} --dns cloudflare 
+      --domains dns.${DOMAIN} --path /etc/letsencrypt/ 
+      renew
+      --days 30
+    volumes:
+      - /root/letsencrypt:/etc/letsencrypt:rw

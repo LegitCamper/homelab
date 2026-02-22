@@ -3,9 +3,8 @@
 - Gateway: A server with a public ip running on a vps like Digital Ocean
 - Homeserver: A server behind a nat
 ## Networking
-- The gateway server forwards all packets from 80 & 443 to to homeserver
+- The gateway server running Pangolin proxy and Crowdsec
 ## Playbooks
-- `gateway.yaml` configures the gateway to forward traffic and protect it with crowdsec
 - `homeserver.yml` configures homeserver with the compose files
 
 # Install Ucore on homeserver

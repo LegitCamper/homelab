@@ -1,0 +1,22 @@
+[http.middlewares]
+[http.middlewares.tailscale-allowlist.IPAllowList]
+sourceRange = ["100.64.0.0/10"]
+
+[http.routers.doh]
+entryPoints = ["websecure"]
+service = "doh"
+rule = "Host(`dns.sawyer.services`)"
+[http.routers.doh.tls]
+certResolver = "cloudflare"
+[http.services.doh.loadBalancer]
+[[http.services.doh.loadBalancer.servers]]
+url = "https://blocky:443"
+
+# not terminating tls and instead pass directly to adguard
+[tcp.routers.dot]
+entryPoints = ["dot"]
+service = "dot"
+rule = "HostSNI(`*`)"
+[tcp.services.dot.loadBalancer]
+[[tcp.services.dot.loadBalancer.servers]]
+address = "172.55.0.10:853"
