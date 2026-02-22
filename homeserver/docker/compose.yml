@@ -674,7 +674,7 @@ services:
 
   immich_server:
     container_name: immich_server
-    image: ghcr.io/immich-app/immich-server:v2.4.0
+    image: ghcr.io/immich-app/immich-server:v2.5.6
     volumes:
       - /mnt/homelab/immich/server:/data:rw
       - /etc/localtime:/etc/localtime:ro
@@ -733,7 +733,7 @@ services:
 
   immich-machine-learning:
     container_name: immich_machine_learning
-    image: ghcr.io/immich-app/immich-machine-learning:v2.4.0-cuda
+    image: ghcr.io/immich-app/immich-machine-learning:v2.5.6-cuda
     expose:
       - 3003
     networks:
