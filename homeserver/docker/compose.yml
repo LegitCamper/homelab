@@ -216,7 +216,7 @@ services:
       - web
       - internal
     expose:
-      - 8888:8888/tcp # HTTP proxy
+      - 8888 # HTTP proxy
       - 8000 # control server
       - 9091 # transmission
     healthcheck:
@@ -577,8 +577,9 @@ services:
     restart: always
 
   calibre-web:
-    image: ghcr.io/linuxserver/calibre-web:5.33.2
+    image: ghcr.io/linuxserver/calibre-web:0.6.26
     container_name: calibre-web
+    restart: always
     environment:
       - PUID=1000
       - PGID=1000
@@ -593,7 +594,6 @@ services:
       - web
     expose:
       - 8083
-    restart: always
     depends_on: 
       - calibre
   
