@@ -390,7 +390,7 @@ services:
       - TZ=${TZ}
 
   cleanuparr:
-    image: ghcr.io/cleanuparr/cleanuparr:2.4.7
+    image: ghcr.io/cleanuparr/cleanuparr:2.7.6
     container_name: cleanuparr
     restart: always 
     networks:
