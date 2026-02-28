@@ -219,12 +219,6 @@ services:
       - 8888 # HTTP proxy
       - 8000 # control server
       - 9091 # transmission
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://127.0.0.1:9999"]
-      interval: 1m30s
-      timeout: 20s
-      retries: 3
-      start_period: 2m
 
   transmission:
     image: lscr.io/linuxserver/transmission:4.0.6-r5-ls322
