@@ -205,6 +205,7 @@ services:
       - UPDATER_PERIOD="6h"
       - UPDATER_PROTONVPN_EMAIL=${UPDATER_PROTONVPN_EMAIL}
       - UPDATER_PROTONVPN_PASSWORD=${UPDATER_PROTONVPN_PASSWORD}
+      - DNS_SERVER=off
       - TZ=${TZ}
     volumes:
       - /mnt/homelab/gluetun:/gluetun
