@@ -19,12 +19,12 @@ blocking:
       - https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
       - http://sysctl.org/cameleon/hosts
       - https://s3.amazonaws.com/lists.disconnect.me/simple_tracking.txt
-      - |
-        # inline definition with YAML literal block scalar style
-        someadsdomain.com
-        *.example.com
     special:
       - https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews/hosts
+  clientGroupsBlock:
+    default:
+      - ads
+      - special
   blockType: zeroIp
   blockTTL: 1m
   loading:
