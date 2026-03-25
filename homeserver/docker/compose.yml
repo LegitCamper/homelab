@@ -15,7 +15,7 @@ volumes:
   logs:
   jellyfin-config:
   jellyfin-cache:
-  huntarr:
+  fetcharr:
   fileflows-temp:
   immich-model-cache:
   immich-db:
@@ -369,20 +369,28 @@ services:
       timeout: 10s
       retries: 2
 
-  huntarr:
-    image: ghcr.io/plexguide/huntarr:8.2.25
-    container_name: huntarr
+  fetcharr:
+    image: ghcr.io/egg82/fetcharr:2.0.2
+    container_name: fetcharr
     restart: always
     user: 1000:1000 
-    networks:
-      - web
-      - internal
-    expose:
-      - 9705
-    volumes:
-      - /mnt/homelab/huntarr:/config:rw
     environment:
+     - VERIFY_CERTS=false
+     - SEARCH_AMOUNT=5
+     - SEARCH_INTERVAL=1hour
+     - USE_CUTOFF=true
+     - RADARR_0_URL=http://radarr
+     - RADARR_0_API_KEY=${ARR_API_KEY}
+     - SONARR_0_URL=http://sonarr
+     - SONARR_0_API_KEY=${ARR_API_KEY}
+     - LIDARR_0_URL=http://lidarr
+     - LIDARR_0_API_KEY=${ARR_API_KEY}
       - TZ=${TZ}
+    networks:
+      - internal
+    volumes:
+      - /mnt/homelab/fetcharr:/app/config:rw
+      - fetcharr:/app/cache:rw
 
   cleanuparr:
     image: ghcr.io/cleanuparr/cleanuparr:2.4.7
