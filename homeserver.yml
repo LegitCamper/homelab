@@ -1,6 +1,7 @@
 ---
 - name: Configure homeserver (ucore)
-  hosts: "*"
+  hosts:
+    - homeserver
   remote_user: core
     
   pre_tasks: 

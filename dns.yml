@@ -1,6 +1,7 @@
 ---
-- name: Configure dns server (ubuntu vps)
-  hosts: "*"
+- name: Configure blocky dns server (ubuntu vps)
+  hosts:
+    - dns
   remote_user: root
     
   tasks:  
