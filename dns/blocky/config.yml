@@ -3,11 +3,10 @@ upstreams:
     strategy: fast
   groups:
     default:
-      - 9.9.9.9
-      - tcp-tls:dns10.quad9.net:853
       - https://dns10.quad9.net/dns-query
-      - tcp-tls:one.one.one.one:853
-  strategy: parallel_best
+      - https://cloudflare-dns.com/dns-query
+      - https://anycast.uncensoreddns.org/dns-query
+  strategy: strict
   timeout: 2s
 
 connectIPVersion: dual
@@ -15,12 +14,17 @@ connectIPVersion: dual
 blocking:
   denylists:
     ads:
-      - https://s3.amazonaws.com/lists.disconnect.me/simple_ad.txt
       - https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
-      - http://sysctl.org/cameleon/hosts
-      - https://s3.amazonaws.com/lists.disconnect.me/simple_tracking.txt
-    special:
-      - https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews/hosts
+      - https://easylist.to/easylist/easylist.txt
+      - https://secure.fanboy.co.nz/fanboy-cookiemonster.txt
+      - https://easylist.to/easylist/easyprivacy.txt
+      - https://secure.fanboy.co.nz/fanboy-annoyance.txt
+      - https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/domains/pro.plus.txt
+
+      - https://github.com/blocklistproject/Lists/blob/master/smart-tv.txt
+      - https://github.com/blocklistproject/Lists/blob/master/tracking.txt
+      - https://github.com/blocklistproject/Lists/blob/master/fraud.txt
+      - https://github.com/blocklistproject/Lists/blob/master/ransomware.txt
   clientGroupsBlock:
     default:
       - ads
