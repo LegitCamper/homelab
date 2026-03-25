@@ -295,7 +295,7 @@ services:
       retries: 2
 
   lidarr:
-    image: ghcr.io/linuxserver/lidarr:3.1.0
+    image: ghcr.io/linuxserver/lidarr:3.1.0.4875-ls22
     container_name: lidarr
     user: 1000:1000 
     environment:
