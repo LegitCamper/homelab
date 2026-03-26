@@ -15,7 +15,8 @@ volumes:
   logs:
   jellyfin-config:
   jellyfin-cache:
-  fetcharr:
+  fetcharr-cache:
+  fetcharr-logs:
   fileflows-temp:
   immich-model-cache:
   immich-db:
@@ -375,22 +376,23 @@ services:
     restart: always
     user: 1000:1000 
     environment:
-     - VERIFY_CERTS=false
-     - SEARCH_AMOUNT=5
-     - SEARCH_INTERVAL=1hour
-     - USE_CUTOFF=true
-     - RADARR_0_URL=http://radarr
-     - RADARR_0_API_KEY=${ARR_API_KEY}
-     - SONARR_0_URL=http://sonarr
-     - SONARR_0_API_KEY=${ARR_API_KEY}
-     - LIDARR_0_URL=http://lidarr
-     - LIDARR_0_API_KEY=${ARR_API_KEY}
+      - VERIFY_CERTS=false
+      - SEARCH_AMOUNT=5
+      - SEARCH_INTERVAL=1hour
+      - USE_CUTOFF=true
+      - RADARR_0_URL=http://radarr:7878
+      - RADARR_0_API_KEY=${RADARR_API_KEY}
+      - SONARR_0_URL=http://sonarr:8989
+      - SONARR_0_API_KEY=${SONARR_API_KEY}
+      - LIDARR_0_URL=http://lidarr:8686
+      - LIDARR_0_API_KEY=${LIDARR_API_KEY}
       - TZ=${TZ}
     networks:
       - internal
     volumes:
       - /mnt/homelab/fetcharr:/app/config:rw
-      - fetcharr:/app/cache:rw
+      - fetcharr-cache:/app/cache:rw
+      - fetcharr-logs:/app/logs:rw
 
   cleanuparr:
     image: ghcr.io/cleanuparr/cleanuparr:2.4.7
