@@ -563,7 +563,7 @@ services:
       retries: 2
 
   calibre:
-    image: ghcr.io/linuxserver/calibre:8.16.2
+    image: ghcr.io/linuxserver/calibre:9.6.0
     container_name: calibre
     security_opt:
       - seccomp:unconfined #optional
