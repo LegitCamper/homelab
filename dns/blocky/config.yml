@@ -11,6 +11,12 @@ upstreams:
 
 connectIPVersion: dual
 
+customDNS:
+  customTTL: 1h
+  mapping:
+    bevbot: 100.116.101.69
+    bevbot.dunker-arctic.ts.net: 100.116.101.69 
+
 blocking:
   denylists:
     ads:
