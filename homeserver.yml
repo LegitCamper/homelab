@@ -30,19 +30,42 @@
           state: started
           enabled: true
 
-    - name: enable docker sock
+    - name: Create docker.service override directory
+      become: true
+      ansible.builtin.file:
+        path: /etc/systemd/system/docker.service.d
+        state: directory
+        mode: "0755"
+    
+    - name: Configure docker.service mount dependency override
+      become: true
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/docker.service.d/override.conf
+        mode: "0644"
+        content: |
+          [Unit]
+          RequiresMountsFor=/mnt/homelab /mnt/media
+          After=network-online.target mnt-homelab.mount mnt-media.mount
+          Wants=network-online.target
+    
+    - name: Reload systemd daemon
       become: true
       ansible.builtin.systemd_service:
-          name: docker.socket
-          state: started
-          enabled: true
-
-      # docker is starting before cifs mounts
-    - name: disable docker service
+        daemon_reload: true
+    
+    - name: Disable docker socket activation
       become: true
       ansible.builtin.systemd_service:
-          name: docker.service
-          enabled: false
+        name: docker.socket
+        enabled: false
+        state: stopped
+    
+    - name: Enable docker service
+      become: true
+      ansible.builtin.systemd_service:
+        name: docker.service
+        enabled: true
+        state: started
 
     - name: install and configure tailscale
       ansible.builtin.include_tasks:
@@ -83,7 +106,9 @@
     - name: Setup containers
       community.docker.docker_compose_v2:
         project_name: homeserver
-        env_files: /home/core/compose-files/secrets.env
-        project_src: ./
-        files: /home/core/compose-files/docker/compose.yml
+        project_src: /home/core/compose-files/docker
+        files:
+          - compose.yml
+        env_files:
+          - /home/core/compose-files/secrets.env
         remove_orphans: true
