@@ -20,44 +20,40 @@
   ignore_errors: true
   changed_when: false
 
-- name: Check homelab mount
-  stat:
-    path: /mnt/homelab 
-  register: homelab_mount
+- name: Verify /mnt/homelab is mounted
+  ansible.builtin.command: findmnt -n /mnt/homelab
+  register: media_findmnt
+  changed_when: false
+  failed_when: false
 
-- name: mount homenas homelab fs
+- name: Verify /mnt/media is mounted
+  ansible.builtin.command: findmnt -n /mnt/media
+  register: media_findmnt
+  changed_when: false
+  failed_when: false
+
+- name: Ensure homelab mount is in fstab and mounted
   become: true
-  when: not homelab_mount.stat.exists
   ansible.posix.mount:
     path: /mnt/homelab
     src: "//{{ cifs_host.stdout }}/homelab"
     fstype: cifs
-    opts: "username={{ cifs_user.stdout }},password={{ cifs_password.stdout }},vers=3.0,rw,nofail,nobrl,uid=1000,gid=1000"
-    state: present
+    opts: "username={{ cifs_user.stdout }},password={{ cifs_password.stdout }},vers=3.0,rw,nofail,_netdev,uid=1000,gid=1000,actimeo=1"
+    state: mounted
 
-- name: Check media mount
-  stat:
-    path: /mnt/media
-  register: media_mount
-
-- name: mount homenas media fs
+- name: Ensure media mount is in fstab and mounted
   become: true
-  when: not media_mount.stat.exists
   ansible.posix.mount:
     path: /mnt/media
     src: "//{{ cifs_host.stdout }}/media"
     fstype: cifs
-    opts: "username={{ cifs_user.stdout }},password={{ cifs_password.stdout }},vers=3.0,rw,nofail,uid=1000,gid=1000"
-    state: present
+    opts: "username={{ cifs_user.stdout }},password={{ cifs_password.stdout }},vers=3.0,rw,nofail,_netdev,uid=1000,gid=1000,actimeo=30"
+    state: mounted
+   
+- name: Verify /mnt/media is mounted
+  ansible.builtin.command: findmnt -n /mnt/media
+  changed_when: false
 
-- name: reboot if needed
-  when: not media_mount.stat.exists or not homelab_mount.stat.exists
-  ansible.builtin.reboot:
-
-- name: reload mount
-  when: not media_mount.stat.exists or not homelab_mount.stat.exists
-  become: true
-  ansible.builtin.systemd_service:
-      name: remote-fs.target
-      state: restarted
-      enabled: true
+- name: Verify /mnt/homelab is mounted
+  ansible.builtin.command: findmnt -n /mnt/homelab
+  changed_when: false
