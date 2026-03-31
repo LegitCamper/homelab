@@ -20,8 +20,8 @@
   ignore_errors: true
   changed_when: false
 
-- name: Verify /mnt/homelab is mounted
-  ansible.builtin.command: findmnt -n /mnt/homelab
+- name: Verify /mnt/homelab_iscsi is mounted
+  ansible.builtin.command: findmnt -n /mnt/homelab_iscsi
   register: media_findmnt
   changed_when: false
   failed_when: false
@@ -32,13 +32,13 @@
   changed_when: false
   failed_when: false
 
-- name: Ensure homelab mount is in fstab and mounted
+- name: Ensure homelab_iscsi mount is in fstab and mounted
   become: true
   ansible.posix.mount:
-    path: /mnt/homelab
-    src: "//{{ cifs_host.stdout }}/homelab"
-    fstype: cifs
-    opts: "username={{ cifs_user.stdout }},password={{ cifs_password.stdout }},vers=3.0,rw,nofail,nobrl,_netdev,uid=1000,gid=1000,echo_interval=60,actimeo=1"
+    path: /mnt/homelab_iscsi
+    src: UUID=5af0a223-44e2-4f50-a7f5-abec2d9b3a04
+    fstype: ext4
+    opts: "defaults,_netdev,nofail"
     state: mounted
 
 - name: Ensure media mount is in fstab and mounted
@@ -54,6 +54,6 @@
   ansible.builtin.command: findmnt -n /mnt/media
   changed_when: false
 
-- name: Verify /mnt/homelab is mounted
-  ansible.builtin.command: findmnt -n /mnt/homelab
+- name: Verify /mnt/homelab_iscsi is mounted
+  ansible.builtin.command: findmnt -n /mnt/homelab_iscsi
   changed_when: false

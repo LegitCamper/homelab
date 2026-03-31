@@ -13,7 +13,6 @@ networks:
 
 volumes:
   logs:
-  jellyfin-config:
   jellyfin-cache:
   fetcharr-cache:
   fetcharr-logs:
@@ -48,7 +47,7 @@ services:
       TZ: ${TZ}
     volumes:
       - /var/lib/docker/volumes:/mnt/volumes:ro
-      - /mnt/homelab:/mnt/homelab:ro
+      - /mnt/homelab_iscsi:/mnt/homelab:ro
 
   prune:
     image: mazzolino/restic:1.8.2
@@ -104,7 +103,7 @@ services:
     networks:
       - web
     volumes:
-      - /mnt/homelab/gitea:/data:rw
+      - /mnt/homelab_iscsi/gitea:/data:rw
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     expose:
@@ -128,7 +127,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - fileflows-temp:/temp:rw
-      - /mnt/homelab/fileflows/configs:/app/Data:rw
+      - /mnt/homelab_iscsi/fileflows/configs:/app/Data:rw
       - /mnt/media/movies:/media/movies:rw
       - /mnt/media/shows:/media/shows:rw
       - /mnt/media/music:/media/music:rw
@@ -154,7 +153,7 @@ services:
     expose:
       - 8096
     volumes:
-      - jellyfin-config:/config:rw
+      - /mnt/homelab_iscsi/jellyfin:/config:rw
       - jellyfin-cache:/cache:rw
       - /mnt/media:/data/media/:rw
     environment:
@@ -209,7 +208,7 @@ services:
       - DNS_SERVER=off
       - TZ=${TZ}
     volumes:
-      - /mnt/homelab/gluetun:/gluetun
+      - /mnt/homelab_iscsi/gluetun:/gluetun
     cap_add:
       - NET_ADMIN
     devices:
@@ -236,7 +235,7 @@ services:
       start_period: 60s
       retries: 3
     volumes:
-      - /mnt/homelab/transmission:/config:rw
+      - /mnt/homelab_iscsi/transmission:/config:rw
       - /mnt/media:/data:rw
     environment:
       - DOCKER_MODS=ghcr.io/michsior14/docker-mods:transmission-gluetun-port-update
@@ -258,7 +257,7 @@ services:
       - PGID=1000
       - TZ=${TZ}
     volumes:
-      - /mnt/homelab/jackett:/config
+      - /mnt/homelab_iscsi/jackett:/config
       - /mnt/media/completed:/downloads
     networks:
       - web
@@ -280,7 +279,7 @@ services:
       - PGID=1000
       - TZ=${TZ}
     volumes:
-      - /mnt/homelab/prowlarr:/config:rw
+      - /mnt/homelab_iscsi/prowlarr:/config:rw
     networks:
       - web
       - internal
@@ -304,7 +303,7 @@ services:
       - PGID=1000
       - TZ=${TZ}
     volumes:
-      - /mnt/homelab/lidarr:/config:rw
+      - /mnt/homelab_iscsi/lidarr:/config:rw
       - /mnt/media:/data:rw
     networks:
       - web
@@ -329,7 +328,7 @@ services:
       - PGID=1000
       - TZ=${TZ}
     volumes:
-      - /mnt/homelab/sonarr:/config:rw
+      - /mnt/homelab_iscsi/sonarr:/config:rw
       - /mnt/media:/data:rw
     networks:
       - web
@@ -354,7 +353,7 @@ services:
       - PGID=1000
       - TZ=${TZ}
     volumes:
-      - /mnt/homelab/radarr:/config:rw
+      - /mnt/homelab_iscsi/radarr:/config:rw
       - /mnt/media:/data:rw   
     networks:
       - web
@@ -390,7 +389,7 @@ services:
     networks:
       - internal
     volumes:
-      - /mnt/homelab/fetcharr:/app/config:rw
+      - /mnt/homelab_iscsi/fetcharr:/app/config:rw
       - fetcharr-cache:/app/cache:rw
       - fetcharr-logs:/app/logs:rw
 
@@ -506,7 +505,7 @@ services:
       - PGID=1000
       - TZ=${TZ}
     volumes:
-      - /mnt/homelab/speakarr:/config:rw
+      - /mnt/homelab_iscsi/speakarr:/config:rw
       - /mnt/media:/data:rw
     networks:
       - web
@@ -532,8 +531,8 @@ services:
       - 80
     volumes:
       - /mnt/media/audio_books:/audiobooks
-      - /mnt/homelab/audiobookshelf/config:/config
-      - /mnt/homelab/audiobookshelf/metadata:/metadata
+      - /mnt/homelab_iscsi/audiobookshelf/config:/config
+      - /mnt/homelab_iscsi/audiobookshelf/metadata:/metadata
     environment:
       - TZ=${TZ}
 
@@ -546,7 +545,7 @@ services:
       - PGID=1000
       - TZ=${TZ}
     volumes:
-      - /mnt/homelab/readarr:/config:rw
+      - /mnt/homelab_iscsi/readarr:/config:rw
       - /mnt/media:/data:rw
     networks:
       - web
@@ -572,7 +571,7 @@ services:
       - PGID=1000
       - TZ=${TZ}
     volumes:
-      - /mnt/homelab/calibre:/config:rw
+      - /mnt/homelab_iscsi/calibre:/config:rw
       - /mnt/media/books:/books:rw
     networks:
       - web
@@ -592,8 +591,8 @@ services:
       #optional & x86-64 only Adds the ability to perform ebook conversion
       - DOCKER_MODS=linuxserver/mods:universal-calibre 
     volumes:
-      - /mnt/homelab/calibre-web:/config:rw
-      - /mnt/homelab/calibre:/calibre:rw
+      - /mnt/homelab_iscsi/calibre-web:/config:rw
+      - /mnt/homelab_iscsi/calibre:/calibre:rw
       - /mnt/media/books:/books:rw
     networks:
       - web
@@ -607,7 +606,7 @@ services:
     container_name: uptime-kuma
     restart: always
     volumes:
-      - /mnt/homelab/uptimekuma:/app/data
+      - /mnt/homelab_iscsi/uptimekuma:/app/data
     networks:
       - web
       - internal
@@ -644,7 +643,7 @@ services:
     restart: always
     user: 1000:1000 
     volumes:
-      - /mnt/homelab/private-search:/app/data:rw
+      - /mnt/homelab_iscsi/private-search:/app/data:rw
     networks:
       - web
     expose:
@@ -654,7 +653,7 @@ services:
     container_name: immich_server
     image: ghcr.io/immich-app/immich-server:v2.6.3
     volumes:
-      - /mnt/homelab/immich/server:/data:rw
+      - /mnt/homelab_iscsi/immich/server:/data:rw
       - /etc/localtime:/etc/localtime:ro
     user: 1000:1000 
     environment:
@@ -751,8 +750,8 @@ services:
       langtool_languageModel: /ngrams
       langtool_fasttextModel: /fasttext/lid.176.bin
     volumes:
-      - /mnt/homelab/languagetool/ngrams:/ngrams:rw
-      - /mnt/homelab/languagetool/fasttext:/fasttext:rw
+      - /mnt/homelab_iscsi/languagetool/ngrams:/ngrams:rw
+      - /mnt/homelab_iscsi/languagetool/fasttext:/fasttext:rw
     deploy:
       resources:
         limits:
@@ -801,7 +800,7 @@ services:
       - internal
       - web
     volumes:
-      - /mnt/homelab/grafana_data:/var/lib/grafana:rw
+      - /mnt/homelab_iscsi/grafana_data:/var/lib/grafana:rw
       - /home/core/compose-files/docker/grafana/:/etc/grafana/provisioning/datasources:rw
     depends_on:
       - loki
@@ -821,7 +820,7 @@ services:
     restart: always
     volumes:
       - /home/core/compose-files/docker/prometheus:/etc/prometheus:ro
-      - /mnt/homelab/prometheus:/prometheus:rw
+      - /mnt/homelab_iscsi/prometheus:/prometheus:rw
     command:
       - --config.file=/etc/prometheus/config.yml
     extra_hosts:
