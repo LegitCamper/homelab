@@ -38,7 +38,7 @@
     path: /mnt/homelab
     src: "//{{ cifs_host.stdout }}/homelab"
     fstype: cifs
-    opts: "username={{ cifs_user.stdout }},password={{ cifs_password.stdout }},vers=3.0,rw,nofail,_netdev,uid=1000,gid=1000,actimeo=1"
+    opts: "username={{ cifs_user.stdout }},password={{ cifs_password.stdout }},vers=3.0,rw,nofail,nobrl,_netdev,uid=1000,gid=1000,echo_interval=60,actimeo=1"
     state: mounted
 
 - name: Ensure media mount is in fstab and mounted
@@ -47,7 +47,7 @@
     path: /mnt/media
     src: "//{{ cifs_host.stdout }}/media"
     fstype: cifs
-    opts: "username={{ cifs_user.stdout }},password={{ cifs_password.stdout }},vers=3.0,rw,nofail,_netdev,uid=1000,gid=1000,actimeo=30"
+    opts: "username={{ cifs_user.stdout }},password={{ cifs_password.stdout }},vers=3.0,rw,nofail,nobrl,_netdev,uid=1000,gid=1000,echo_interval=60,actimeo=60"
     state: mounted
    
 - name: Verify /mnt/media is mounted
