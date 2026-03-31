@@ -14,6 +14,7 @@ connectIPVersion: dual
 customDNS:
   customTTL: 1h
   mapping:
+    homenas: 100.75.47.18
     bevbot: 100.116.101.69
     bevbot.dunker-arctic.ts.net: 100.116.101.69 
 

@@ -4,6 +4,7 @@
 - Homeserver: A server behind a nat
 ## Playbooks
 - `homeserver.yml` configures homeserver with the compose files
+- `dns.yml` configures vps with blocky dns and letsencrypt
 
 # Homeserver ucore distro setup
 ## Install Ucore on homeserver
