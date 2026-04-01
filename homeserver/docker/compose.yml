@@ -112,7 +112,7 @@ services:
 
   fileflows:
     container_name: fileflows
-    image: revenz/fileflows:26.03
+    image: revenz/fileflows:26.04
     restart: always
     networks:
       - web
