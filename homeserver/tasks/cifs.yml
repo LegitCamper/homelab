@@ -47,7 +47,7 @@
     path: /mnt/media
     src: "//{{ cifs_host.stdout }}/media"
     fstype: cifs
-    opts: "username={{ cifs_user.stdout }},password={{ cifs_password.stdout }},vers=3.0,rw,nofail,nobrl,_netdev,uid=1000,gid=1000,echo_interval=60,actimeo=60"
+    opts: "username={{ cifs_user.stdout }},password={{ cifs_password.stdout }},vers=3.0,rw,nofail,nobrl,_netdev,uid=1000,gid=1000"
     state: mounted
    
 - name: Verify /mnt/media is mounted

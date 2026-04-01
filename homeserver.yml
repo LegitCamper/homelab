@@ -44,8 +44,8 @@
         mode: "0644"
         content: |
           [Unit]
-          RequiresMountsFor=/mnt/homelab /mnt/media
-          After=network-online.target mnt-homelab.mount mnt-media.mount
+          RequiresMountsFor=/mnt/homelab_iscsi /mnt/media
+          After=network-online.target mnt-homelab_iscsi.mount mnt-media.mount
           Wants=network-online.target
     
     - name: Reload systemd daemon
