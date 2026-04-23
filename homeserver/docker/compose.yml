@@ -2,14 +2,12 @@ networks:
   # exposed through newt/pangolin
   web:
     external: true
-  # Not exposed
-  internal: 
+  arr-internal: 
     external: false
-  # This network exists just so adugard can have a static ip for tcp routing
-  dns:
-    ipam:
-      config:
-        - subnet: 172.55.0.0/24
+  immich-internal: 
+    external: false
+  logs-internal: 
+    external: false
 
 volumes:
   logs:
@@ -176,7 +174,7 @@ services:
     image: ghcr.io/yoori/flare-bypasser:main
     container_name: flaresolverr
     networks:
-      - internal
+      - arr-internal
     environment:
       UNUSED: "false"
       DEBUG: "false"
@@ -215,7 +213,7 @@ services:
       - /dev/net/tun:/dev/net/tun
     networks:
       - web
-      - internal
+      - arr-internal
     expose:
       - 8888 # HTTP proxy
       - 8000 # control server
@@ -261,7 +259,7 @@ services:
       - /mnt/media/completed:/downloads
     networks:
       - web
-      - internal
+      - arr-internal
     expose:
       - 9117
     sysctls:
@@ -282,7 +280,7 @@ services:
       - /mnt/homelab_iscsi/prowlarr:/config:rw
     networks:
       - web
-      - internal
+      - arr-internal
     expose:
       - 9696
     depends_on:
@@ -307,7 +305,7 @@ services:
       - /mnt/media:/data:rw
     networks:
       - web
-      - internal
+      - arr-internal
     expose:
       - 8686
     depends_on:
@@ -332,7 +330,7 @@ services:
       - /mnt/media:/data:rw
     networks:
       - web
-      - internal
+      - arr-internal
     expose:
       - 8989
     depends_on:
@@ -357,7 +355,7 @@ services:
       - /mnt/media:/data:rw   
     networks:
       - web
-      - internal
+      - arr-internal
     expose:
       - 7878
     depends_on:
@@ -387,7 +385,7 @@ services:
       - LIDARR_0_API_KEY=${LIDARR_API_KEY}
       - TZ=${TZ}
     networks:
-      - internal
+      - arr-internal
     volumes:
       - /mnt/homelab_iscsi/fetcharr:/app/config:rw
       - fetcharr-cache:/app/cache:rw
@@ -398,7 +396,7 @@ services:
     container_name: cleanuparr
     restart: always 
     networks:
-      - internal
+      - arr-internal
     volumes:
       - /mnt/media/completed:/downloads
     environment:
@@ -509,7 +507,7 @@ services:
       - /mnt/media:/data:rw
     networks:
       - web
-      - internal
+      - arr-internal
     expose:
       - 8787
     depends_on:
@@ -549,7 +547,7 @@ services:
       - /mnt/media:/data:rw
     networks:
       - web
-      - internal
+      - arr-internal
     expose:
       - 8787
     depends_on:
@@ -609,7 +607,6 @@ services:
       - /mnt/homelab_iscsi/uptimekuma:/app/data
     networks:
       - web
-      - internal
     expose:
       - 3001
 
@@ -667,8 +664,8 @@ services:
     expose:
       - 2283
     networks:
-      - internal
       - web
+      - immich-internal
     depends_on:
       - immich_redis
       - immich_postgres
@@ -684,7 +681,7 @@ services:
     container_name: immich_redis
     image: docker.io/valkey/valkey:9@sha256:3eeb09785cd61ec8e3be35f8804c8892080f3ca21934d628abc24ee4ed1698f6
     networks:
-      - internal
+      - immich-internal
     expose:
       - 6379
     healthcheck:
@@ -704,7 +701,7 @@ services:
     expose:
       - 5432
     networks:
-      - internal
+      - immich-internal
     shm_size: 128mb
     restart: always
 
@@ -714,7 +711,7 @@ services:
     expose:
       - 3003
     networks:
-      - internal
+      - immich-internal
     volumes:
       - immich-model-cache:/cache
     restart: always
@@ -766,7 +763,7 @@ services:
       - /home/core/compose-files/docker/loki/:/mnt/config:ro
     command: -config.file=/mnt/config/config.yml
     networks:
-      - internal
+      - logs-internal
     expose:
      - 3100  
     restart: always
@@ -783,7 +780,7 @@ services:
     expose:
       - 9080
     networks:
-      - internal
+      - logs-internal
     depends_on:
       - loki
     restart: always
@@ -797,8 +794,8 @@ services:
     expose:
       - 3000
     networks:
-      - internal
       - web
+      - logs-internal
     volumes:
       - /mnt/homelab_iscsi/grafana_data:/var/lib/grafana:rw
       - /home/core/compose-files/docker/grafana/:/etc/grafana/provisioning/datasources:rw
@@ -814,7 +811,7 @@ services:
       TZ: ${TZ}
     networks:
       - web
-      - internal
+      - logs-internal
     expose:
       - 9090
     restart: always
@@ -837,7 +834,7 @@ services:
     command:
       - --path.rootfs=/host -–collector.systemd -–collector.processes
     networks:
-      - internal
+      - logs-internal
     expose:
       - 9100
     restart: always
@@ -850,7 +847,7 @@ services:
     environment:
       TZ: ${TZ}
     networks:
-      - internal
+      - logs-internal
     expose:
       - 9400
     restart: always
@@ -874,7 +871,7 @@ services:
     expose:
       - 8080
     networks:
-      - internal
+      - logs-internal
     volumes:
       - /:/rootfs:ro 
       - /var/run:/var/run:ro 
