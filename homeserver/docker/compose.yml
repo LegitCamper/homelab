@@ -14,6 +14,7 @@ volumes:
   jellyfin-cache:
   fetcharr-cache:
   fetcharr-logs:
+  tidarr-shared:
   fileflows-temp:
   immich-model-cache:
   immich-db:
@@ -316,6 +317,21 @@ services:
       interval: 5m00s
       timeout: 10s
       retries: 2
+
+  tidarr:
+    image: cstaelen/tidarr
+    container_name: tidarr
+    user: 1000:1000 
+    expose:
+      - 8484
+    networks:
+      - web
+      - arr-internal
+    volumes:
+      - /mnt/homelab_iscsi/tidarr:/shared:rw
+      - /mnt/media:/data:rw
+      - /mnt/media/completed:/shared/nzb_downloads/:rw
+    restart: always
 
   sonarr:
     image: ghcr.io/linuxserver/sonarr:4.0.17
