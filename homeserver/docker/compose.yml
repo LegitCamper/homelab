@@ -14,7 +14,6 @@ volumes:
   jellyfin-cache:
   fetcharr-cache:
   fetcharr-logs:
-  tidarr-shared:
   fileflows-temp:
   immich-model-cache:
   immich-db:
@@ -329,8 +328,7 @@ services:
       - arr-internal
     volumes:
       - /mnt/homelab_iscsi/tidarr:/shared:rw
-      - /mnt/media:/data:rw
-      - /mnt/media/completed:/shared/nzb_downloads/:rw
+      - /mnt/media/tidarr:/shared/nzb_downloads/:rw
     restart: always
 
   sonarr:
