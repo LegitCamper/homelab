@@ -8,6 +8,8 @@ networks:
     external: false
   logs-internal: 
     external: false
+  meilisearch-internal:
+    external: false
 
 volumes:
   logs:
@@ -148,6 +150,7 @@ services:
     user: "1000:1000"
     networks:
       - web
+      - meilisearch-internal
     expose:
       - 8096
     volumes:
@@ -168,6 +171,21 @@ services:
             - driver: nvidia
               capabilities: [gpu]
               count: -1
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.34 
+    container_name: meilisearch
+    restart: always
+    networks:
+      - meilisearch-internal
+    expose:
+      - 7700
+    environment:
+      MEILI_ENV: production
+      MEILI_NO_ANALYTICS: "true"
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}
+    volumes:
+      - /mnt/homelab_iscsi/meili_data:/meili_data
 
   flaresolverr:
     # use fork as flaresolverr is not working
