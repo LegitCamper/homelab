@@ -802,7 +802,7 @@ services:
 
   promtail:
     container_name: promtail
-    image: grafana/promtail:3.6.6
+    image: grafana/promtail:3.6.11
     environment:
       TZ: ${TZ}
     volumes:
