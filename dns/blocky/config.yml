@@ -17,6 +17,8 @@ customDNS:
     homenas: 100.75.47.18
     bevbot: 100.116.101.69
     bevbot.dunker-arctic.ts.net: 100.116.101.69 
+    bevbot2: 100.116.124.26
+    bevbot2.dunker-arctic.ts.net: 100.116.124.26 
 
 blocking:
   denylists:
