@@ -125,7 +125,6 @@ services:
       - NVIDIA_DRIVER_CAPABILITIES=all
       - NVIDIA_VISIBLE_DEVICES=all
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
       - fileflows-temp:/temp:rw
       - /mnt/homelab_iscsi/fileflows/configs:/app/Data:rw
       - /mnt/media/movies:/media/movies:rw
