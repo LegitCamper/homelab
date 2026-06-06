@@ -590,46 +590,6 @@ services:
       timeout: 10s
       retries: 2
 
-  calibre:
-    image: ghcr.io/linuxserver/calibre:9.6.0
-    container_name: calibre
-    security_opt:
-      - seccomp:unconfined #optional
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=${TZ}
-    volumes:
-      - /mnt/homelab_iscsi/calibre:/config:rw
-      - /mnt/media/books:/books:rw
-    networks:
-      - web
-    expose:
-      - 8080 # Desktop Gui
-      - 8081 # Webserver Gui
-    restart: always
-
-  calibre-web:
-    image: ghcr.io/linuxserver/calibre-web:5.33.2
-    container_name: calibre-web
-    restart: always
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=${TZ}
-      #optional & x86-64 only Adds the ability to perform ebook conversion
-      - DOCKER_MODS=linuxserver/mods:universal-calibre 
-    volumes:
-      - /mnt/homelab_iscsi/calibre-web:/config:rw
-      - /mnt/homelab_iscsi/calibre:/calibre:rw
-      - /mnt/media/books:/books:rw
-    networks:
-      - web
-    expose:
-      - 8083
-    depends_on: 
-      - calibre
-  
   uptime-kuma:
     image: louislam/uptime-kuma:2.2.1
     container_name: uptime-kuma
