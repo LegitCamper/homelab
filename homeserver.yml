@@ -1,114 +1,116 @@
----
 - name: Configure homeserver (ucore)
-  hosts:
-    - homeserver
+  hosts: homeserver
   remote_user: core
-    
-  pre_tasks: 
+  vars:
+    compose_base_path: "/home/core/compose-files"
+    docker_override_path: "/etc/systemd/system/docker.service.d"
+
+  pre_tasks:
     - name: Put SELinux in permissive mode
       become: true
       ansible.posix.selinux:
         policy: targeted
         state: permissive
 
-    - name: Crate docker stack dir
+    - name: Use directory structure for compose files
       ansible.builtin.file:
-        path: /home/core/compose-files/
+        path: "{{ item }}"
         state: directory
+        mode: "0755"
+      loop:
+        - "{{ compose_base_path }}"
+        - "{{ compose_base_path }}/docker"
 
     - name: Copy secrets file
       ansible.builtin.copy:
         decrypt: true
         src: secrets.env
-        dest: /home/core/compose-files
+        dest: "{{ compose_base_path }}/secrets.env"
+        mode: "0600" # Secrets should be restrictive
 
-  tasks:  
-    - name: enable tailscale
+  tasks:
+    - name: Enable tailscale
       become: true
       ansible.builtin.systemd_service:
-          name: tailscaled
-          state: started
-          enabled: true
+        name: tailscaled
+        state: started
+        enabled: true
 
     - name: Create docker.service override directory
       become: true
       ansible.builtin.file:
-        path: /etc/systemd/system/docker.service.d
+        path: "{{ docker_override_path }}"
         state: directory
         mode: "0755"
-    
+
     - name: Configure docker.service mount dependency override
       become: true
       ansible.builtin.copy:
-        dest: /etc/systemd/system/docker.service.d/override.conf
+        dest: "{{ docker_override_path }}/override.conf"
         mode: "0644"
         content: |
           [Unit]
           RequiresMountsFor=/mnt/homelab_iscsi /mnt/media
           After=network-online.target mnt-homelab_iscsi.mount mnt-media.mount
           Wants=network-online.target
-    
-    - name: Reload systemd daemon
-      become: true
-      ansible.builtin.systemd_service:
-        daemon_reload: true
-    
-    - name: Disable docker socket activation
-      become: true
-      ansible.builtin.systemd_service:
-        name: docker.socket
-        enabled: false
-        state: stopped
-    
-    - name: Enable docker service
-      become: true
-      ansible.builtin.systemd_service:
-        name: docker.service
-        enabled: true
-        state: started
+      notify: Reload systemd
 
-    - name: install and configure tailscale
+    - name: Manage Docker services
+      become: true
+      ansible.builtin.systemd_service:
+        name: "{{ item.name }}"
+        enabled: "{{ item.enabled }}"
+        state: "{{ item.state }}"
+      loop:
+        - { name: "docker.socket", enabled: false, state: "stopped" }
+        - { name: "docker.service", enabled: true, state: "started" }
+
+    - name: Install and configure CIFS
       ansible.builtin.include_tasks:
         file: homeserver/tasks/cifs.yml
 
     - name: Copy compose files
       ansible.builtin.copy:
-        src: homeserver/docker
-        dest: /home/core/compose-files
+        src: homeserver/docker/
+        dest: "{{ compose_base_path }}/docker/"
+        mode: "0644"
 
-    - name: Is core user in docker group 
-      ansible.builtin.shell:
-        grep 'docker' /etc/group | grep core
-      register: core_in_docker
-      ignore_errors: true
-      changed_when: false
-
-    - name: add core user to docker group
-      when: core_in_docker.rc != 0
-      become: yes
+    - name: Ensure core user is in docker group
+      become: true
       ansible.builtin.user:
-        name: "core"
+        name: core
         groups: docker
-        append: yes
+        append: true
+      register: user_group_update
+      notify: Reboot server
 
-    - name: reboot if needed
-      when: core_in_docker.rc != 0
-      ansible.builtin.reboot:
+    - name: Flush handlers if reboot required
+      ansible.builtin.meta: flush_handlers
 
-    - name: Create 'web' network
+    - name: Create docker networks
       community.docker.docker_network:
-        name: web
-
-    - name: Create 'internal' network
-      community.docker.docker_network:
-        name: internal
+        name: "{{ item }}"
+      loop:
+        - web
+        - internal
 
     - name: Setup containers
       community.docker.docker_compose_v2:
         project_name: homeserver
-        project_src: /home/core/compose-files/docker
+        project_src: "{{ compose_base_path }}/docker"
         files:
           - compose.yml
         env_files:
-          - /home/core/compose-files/secrets.env
+          - "{{ compose_base_path }}/secrets.env"
         remove_orphans: true
+
+  handlers:
+    - name: Reload systemd
+      become: true
+      ansible.builtin.systemd_service:
+        daemon_reload: true
+
+    - name: Reboot server
+      become: true
+      ansible.builtin.reboot:
+        msg: "Rebooting to apply docker group membership"
