@@ -724,7 +724,7 @@ services:
             count: -1
 
   languagetool:
-    image: meyay/languagetool:6.7-3
+    image: meyay/languagetool:6.8-3
     container_name: languagetool
     restart: always
     user: "1000:1000"
