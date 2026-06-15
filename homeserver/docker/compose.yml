@@ -235,6 +235,7 @@ services:
       - 8888 # HTTP proxy
       - 8000 # control server
       - 9091 # transmission
+      - 8080 # Sabnzbd
 
   transmission:
     image: lscr.io/linuxserver/transmission:4.0.6-r5-ls322
@@ -258,6 +259,29 @@ services:
       - PGID=1000
       - TZ=${TZ}
       - GLUETUN_ENDPOINT=/v1/portforward
+    deploy:
+      resources:
+        limits:
+          memory: 10G
+
+  sabnzbd:
+    image: lscr.io/linuxserver/sabnzbd
+    container_name: sabnzbd
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=UTC
+    volumes:
+      - /mnt/media:/data:rw
+      - /mnt/homelab_iscsi/sabnzbd:/config:rw
+    restart: always
+    network_mode: "service:gluetun"
+    healthcheck:
+      test: ["CMD", "curl", "http://localhost:8000/v1/vpn/status", "|", "grep", "-q", '{"status":"running"}']
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 3
     deploy:
       resources:
         limits:
