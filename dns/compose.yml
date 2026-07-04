@@ -22,7 +22,7 @@ services:
       - /root/letsencrypt:/etc/letsencrypt:ro
 
   lego:
-    image: goacme/lego:v4.33.0
+    image: goacme/lego:v4.35.2
     container_name: lego-certbot
     restart: unless-stopped
     environment:
