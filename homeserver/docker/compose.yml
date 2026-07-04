@@ -334,7 +334,7 @@ services:
     restart: always
 
   prowlarr:
-    image: ghcr.io/linuxserver/prowlarr:2.3.0
+    image: ghcr.io/linuxserver/prowlarr:2.4.0
     container_name: prowlarr
     user: 1000:1000 
     environment:
