@@ -22,7 +22,7 @@ services:
       - /root/letsencrypt/blocky-certs:/etc/letsencrypt:ro
 
   lego:
-    image: goacme/lego:v5.2.2
+    image: goacme/lego:v5.3.1
     container_name: lego-certbot
     restart: always
     environment:
