@@ -24,15 +24,22 @@ services:
   lego:
     image: goacme/lego:v5.2.2
     container_name: lego-certbot
-    restart: unless-stopped
+    restart: always
     environment:
       - TZ=${TZ}
       - CLOUDFLARE_DNS_API_TOKEN=${CF_API_KEY}
+    entrypoint: ["/bin/sh", "-c"]
     command:
-      --accept-tos
-      --email ${CF_API_EMAIL} --dns cloudflare 
-      --domains dns.${DOMAIN} --path /etc/letsencrypt/ 
-      renew
-      --days 30
+      - |
+        while true; do
+          /lego run \
+            --accept-tos \
+            --email "${CF_API_EMAIL}" \
+            --dns cloudflare \
+            --domains "dns.${DOMAIN}" \
+            --path /etc/letsencrypt/ \
+            --renew-days 30;
+          sleep 12h;
+        done
     volumes:
       - /root/letsencrypt:/etc/letsencrypt:rw
