@@ -815,6 +815,25 @@ services:
         limits:
           memory: 5G
 
+  syncthing:
+    image: lscr.io/linuxserver/syncthing:2.1.2
+    container_name: syncthing
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TZ}
+    volumes:
+      - /mnt/homelab_iscsi/syncthing/config:/config
+      - /mnt/homelab_iscsi/syncthing/data:/data
+    networks:
+      - web
+    expose:
+      - 8384
+      - 22000
+      - 22000
+      - 21027
+    restart: always
+
   loki:
     image: grafana/loki:3.7.2
     container_name: loki
