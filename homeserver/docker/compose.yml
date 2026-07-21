@@ -208,6 +208,28 @@ services:
       retries: 3
     restart: always
 
+  maintainerr:
+    image: ghcr.io/maintainerr/maintainerr:3.18.0
+    container_name: maintainerr
+    user: 1000:1000
+    volumes:
+      - /mnt/homelab_iscsi/maintainerr:/opt/data/:rw
+    environment:
+      - TZ=${TZ}
+      # - GITHUB_TOKEN=ghp_yourtoken # Optional: GitHub Personal Access Token for higher API rate limits (60/hr without, 5000/hr with token)
+    networks:
+      - web
+      - arr-internal
+    expose:
+      - 6246
+    restart: always
+    healthcheck: 
+      test: ['CMD', '/opt/app/healthcheck.sh']
+      interval: 30s
+      timeout: 5s
+      start_period: 40s
+      retries: 3
+
   flaresolverr:
     # use fork as flaresolverr is not working
     image: ghcr.io/yoori/flare-bypasser:main
