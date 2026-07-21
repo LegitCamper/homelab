@@ -471,7 +471,7 @@ services:
       - fetcharr-logs:/app/logs:rw
 
   cleanuparr:
-    image: ghcr.io/cleanuparr/cleanuparr:2.9.15
+    image: ghcr.io/cleanuparr/cleanuparr:2.9.16
     container_name: cleanuparr
     restart: always 
     networks:
