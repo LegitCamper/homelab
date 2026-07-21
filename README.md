@@ -19,3 +19,7 @@
 - ensure tailscaled is running: `sudo systemctl start tailescaled` (ansible will ensure its enabled) and then sign in `tailscale up` 
 - `ansible-playbook -i server.tailscale.hostname, homeserver.yml` (you will need `--ask-become-pass` if there is a sudo password)
 - The server should be ready to go 🎉
+
+## Quick updates
+Once a host has already been fully set up, routine changes (e.g. editing `homeserver/docker/compose.yml` or another file under `homeserver/docker/`) don't need the full first-time-setup run. Use `--tags deploy` to just copy the compose files/secrets and run `docker compose up`:
+- `ansible-playbook -i server.tailscale.hostname, homeserver.yml --tags deploy`

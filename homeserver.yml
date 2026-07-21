@@ -27,6 +27,7 @@
         src: secrets.env
         dest: "{{ compose_base_path }}/secrets.env"
         mode: "0600" # Secrets should be restrictive
+      tags: deploy
 
   tasks:
     - name: Enable tailscale
@@ -74,6 +75,7 @@
         src: homeserver/docker/
         dest: "{{ compose_base_path }}/docker/"
         mode: "0644"
+      tags: deploy
 
     - name: Ensure core user is in docker group
       become: true
@@ -103,6 +105,7 @@
         env_files:
           - "{{ compose_base_path }}/secrets.env"
         remove_orphans: true
+      tags: deploy
 
   handlers:
     - name: Reload systemd
