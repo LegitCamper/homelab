@@ -19,7 +19,7 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /root/dns/blocky/config.yml:/app/config.yml:ro
-      - /root/letsencrypt:/etc/letsencrypt:ro
+      - /root/letsencrypt/blocky-certs:/etc/letsencrypt:ro
 
   lego:
     image: goacme/lego:v5.2.2
@@ -39,6 +39,10 @@ services:
             --domains "dns.${DOMAIN}" \
             --path /etc/letsencrypt/ \
             --renew-days 30;
+          mkdir -p /etc/letsencrypt/blocky-certs;
+          cp /etc/letsencrypt/certificates/dns.${DOMAIN}.crt /etc/letsencrypt/blocky-certs/;
+          cp /etc/letsencrypt/certificates/dns.${DOMAIN}.key /etc/letsencrypt/blocky-certs/;
+          chown -R 100:100 /etc/letsencrypt/blocky-certs;
           sleep 12h;
         done
     volumes:
