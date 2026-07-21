@@ -172,7 +172,7 @@ services:
               count: -1
 
   meilisearch:
-    image: getmeili/meilisearch:v1.48 
+    image: getmeili/meilisearch:v1.50 
     container_name: meilisearch
     restart: always
     networks:
