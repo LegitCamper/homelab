@@ -835,7 +835,7 @@ services:
     restart: always
 
   loki:
-    image: grafana/loki:3.7.2
+    image: grafana/loki:3.7.4
     container_name: loki
     environment:
       TZ: ${TZ}
