@@ -5,21 +5,18 @@ networks:
         - subnet: 172.55.0.0/24
 
 services:
-  blocky:
-    image: spx01/blocky:v0.33.0
-    container_name: blocky
+  dns-rs:
+    image: ghcr.io/legitcamper/dns-rs:latest
+    container_name: dns-rs
     restart: always
-    hostname: blocky-homeserver
-    user: "100:100"
+    user: "1000:1000"
     ports:
       - "853:853/tcp"
       - "443:443/tcp"
-    environment:
-      - TZ=${TZ} 
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - /root/dns/blocky/config.yml:/app/config.yml:ro
-      - /root/letsencrypt/blocky-certs:/etc/letsencrypt:ro
+      - /root/dns/dns-rs/config.toml:/etc/dns-rs/config.toml:ro
+      - /root/letsencrypt/dns-rs-certs:/etc/letsencrypt:ro
 
   lego:
     image: goacme/lego:v5.2.2
@@ -39,10 +36,10 @@ services:
             --domains "dns.${DOMAIN}" \
             --path /etc/letsencrypt/ \
             --renew-days 30;
-          mkdir -p /etc/letsencrypt/blocky-certs;
-          cp /etc/letsencrypt/certificates/dns.${DOMAIN}.crt /etc/letsencrypt/blocky-certs/;
-          cp /etc/letsencrypt/certificates/dns.${DOMAIN}.key /etc/letsencrypt/blocky-certs/;
-          chown -R 100:100 /etc/letsencrypt/blocky-certs;
+          mkdir -p /etc/letsencrypt/dns-rs-certs;
+          cp /etc/letsencrypt/certificates/dns.${DOMAIN}.crt /etc/letsencrypt/dns-rs-certs/;
+          cp /etc/letsencrypt/certificates/dns.${DOMAIN}.key /etc/letsencrypt/dns-rs-certs/;
+          chown -R 1000:1000 /etc/letsencrypt/dns-rs-certs;
           sleep 12h;
         done
     volumes:
