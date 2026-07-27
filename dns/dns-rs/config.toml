@@ -25,10 +25,12 @@ urls = [
 ]
 
 [upstream]
+strategy = "sequential"
 urls = [
-  "https://dns.quad9.net/dns-query",
   "https://cloudflare-dns.com/dns-query",
+  "https://dns.quad9.net/dns-query",
   "https://anycast.uncensoreddns.org/dns-query",
+  "tls://1.1.1.1:853#cloudflare-dns.com",
 ]
 
 [static_hosts]
