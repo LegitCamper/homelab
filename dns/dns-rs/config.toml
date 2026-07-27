@@ -1,8 +1,8 @@
 [server]
 dot_port = 853
 doh_port = 443
-tls_cert = "/cert.pem"
-tls_key = "/key.pem"
+tls_cert = "/etc/letsencrypt/dns.sawyer.services.crt"
+tls_key = "/etc/letsencrypt/dns.sawyer.services.key"
 default_ttl = 300
 
 [blocking]
