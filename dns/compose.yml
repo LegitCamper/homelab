@@ -6,7 +6,7 @@ networks:
 
 services:
   dns-rs:
-    image: ghcr.io/legitcamper/dns-rs:main
+    image: ghcr.io/legitcamper/dns-rs:latest
     container_name: dns-rs
     restart: always
     user: "1000:1000"
