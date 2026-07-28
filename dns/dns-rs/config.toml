@@ -13,15 +13,17 @@ refresh_interval_secs = 43200
 urls = [
   "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts",
   "https://easylist.to/easylist/easylist.txt",
-  "https://secure.fanboy.co.nz/fanboy-cookiemonster.txt",
   "https://easylist.to/easylist/easyprivacy.txt",
   "https://secure.fanboy.co.nz/fanboy-annoyance.txt",
+  "https://secure.fanboy.co.nz/fanboy-cookiemonster.txt",
   "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/domains/pro.plus.txt",
 
-  "https://github.com/blocklistproject/Lists/blob/master/smart-tv.txt",
-  "https://github.com/blocklistproject/Lists/blob/master/tracking.txt",
-  "https://github.com/blocklistproject/Lists/blob/master/fraud.txt",
-  "https://github.com/blocklistproject/Lists/blob/master/ransomware.txt",
+  "https://raw.githubusercontent.com/blocklistproject/Lists/refs/heads/main/ads.txt",
+  "https://raw.githubusercontent.com/blocklistproject/Lists/refs/heads/main/phishing.txt",
+  "https://raw.githubusercontent.com/blocklistproject/Lists/refs/heads/main/smart-tv.txt",
+  "https://raw.githubusercontent.com/blocklistproject/Lists/refs/heads/main/tracking.txt",
+  "https://raw.githubusercontent.com/blocklistproject/Lists/refs/heads/main/fraud.txt",
+  "https://raw.githubusercontent.com/blocklistproject/Lists/refs/heads/main/ransomware.txt",
 ]
 
 [upstream]
