@@ -26,6 +26,8 @@ urls = [
   "https://raw.githubusercontent.com/blocklistproject/Lists/refs/heads/main/ransomware.txt",
 ]
 
+whitelist = ["s.youtube.com"]
+
 [upstream]
 strategy = "sequential"
 urls = [
@@ -42,4 +44,4 @@ urls = [
 
 [cache]
 enabled = true
-max_entries = 10000
+max_entries = 250000

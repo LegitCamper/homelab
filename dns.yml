@@ -26,6 +26,7 @@
       ansible.builtin.copy:
         src: dns
         dest: /root/
+      tags: deploy
 
     - name: Setup containers
       community.docker.docker_compose_v2:
