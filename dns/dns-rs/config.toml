@@ -27,7 +27,11 @@ urls = [
 ]
 
 [whitelist]
-domains = ["s.youtube.com"]
+urls = [
+  "https://github.com/GoodnessJSON/PiHole-Whitelist/blob/master/lists/optional-list.txt",
+  "https://github.com/GoodnessJSON/PiHole-Whitelist/blob/master/lists/referral-sites.txt",
+  "https://github.com/GoodnessJSON/PiHole-Whitelist/blob/master/lists/whitelist.txt",
+]
 
 [upstream]
 strategy = "sequential"
