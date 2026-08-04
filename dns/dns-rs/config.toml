@@ -27,10 +27,11 @@ urls = [
 ]
 
 [whitelist]
+refresh_interval_secs = 43200
 urls = [
-  "https://github.com/GoodnessJSON/PiHole-Whitelist/blob/master/lists/optional-list.txt",
-  "https://github.com/GoodnessJSON/PiHole-Whitelist/blob/master/lists/referral-sites.txt",
-  "https://github.com/GoodnessJSON/PiHole-Whitelist/blob/master/lists/whitelist.txt",
+  "https://raw.githubusercontent.com/GoodnessJSON/PiHole-Whitelist/refs/heads/master/lists/optional-list.txt",
+  "https://raw.githubusercontent.com/GoodnessJSON/PiHole-Whitelist/refs/heads/master/lists/referral-sites.txt",
+  "https://raw.githubusercontent.com/GoodnessJSON/PiHole-Whitelist/refs/heads/master/lists/whitelist.txt",
 ]
 
 [upstream]
