@@ -107,6 +107,23 @@
         remove_orphans: true
       tags: deploy
 
+    - name: Recreate containers older than a week
+      ansible.builtin.shell: |
+        cd {{ compose_base_path }}/docker
+        {% raw %}
+        week_ago=$(date -d '-7 days' +%s)
+        for cid in $(docker ps -q --filter "label=com.docker.compose.project=homeserver"); do
+          created_ts=$(date -d "$(docker inspect -f '{{.Created}}' "$cid")" +%s)
+          if [ "$created_ts" -lt "$week_ago" ]; then
+            service=$(docker inspect -f '{{ index .Config.Labels "com.docker.compose.service" }}' "$cid")
+        {% endraw %}
+            docker compose -p homeserver --env-file {{ compose_base_path }}/secrets.env up -d --force-recreate --no-deps "$service"
+        {% raw %}
+          fi
+        done
+        {% endraw %}
+      tags: deploy
+
   handlers:
     - name: Reload systemd
       become: true
