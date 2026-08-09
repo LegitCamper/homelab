@@ -621,7 +621,7 @@ services:
       retries: 2
 
   audiobookshelf:
-    image: ghcr.io/advplyr/audiobookshelf:2.35.1
+    image: ghcr.io/advplyr/audiobookshelf:2.36.0
     container_name: audiobookshelf
     restart: always
     networks:
