@@ -912,7 +912,9 @@ services:
     environment:
       TZ: ${TZ}
     command:
-      - --path.rootfs=/host -–collector.systemd -–collector.processes
+      - --path.rootfs=/host
+      - --collector.systemd
+      - --collector.processes
     networks:
       - logs-internal
     expose:
