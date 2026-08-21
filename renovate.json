@@ -2,5 +2,19 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended"
+  ],
+  "packageRules": [
+    {
+      "description": "Disable automatic updates for Meilisearch and Immich Valkey",
+      "matchUpdateTypes": ["major"],
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchPackageNames": [
+        "getmeili/meilisearch",
+        "docker.io/valkey/valkey"
+      ],
+      "enabled": false
+    }
   ]
 }
