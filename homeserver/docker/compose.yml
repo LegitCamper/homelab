@@ -157,7 +157,8 @@ services:
     volumes:
       - /mnt/homelab_iscsi/jellyfin:/config:rw
       - jellyfin-cache:/cache:rw
-      - /mnt/media:/data/media/:rw
+      - /mnt/media:/data:rw
+
     environment:
       - TZ=${TZ}
       - JELLYFIN_PublishedServerUrl=https://jellyfin.${DOMAIN}
