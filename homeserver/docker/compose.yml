@@ -477,7 +477,7 @@ services:
       retries: 2
 
   fetcharr:
-    image: ghcr.io/egg82/fetcharr:2.0.2
+    image: ghcr.io/egg82/fetcharr:2.2.1
     container_name: fetcharr
     restart: always
     user: 1000:1000 
