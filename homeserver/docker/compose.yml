@@ -192,7 +192,7 @@ services:
       - /mnt/homelab_iscsi/meili_data:/meili_data
 
   seerr:
-    image: ghcr.io/seerr-team/seerr:v3.3.0
+    image: ghcr.io/seerr-team/seerr:v3.4.1
     container_name: seerr
     user: "1000:1000"
     environment:
