@@ -95,7 +95,7 @@ services:
       - NEWT_SECRET=${NEWT_SECRET}
 
   gitea:
-    image: docker.gitea.com/gitea:1.27.1
+    image: docker.gitea.com/gitea:1.27.3
     container_name: gitea
     restart: always
     environment:
