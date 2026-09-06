@@ -19,6 +19,9 @@ volumes:
   fileflows-temp:
   immich-model-cache:
   immich-db:
+  cli-proxy-auth:
+  cli-proxy-logs:
+  cli-proxy-plugins:
 
 services:
   backup:
@@ -1003,3 +1006,23 @@ services:
       - web
     expose:
         - 8000
+
+  cli-proxy-api:
+    image: eceasy/cli-proxy-api:v7.2.151
+    container_name: cli-proxy-api
+    networks:
+      - web
+    ports:
+      - 1455:1455 # codex callback port
+      - 54545:54545 # claude callback port
+    expose:
+      - 8317
+      - 8085
+      - 51121
+      - 11451
+    volumes:
+      - /home/core/compose-files/docker/cli-proxy-api/config.yaml:/CLIProxyAPI/config.yaml
+      - cli-proxy-auth:/root/.cli-proxy-api
+      - cli-proxy-logs:/CLIProxyAPI/logs
+      - cli-proxy-plugins:/CLIProxyAPI/plugins
+    restart: always
