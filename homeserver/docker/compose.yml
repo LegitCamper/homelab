@@ -10,6 +10,8 @@ networks:
     external: false
   meilisearch-internal:
     external: false
+  cli-proxy-api:
+    external: false
 
 volumes:
   logs:
@@ -22,6 +24,8 @@ volumes:
   cli-proxy-auth:
   cli-proxy-logs:
   cli-proxy-plugins:
+  cli-proxy-api:
+  aegisgate:
 
 services:
   backup:
@@ -565,14 +569,6 @@ services:
       - DOWNLOADCLEANER__CATEGORIES__2__MAX_RATIO=2
       - DOWNLOADCLEANER__CATEGORIES__2__MIN_SEED_TIME=0
       - DOWNLOADCLEANER__CATEGORIES__2__MAX_SEED_TIME=240
-      - DOWNLOADCLEANER__CATEGORIES__3__NAME=readarr
-      - DOWNLOADCLEANER__CATEGORIES__3__MAX_RATIO=2
-      - DOWNLOADCLEANER__CATEGORIES__3__MIN_SEED_TIME=0
-      - DOWNLOADCLEANER__CATEGORIES__3__MAX_SEED_TIME=240
-      - DOWNLOADCLEANER__CATEGORIES__4__NAME=speakarr
-      - DOWNLOADCLEANER__CATEGORIES__4__MAX_RATIO=2
-      - DOWNLOADCLEANER__CATEGORIES__4__MIN_SEED_TIME=0
-      - DOWNLOADCLEANER__CATEGORIES__4__MAX_SEED_TIME=240
       - DOWNLOADCLEANER__CATEGORIES__5__NAME=cleanuperr-unlinked
       - DOWNLOADCLEANER__CATEGORIES__5__MAX_RATIO=1
       - DOWNLOADCLEANER__CATEGORIES__5__MIN_SEED_TIME=0
@@ -584,8 +580,6 @@ services:
       - DOWNLOADCLEANER__UNLINKED_CATEGORIES__0=tv-sonarr
       - DOWNLOADCLEANER__UNLINKED_CATEGORIES__1=radarr
       - DOWNLOADCLEANER__UNLINKED_CATEGORIES__2=lidarr
-      - DOWNLOADCLEANER__UNLINKED_CATEGORIES__3=readarr
-      - DOWNLOADCLEANER__UNLINKED_CATEGORIES__4=speakarr
       
       - DOWNLOAD_CLIENT=transmission
       - TRANSMISSION__URL=http://gluetun:9091
@@ -606,30 +600,21 @@ services:
       - LIDARR__INSTANCES__0__URL=http://lidarr:8686
       - LIDARR__INSTANCES__0__APIKEY=${LIDARR_API_KEY}
 
-  speakarr:
-    image: lscr.io/linuxserver/readarr:develop
-    container_name: speakarr
-    user: 1000:1000 
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=${TZ}
-    volumes:
-      - /mnt/homelab_iscsi/speakarr:/config:rw
-      - /mnt/media:/data:rw
+  bindery:
+    image: ghcr.io/vavallee/bindery:1.34.0
+    container_name: bindery
     networks:
       - web
       - arr-internal
     expose:
       - 8787
-    depends_on:
-      - transmission 
+    volumes:
+      - /mnt/homelab_iscsi/bindery:/config:rw
+      - /mnt/media:/data:rw
+    environment:
+      - BINDERY_LOG_LEVEL=info
+      - TZ=${TZ}
     restart: always
-    healthcheck: 
-      test: curl -f http://localhost:9091 || exit 1
-      interval: 5m00s
-      timeout: 10s
-      retries: 2
 
   audiobookshelf:
     image: ghcr.io/advplyr/audiobookshelf:2.35.1
@@ -645,31 +630,6 @@ services:
       - /mnt/homelab_iscsi/audiobookshelf/metadata:/metadata
     environment:
       - TZ=${TZ}
-
-  readarr:
-    image: lscr.io/linuxserver/readarr:develop
-    container_name: readarr
-    user: 1000:1000 
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=${TZ}
-    volumes:
-      - /mnt/homelab_iscsi/readarr:/config:rw
-      - /mnt/media:/data:rw
-    networks:
-      - web
-      - arr-internal
-    expose:
-      - 8787
-    depends_on:
-      - transmission 
-    restart: always
-    healthcheck: 
-      test: curl -f http://localhost:9091 || exit 1
-      interval: 5m00s
-      timeout: 10s
-      retries: 2
 
   uptime-kuma:
     image: louislam/uptime-kuma:2.4.0
@@ -1011,7 +971,7 @@ services:
     image: eceasy/cli-proxy-api:v7.2.151
     container_name: cli-proxy-api
     networks:
-      - web
+      - cli-proxy-api
     ports:
       - 1455:1455 # codex callback port
       - 54545:54545 # claude callback port
@@ -1025,4 +985,32 @@ services:
       - cli-proxy-auth:/root/.cli-proxy-api
       - cli-proxy-logs:/CLIProxyAPI/logs
       - cli-proxy-plugins:/CLIProxyAPI/plugins
+    restart: always
+
+  aegisgate:
+    image: ghcr.io/legitcamper/aegisgate:latest
+    container_name: aegisgate
+    user: "10001:10001"
+    networks:
+      - cli-proxy-api
+      - web
+    expose:
+      - 18080
+    environment:
+      AEGIS_ENV: "prod"
+      AEGIS_HOST: "0.0.0.0"
+      AEGIS_PORT: "18080"
+      AEGIS_ENFORCE_LOOPBACK_ONLY: "false"
+      AEGIS_SQLITE_DB_PATH: "/app/logs/aegisgate.db"
+      AEGIS_AUDIT_LOG_PATH: "/app/logs/audit.jsonl"
+      AEGIS_INIT_STRICT: "true"
+      AEGIS_BOOTSTRAP_RULES_DIR: "/app/bootstrap/rules"
+      AEGIS_SECURITY_RULES_PATH: "/app/aegisgate/policies/rules/security_filters.yaml"
+      AEGIS_DOCKER_UPSTREAMS: "8317:cli-proxy-api"
+    volumes:
+      - logs:/app/logs:rw
+      - aegisgate:/app/aegisgate/policies/rules:rw
+      - aegisgate:/app/config:rw
+    tmpfs:
+      - /tmp
     restart: always
