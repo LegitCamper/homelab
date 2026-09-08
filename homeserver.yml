@@ -96,6 +96,17 @@
         - web
         - internal
 
+    - name: Pull latest images
+      community.docker.docker_compose_v2_pull:
+        project_name: homeserver
+        project_src: "{{ compose_base_path }}/docker"
+        files:
+          - compose.yml
+        env_files:
+          - "{{ compose_base_path }}/secrets.env"
+        policy: always
+      tags: deploy
+
     - name: Setup containers
       community.docker.docker_compose_v2:
         project_name: homeserver
