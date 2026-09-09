@@ -25,7 +25,7 @@ volumes:
   cli-proxy-logs:
   cli-proxy-plugins:
   cli-proxy-api:
-  aegisgate:
+  agentveil-redis_data:
 
 services:
   backup:
@@ -625,7 +625,7 @@ services:
     expose:
       - 80
     volumes:
-      - /mnt/media/audio_books:/audiobooks
+      - /mnt/media/books:/data/books:rw
       - /mnt/homelab_iscsi/audiobookshelf/config:/config
       - /mnt/homelab_iscsi/audiobookshelf/metadata:/metadata
     environment:
@@ -987,30 +987,35 @@ services:
       - cli-proxy-plugins:/CLIProxyAPI/plugins
     restart: always
 
-  aegisgate:
-    image: ghcr.io/legitcamper/aegisgate:latest
-    container_name: aegisgate
-    user: "10001:10001"
+  agentveil:
+    image: ghcr.io/legitcamper/agentveil:latest
+    container_name: agentveil
+    networks:
+      - web
+      - cli-proxy-api
+    expose:
+      - 8080
+    environment:
+      - TARGET_URL=http://cli-proxy-api:8317
+      - LISTEN_ADDR=:8080
+      - REDIS_ADDR=agentveil-redis:6379
+      - VEIL_DEFAULT_ROLE=admin
+    depends_on:
+      agentveil-redis:
+        condition: service_healthy
+
+  agentveil-redis:
+    image: redis:7-alpine
+    container_name: agentveil-redis
     networks:
       - cli-proxy-api
-      - web
     expose:
-      - 18080
-    environment:
-      AEGIS_ENV: "prod"
-      AEGIS_HOST: "0.0.0.0"
-      AEGIS_PORT: "18080"
-      AEGIS_ENFORCE_LOOPBACK_ONLY: "false"
-      AEGIS_SQLITE_DB_PATH: "/app/logs/aegisgate.db"
-      AEGIS_AUDIT_LOG_PATH: "/app/logs/audit.jsonl"
-      AEGIS_INIT_STRICT: "true"
-      AEGIS_BOOTSTRAP_RULES_DIR: "/app/bootstrap/rules"
-      AEGIS_SECURITY_RULES_PATH: "/app/aegisgate/policies/rules/security_filters.yaml"
-      AEGIS_DOCKER_UPSTREAMS: "8317:cli-proxy-api"
+      - 6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
     volumes:
-      - logs:/app/logs:rw
-      - aegisgate:/app/aegisgate/policies/rules:rw
-      - aegisgate:/app/config:rw
-    tmpfs:
-      - /tmp
-    restart: always
+      - agentveil-redis_data:/data
+
