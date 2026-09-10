@@ -21,12 +21,7 @@ volumes:
   fileflows-temp:
   immich-model-cache:
   immich-db:
-  cli-proxy-auth:
-  cli-proxy-logs:
-  cli-proxy-plugins:
-  cli-proxy-api:
   9router-data:
-  agentveil-redis_data:
 
 services:
   backup:
@@ -970,6 +965,15 @@ services:
     expose:
         - 8000
 
+  headroom:
+    image: ghcr.io/headroomlabs-ai/headroom:0.37.0
+    container_name: headroom
+    restart: always
+    networks:
+      - cli-proxy-api
+    expose:
+      - 8787
+
   9router:
     image: decolua/9router:0.5.69
     container_name: 9router
@@ -1001,44 +1005,20 @@ services:
     depends_on:
       - headroom
 
-  headroom:
-    image: ghcr.io/headroomlabs-ai/headroom:0.37.0
-    container_name: headroom
-    restart: always
-    networks:
-      - cli-proxy-api
-    expose:
-      - 8787
-
-  agentveil:
-    image: ghcr.io/legitcamper/agentveil:latest
-    container_name: agentveil
+  gatekeeper:
+    image: ghcr.io/legitcamper/gatekeeper:latest
+    container_name: gatekeeper
     networks:
       - web
       - cli-proxy-api
     expose:
       - 8080
     environment:
-      - TARGET_URL=http://cli-proxy-api:8317
-      - LISTEN_ADDR=:8080
-      - REDIS_ADDR=agentveil-redis:6379
-      - VEIL_DEFAULT_ROLE=admin
-    depends_on:
-      agentveil-redis:
-        condition: service_healthy
-
-  agentveil-redis:
-    image: redis:7-alpine
-    container_name: agentveil-redis
-    networks:
-      - cli-proxy-api
-    expose:
-      - 6379
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-    volumes:
-      - agentveil-redis_data:/data
-
+      TARGET_URL: http://9router:20128
+      LISTEN_ADDR: 0.0.0.0:8080
+      GATEKEEPER_VAULT_TTL_SECS: 1800
+      GATEKEEPER_MAX_SESSIONS: 10000
+      GATEKEEPER_MAX_ENTRIES_PER_SESSION: 1000
+      GATEKEEPER_MAX_BODY_BYTES: 10485760
+      RUST_LOG: info
+    restart: always
