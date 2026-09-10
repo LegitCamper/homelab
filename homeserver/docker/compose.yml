@@ -601,20 +601,22 @@ services:
       - LIDARR__INSTANCES__0__URL=http://lidarr:8686
       - LIDARR__INSTANCES__0__APIKEY=${LIDARR_API_KEY}
 
-  bindery:
-    image: ghcr.io/vavallee/bindery:1.34.0
-    container_name: bindery
+
+  chaptarr:
+    image: chaptarr/chaptarr:0.9.958
+    container_name: chaptarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TZ}
+    volumes:
+      - /mnt/homelab_iscsi/chaptarr:/config:rw
+      - /mnt/media:/data:rw
     networks:
       - web
       - arr-internal
     expose:
-      - 8787
-    volumes:
-      - /mnt/homelab_iscsi/bindery:/config:rw
-      - /mnt/media:/data:rw
-    environment:
-      - BINDERY_LOG_LEVEL=info
-      - TZ=${TZ}
+      - 8789
     restart: always
 
   audiobookshelf:
@@ -626,7 +628,7 @@ services:
     expose:
       - 80
     volumes:
-      - /mnt/media/books:/data/books:rw
+      - /mnt/media/audio_books:/data/audio_books:rw
       - /mnt/homelab_iscsi/audiobookshelf/config:/config
       - /mnt/homelab_iscsi/audiobookshelf/metadata:/metadata
     environment:
