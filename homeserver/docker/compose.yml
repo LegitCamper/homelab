@@ -25,6 +25,7 @@ volumes:
   cli-proxy-logs:
   cli-proxy-plugins:
   cli-proxy-api:
+  9router-data:
   agentveil-redis_data:
 
 services:
@@ -986,6 +987,44 @@ services:
       - cli-proxy-logs:/CLIProxyAPI/logs
       - cli-proxy-plugins:/CLIProxyAPI/plugins
     restart: always
+
+  9router:
+    image: decolua/9router:0.5.69
+    container_name: 9router
+    restart: always
+    networks:
+      - web
+      - cli-proxy-api
+    expose:
+      - 20128
+    volumes:
+      - 9router-data:/app/data
+    environment:
+      DATA_DIR: /app/data
+      PORT: "20128"
+      HOSTNAME: "0.0.0.0"
+      NODE_ENV: production
+      HEADROOM_URL: http://headroom:8787
+      BASE_URL: https://9router.${DOMAIN}
+      CLOUD_URL: https://9router.com
+      NEXT_PUBLIC_BASE_URL: https://9router.${DOMAIN}
+      NEXT_PUBLIC_CLOUD_URL: https://9router.com
+      SEARXNG_URL: http://searxng.${DOMAIN}/search
+      ENABLE_REQUEST_LOGS: false
+      OBSERVABILITY_ENABLED: true
+      AUTH_COOKIE_SECURE: false
+      REQUIRE_API_KEY: false
+      JWT_SECRET: ${_9R_JWT_SECRET}
+      INITIAL_PASSWORD: ${_9R_INITIAL_PASSWORD}
+    depends_on:
+      - headroom
+
+  headroom:
+    image: ghcr.io/headroomlabs-ai/headroom:0.37.0
+    container_name: headroom
+    restart: always
+    expose:
+      - 8787
 
   agentveil:
     image: ghcr.io/legitcamper/agentveil:latest
