@@ -970,26 +970,6 @@ services:
     expose:
         - 8000
 
-  cli-proxy-api:
-    image: eceasy/cli-proxy-api:v7.2.151
-    container_name: cli-proxy-api
-    networks:
-      - cli-proxy-api
-    ports:
-      - 1455:1455 # codex callback port
-      - 54545:54545 # claude callback port
-    expose:
-      - 8317
-      - 8085
-      - 51121
-      - 11451
-    volumes:
-      - /home/core/compose-files/docker/cli-proxy-api/config.yaml:/CLIProxyAPI/config.yaml
-      - cli-proxy-auth:/root/.cli-proxy-api
-      - cli-proxy-logs:/CLIProxyAPI/logs
-      - cli-proxy-plugins:/CLIProxyAPI/plugins
-    restart: always
-
   9router:
     image: decolua/9router:0.5.69
     container_name: 9router
@@ -1025,6 +1005,8 @@ services:
     image: ghcr.io/headroomlabs-ai/headroom:0.37.0
     container_name: headroom
     restart: always
+    networks:
+      - cli-proxy-api
     expose:
       - 8787
 
