@@ -20,7 +20,6 @@ volumes:
   fetcharr-logs:
   fileflows-temp:
   immich-model-cache:
-  immich-db:
   9router-data:
 
 services:
@@ -628,30 +627,6 @@ services:
       - /mnt/homelab_iscsi/audiobookshelf/metadata:/metadata
     environment:
       - TZ=${TZ}
-
-  uptime-kuma:
-    image: louislam/uptime-kuma:2.5.4
-    container_name: uptime-kuma
-    restart: always
-    environment:
-      - TZ=${TZ}
-    volumes:
-      - /mnt/homelab_iscsi/uptimekuma:/app/data
-    networks:
-      - web
-    expose:
-      - 3001
-
-  unduck:
-    image: ghcr.io/legitcamper/unduck:latest
-    container_name: unduck
-    restart: always
-    environment:
-      - TZ=${TZ}
-    networks:
-      - web
-    expose:
-      - 3000
 
   searxng:
     image: searxng/searxng:2025.12.19-8bf600cc6
