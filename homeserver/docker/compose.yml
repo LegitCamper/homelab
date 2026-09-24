@@ -454,7 +454,7 @@ services:
       retries: 2
 
   radarr:
-    image: ghcr.io/linuxserver/radarr:6.3.0
+    image: ghcr.io/linuxserver/radarr:6.4.4
     container_name: radarr
     user: 1000:1000 
     environment:
