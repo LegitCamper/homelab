@@ -950,7 +950,7 @@ services:
       - 8787
 
   9router:
-    image: decolua/9router:0.5.85
+    image: decolua/9router:0.5.91
     container_name: 9router
     restart: always
     networks:
