@@ -429,7 +429,7 @@ services:
     restart: always
 
   sonarr:
-    image: ghcr.io/linuxserver/sonarr:4.0.19
+    image: ghcr.io/linuxserver/sonarr:4.0.20
     container_name: sonarr
     user: 1000:1000 
     environment:
