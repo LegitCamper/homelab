@@ -597,7 +597,7 @@ services:
 
 
   chaptarr:
-    image: chaptarr/chaptarr:0.9.958
+    image: chaptarr/chaptarr:0.9.965
     container_name: chaptarr
     environment:
       - PUID=1000
