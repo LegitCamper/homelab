@@ -190,6 +190,7 @@ services:
       MEILI_ENV: production
       MEILI_NO_ANALYTICS: "true"
       MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}
+    command: meilisearch --upgrade-db
     volumes:
       - /mnt/homelab_iscsi/meili_data:/meili_data
 
