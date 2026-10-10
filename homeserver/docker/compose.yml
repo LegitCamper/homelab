@@ -771,7 +771,7 @@ services:
           memory: 5G
 
   syncthing:
-    image: lscr.io/linuxserver/syncthing:2.1.5
+    image: lscr.io/linuxserver/syncthing:2.1.6
     container_name: syncthing
     environment:
       - PUID=1000
