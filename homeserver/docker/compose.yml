@@ -614,7 +614,7 @@ services:
     restart: always
 
   audiobookshelf:
-    image: ghcr.io/advplyr/audiobookshelf:2.36.1
+    image: ghcr.io/advplyr/audiobookshelf:2.37.1
     container_name: audiobookshelf
     restart: always
     networks:
