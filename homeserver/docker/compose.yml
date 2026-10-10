@@ -397,6 +397,16 @@ services:
       - transmission 
     restart: always
 
+  seekarr:
+    image: ghcr.io/scottrobertson/seekarr:sha-5c07764
+    container_name: seekarr
+    user: 1000:1000 
+    volumes:
+      - /mnt/homelab_iscsi/seekarr:/seekarr
+    networks:
+      - arr-internal
+    restart: always
+
   lidarr:
     image: ghcr.io/linuxserver/lidarr:3.1.0
     container_name: lidarr
