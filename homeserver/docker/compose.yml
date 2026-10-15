@@ -1050,6 +1050,9 @@ services:
     environment:
       MEILI_ADDR: http://meilisearch:7700
       BROWSER_WEB_URL: http://chrome:9222
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      NEXTAUTH_URL: http://localhost:3000
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}
       DATA_DIR: /data
 
   chrome:
