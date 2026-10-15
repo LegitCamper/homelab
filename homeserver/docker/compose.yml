@@ -1054,6 +1054,13 @@ services:
       NEXTAUTH_URL: http://localhost:3000
       MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}
       DATA_DIR: /data
+      OPENAI_API_KEY: ${PANGOLIN_API_KEY}
+      OPENAI_BASE_URL: https://aigateway.${DOMAIN}/v1
+      INFERENCE_TEXT_MODEL: cx/gpt-4.1-mini
+      INFERENCE_IMAGE_MODEL: cx/gpt-4o-mini
+      EMBEDDING_TEXT_MODEL: cx/text-embedding-3-small
+      EMBEDDING_DIMENSIONS: 1536
+      EMBEDDING_TEXT_MODEL_DIMENSION_OVERRIDE: 1536
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:3000/api/health | grep -q '\"status\"\\s*:\\s*\"ok\"' || exit 1"]
       interval: 30s
