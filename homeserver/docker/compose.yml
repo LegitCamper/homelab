@@ -1,6 +1,5 @@
 networks:
-  # exposed through newt/pangolin
-  web:
+  web: # exposed through newt/pangolin
     external: true
   arr-internal: 
     external: false
@@ -11,6 +10,8 @@ networks:
   meilisearch-internal:
     external: false
   cli-proxy-api:
+    external: false
+  chrome-internal:
     external: false
 
 volumes:
@@ -1033,3 +1034,33 @@ services:
       RUST_LOG: info
       GATEKEEPER_REDACT: ${GATEKEEPER_REDACT}
     restart: always
+
+  karakeep:
+    image: ghcr.io/karakeep-app/karakeep:0.33.2
+    container_name: karakeep
+    restart: always
+    volumes:
+      - /mnt/homelab_iscsi/karakeep:/data:rw
+    expose:
+      - 3000
+    networks:
+      - web
+      - meilisearch-internal
+      - chrome-internal
+    environment:
+      MEILI_ADDR: http://meilisearch:7700
+      BROWSER_WEB_URL: http://chrome:9222
+      DATA_DIR: /data
+
+  chrome:
+    image: ghcr.io/karakeep-app/karakeep-chrome:154.0.8037.57-r1
+    restart: unless-stopped
+    networks:
+      - chrome-internal
+    init: true
+    command:
+      - --disable-gpu
+      - --disable-dev-shm-usage
+      - --hide-scrollbars
+      - --disable-blink-features=AutomationControlled
+      - --window-size=1440,900
