@@ -981,7 +981,7 @@ services:
       retries: 3
 
   9router:
-    image: decolua/9router:0.5.95
+    image: decolua/9router:0.5.104
     container_name: 9router
     restart: always
     networks:
