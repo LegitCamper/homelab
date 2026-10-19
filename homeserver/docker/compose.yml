@@ -967,7 +967,7 @@ services:
         - 8000
 
   headroom:
-    image: ghcr.io/headroomlabs-ai/headroom:0.40.0
+    image: ghcr.io/headroomlabs-ai/headroom:0.41.0
     container_name: headroom
     restart: always
     networks:
