@@ -153,7 +153,7 @@ services:
             count: -1
 
   jellyfin:
-    image: ghcr.io/jellyfin/jellyfin:12.2
+    image: ghcr.io/jellyfin/jellyfin:12.3
     container_name: jellyfin
     restart: always
     user: "1000:1000"
