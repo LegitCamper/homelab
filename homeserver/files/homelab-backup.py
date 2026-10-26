@@ -143,7 +143,7 @@ def stage_group(config, name, containers, paths):
     atomic_json(STATE / 'stopped.json', running)
     try:
         for container in running:
-            run('docker', 'stop', '--time', str(config['stop_timeout']), container)
+            run('docker', 'stop', '--timeout', str(config['stop_timeout']), container)
             state = inspect(container)['State']
             if state['Running'] or state['ExitCode'] == 137 or state['OOMKilled']:
                 raise RuntimeError(f'Container did not stop cleanly: {container}')

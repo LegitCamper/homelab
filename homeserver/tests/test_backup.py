@@ -35,6 +35,8 @@ class BackupTests(unittest.TestCase):
 
         def run(*args, **kwargs):
             self.assertTrue((self.root / 'stopped.json').exists())
+            if args[1] == 'stop':
+                self.assertEqual(args[:4], ('docker', 'stop', '--timeout', '120'))
             events.append((args[1], args[-1]))
             states[args[-1]] = args[1] == 'start'
 
