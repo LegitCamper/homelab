@@ -22,7 +22,8 @@ volumes:
   fileflows-temp:
   immich-model-cache:
   9router-data:
-
+  karasearch:
+    
 services:
   # traffic ingress from pangolin
   newt:
@@ -999,3 +1000,19 @@ services:
       - --hide-scrollbars
       - --disable-blink-features=AutomationControlled
       - --window-size=1440,900
+
+  karasearch:
+    image: ghcr.io/legitcamper/karasearch:latest
+    container_name: karasearch
+    restart: always
+    networks:
+      - web
+    expose:
+      - 8787
+    environment:
+      KARAKEEP_URL: http://karakeep:3000
+      SEARCH_URL: https://search.${DOMAIN}/search?q={query}&t=general
+      COOKIE_SECURE: true
+    volumes:
+      - karasearch:/data
+    read_only: true
