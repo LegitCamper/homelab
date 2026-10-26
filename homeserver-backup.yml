@@ -6,10 +6,70 @@
   vars_files:
     - homeserver/backup.yml
   tasks:
-    - name: Load separately vaulted backup credentials
-      ansible.builtin.include_vars:
-        file: homeserver/backup-secrets.yml
+    - name: Extract backup credentials from the existing vaulted secrets.env
       no_log: true
+      when: not ansible_check_mode
+      block:
+        - name: Allocate a private temporary environment file
+          ansible.builtin.tempfile:
+            state: file
+            prefix: homelab-backup-env-
+          register: backup_env_file
+
+        - name: Decrypt the existing environment file for Compose parsing
+          ansible.builtin.copy:
+            src: secrets.env
+            dest: "{{ backup_env_file.path }}"
+            decrypt: true
+            owner: root
+            group: root
+            mode: "0600"
+          diff: false
+
+        - name: Resolve only backup variables without starting containers
+          ansible.builtin.command:
+            argv:
+              - env
+              - -u
+              - RESTIC_REPOSITORY
+              - -u
+              - RESTIC_PASSWORD
+              - -u
+              - B2_ACCOUNT_ID
+              - -u
+              - B2_ACCOUNT_KEY
+              - docker
+              - compose
+              - --project-name
+              - homelab-backup-credentials
+              - --env-file
+              - "{{ backup_env_file.path }}"
+              - --file
+              - '-'
+              - config
+              - --format
+              - json
+            stdin: |
+              services:
+                backup:
+                  image: scratch
+                  environment:
+                    RESTIC_REPOSITORY: ${RESTIC_REPOSITORY:?required in secrets.env}
+                    RESTIC_PASSWORD: ${RESTIC_PASSWORD:?required in secrets.env}
+                    B2_ACCOUNT_ID: ${B2_ACCOUNT_ID:?required in secrets.env}
+                    B2_ACCOUNT_KEY: ${B2_ACCOUNT_KEY:?required in secrets.env}
+          register: backup_env_result
+          changed_when: false
+
+        - name: Keep only the four restic credentials
+          ansible.builtin.set_fact:
+            backup_environment: "{{ (backup_env_result.stdout | from_json).services.backup.environment }}"
+      always:
+        - name: Remove the temporary decrypted environment file
+          ansible.builtin.file:
+            path: "{{ backup_env_file.path }}"
+            state: absent
+          when: backup_env_file.path is defined
 
     - name: Validate backup credentials
       ansible.builtin.assert:
@@ -20,6 +80,7 @@
           - backup_environment.B2_ACCOUNT_KEY | length > 0
           - backup_environment.RESTIC_REPOSITORY.startswith('b2:')
       no_log: true
+      when: not ansible_check_mode
 
     - name: Layer backup packages for the next boot without applying live
       community.general.rpm_ostree_pkg:
@@ -70,7 +131,7 @@
         group: root
         mode: "0600"
 
-    - name: Write backup credentials without shell or dotenv interpretation
+    - name: Write extracted restic credentials
       ansible.builtin.copy:
         content: "{{ backup_environment | to_nice_json }}\n"
         dest: /etc/homelab-backup/environment.json
@@ -79,6 +140,7 @@
         mode: "0600"
       no_log: true
       diff: false
+      when: not ansible_check_mode
 
     - name: Install backup jobs
       ansible.builtin.copy:

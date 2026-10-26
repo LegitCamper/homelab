@@ -118,10 +118,15 @@ immutable/offline copies need a separate design, not an untested retention toggl
 
 ### Future rollout (operator actions, not run by editing this repository)
 
-1. Copy `homeserver/backup-secrets.yml.example` to
-   `homeserver/backup-secrets.yml`, restrict it to mode 0600, fill in the existing
-   repository/password and a scoped B2 key, then encrypt it with `ansible-vault
-   encrypt homeserver/backup-secrets.yml`. The real file is ignored by Git.
+1. Reuse the existing vaulted `secrets.env`, including `RESTIC_REPOSITORY`,
+   `RESTIC_PASSWORD`, `B2_ACCOUNT_ID`, and `B2_ACCOUNT_KEY`. No separate backup
+   secrets file is needed. The playbook decrypts it into a private temporary file,
+   uses `docker compose config` to resolve the four values without starting any
+   containers, then removes the temporary file even if parsing fails. Only those
+   four values are written to root-only `/etc/homelab-backup/environment.json`;
+   output/diffs are suppressed. Rerun this playbook after changing credentials.
+   Check mode skips credential extraction and writing; real deployment validates
+   that every required value is nonempty.
 2. Review scope, free space, host timezone and retention in `homeserver/backup.yml`.
    Keep `backup_enable_timers: false`. On your chosen rollout date run
    `ansible-playbook homeserver-backup.yml`. If packages need a reboot, schedule it

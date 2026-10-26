@@ -166,6 +166,35 @@ class BackupTests(unittest.TestCase):
         self.assertEqual(marker['repository'], 'test-repo')
         self.assertEqual(marker['config'], config)
 
+    def test_credentials_reuse_vaulted_env_with_private_copy_and_cleanup(self):
+        tasks = yaml.safe_load((ROOT / 'homeserver-backup.yml').read_text())[0]['tasks']
+        extraction = tasks[0]
+        self.assertTrue(extraction['no_log'])
+        self.assertEqual(extraction['when'], 'not ansible_check_mode')
+        temporary, copy, resolve, retain = extraction['block']
+        self.assertEqual(temporary['ansible.builtin.tempfile']['state'], 'file')
+        self.assertEqual(copy['ansible.builtin.copy']['src'], 'secrets.env')
+        self.assertTrue(copy['ansible.builtin.copy']['decrypt'])
+        self.assertEqual(copy['ansible.builtin.copy']['mode'], '0600')
+        self.assertFalse(copy['diff'])
+        command = resolve['ansible.builtin.command']
+        self.assertEqual(command['argv'][-3:], ['config', '--format', 'json'])
+        self.assertIn('{{ backup_env_file.path }}', command['argv'])
+        environment = yaml.safe_load(command['stdin'])['services']['backup']['environment']
+        required = {'RESTIC_REPOSITORY', 'RESTIC_PASSWORD', 'B2_ACCOUNT_ID', 'B2_ACCOUNT_KEY'}
+        self.assertEqual(set(environment), required)
+        for name in required:
+            self.assertEqual(environment[name], '${' + name + ':?required in secrets.env}')
+            self.assertEqual(command['argv'][command['argv'].index(name) - 1], '-u')
+        self.assertIn('services.backup.environment', retain['ansible.builtin.set_fact']['backup_environment'])
+        cleanup = extraction['always'][0]
+        self.assertEqual(cleanup['ansible.builtin.file']['state'], 'absent')
+        self.assertEqual(cleanup['ansible.builtin.file']['path'], '{{ backup_env_file.path }}')
+        writer = next(task for task in tasks if task.get('ansible.builtin.copy', {}).get('dest') == '/etc/homelab-backup/environment.json')
+        self.assertTrue(writer['no_log'])
+        self.assertFalse(writer['diff'])
+        self.assertEqual(writer['ansible.builtin.copy']['mode'], '0600')
+
     def test_compose_persistent_mounts_have_explicit_coverage_or_exclusion(self):
         compose = yaml.safe_load((ROOT / 'homeserver/docker/compose.yml').read_text())
         config = yaml.safe_load((ROOT / 'homeserver/backup.yml').read_text())['backup_config']
