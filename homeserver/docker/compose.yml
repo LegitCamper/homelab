@@ -368,27 +368,6 @@ services:
       - transmission 
     restart: always
 
-  tidarr:
-    image: cstaelen/tidarr
-    container_name: tidarr
-    user: 1000:1000 
-    environment:
-      - TZ=${TZ}
-    expose:
-      - 8484
-    networks:
-      - web
-      - arr-internal
-    volumes:
-      - /mnt/homelab_iscsi/tidarr:/shared:rw
-      - /mnt/media/tidarr:/shared/nzb_downloads/:rw
-    restart: always
-    healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:8484/api/is-auth-active"]
-      interval: 5m
-      timeout: 10s
-      retries: 3
-
   sonarr:
     image: ghcr.io/linuxserver/sonarr:4.0.20
     container_name: sonarr

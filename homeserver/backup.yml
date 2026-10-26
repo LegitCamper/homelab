@@ -51,9 +51,6 @@ backup_config:
     - name: lidarr
       services: [lidarr]
       paths: [/mnt/homelab_iscsi/lidarr]
-    - name: tidarr
-      services: [tidarr]
-      paths: [/mnt/homelab_iscsi/tidarr]
     - name: sonarr
       services: [sonarr]
       paths: [/mnt/homelab_iscsi/sonarr]
