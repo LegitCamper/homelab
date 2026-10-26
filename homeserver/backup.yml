@@ -1,5 +1,5 @@
 ---
-backup_enable_timers: false
+backup_enable_timers: true
 backup_jobs:
   - {name: backup, calendar: "*-*-* 03:30:00"}
   - {name: check, calendar: "Sun *-*-* 10:00:00"}
