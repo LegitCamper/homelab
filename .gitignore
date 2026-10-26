@@ -1,1 +1,3 @@
 *.ign
+homeserver/backup-secrets.yml
+__pycache__/

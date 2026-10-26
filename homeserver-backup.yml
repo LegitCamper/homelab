@@ -1,0 +1,163 @@
+---
+- name: Configure native restic backups on ucore
+  hosts: homeserver
+  remote_user: core
+  become: true
+  vars_files:
+    - homeserver/backup.yml
+  tasks:
+    - name: Load separately vaulted backup credentials
+      ansible.builtin.include_vars:
+        file: homeserver/backup-secrets.yml
+      no_log: true
+
+    - name: Validate backup credentials
+      ansible.builtin.assert:
+        that:
+          - backup_environment.RESTIC_REPOSITORY | length > 0
+          - backup_environment.RESTIC_PASSWORD | length > 0
+          - backup_environment.B2_ACCOUNT_ID | length > 0
+          - backup_environment.B2_ACCOUNT_KEY | length > 0
+          - backup_environment.RESTIC_REPOSITORY.startswith('b2:')
+      no_log: true
+
+    - name: Layer backup packages for the next boot without applying live
+      community.general.rpm_ostree_pkg:
+        name: [restic, rsync]
+        state: present
+        apply_live: false
+      when: not ansible_check_mode
+
+    - name: Check booted package availability
+      ansible.builtin.command:
+        argv: [rpm, -q, restic, rsync]
+      register: backup_packages
+      changed_when: false
+      failed_when: false
+      check_mode: false
+
+    - name: Require an operator-controlled reboot before configuration
+      ansible.builtin.assert:
+        that: backup_packages.rc == 0
+        fail_msg: >-
+          Packages are not in the booted deployment. Reboot during your chosen
+          maintenance window, then rerun this playbook. No reboot is automated.
+
+    - name: Create private backup directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0700"
+      loop:
+        - /etc/homelab-backup
+        - /var/lib/homelab-backup
+
+    - name: Install backup runner
+      ansible.builtin.copy:
+        src: homeserver/files/homelab-backup.py
+        dest: /usr/local/sbin/homelab-backup
+        owner: root
+        group: root
+        mode: "0700"
+
+    - name: Write backup scope
+      ansible.builtin.copy:
+        content: "{{ backup_config | to_nice_json }}\n"
+        dest: /etc/homelab-backup/config.json
+        owner: root
+        group: root
+        mode: "0600"
+
+    - name: Write backup credentials without shell or dotenv interpretation
+      ansible.builtin.copy:
+        content: "{{ backup_environment | to_nice_json }}\n"
+        dest: /etc/homelab-backup/environment.json
+        owner: root
+        group: root
+        mode: "0600"
+      no_log: true
+      diff: false
+
+    - name: Install backup jobs
+      ansible.builtin.copy:
+        dest: "/etc/systemd/system/homelab-{{ item.name }}.service"
+        mode: "0644"
+        content: |
+          [Unit]
+          Description=Homelab restic {{ item.name }}
+          Wants=network-online.target
+          After=network-online.target docker.service
+          Requires=docker.service
+          RequiresMountsFor={{ backup_config.required_mounts | join(' ') }} {{ backup_config.staging }}
+
+          [Service]
+          Type=oneshot
+          UMask=0077
+          ExecStart=/usr/local/sbin/homelab-backup {{ item.name }}
+          ExecStopPost=/usr/local/sbin/homelab-backup recover
+          TimeoutStartSec=12h
+          TimeoutStopSec=15min
+          Nice=10
+          IOSchedulingClass=best-effort
+          IOSchedulingPriority=7
+          StandardOutput=journal
+          StandardError=journal
+      loop: "{{ backup_jobs }}"
+
+    - name: Install timers without running jobs during configuration
+      ansible.builtin.copy:
+        dest: "/etc/systemd/system/homelab-{{ item.name }}.timer"
+        mode: "0644"
+        content: |
+          [Unit]
+          Description=Schedule homelab {{ item.name }}
+
+          [Timer]
+          OnCalendar={{ item.calendar }}
+          RandomizedDelaySec=30min
+          Persistent=true
+
+          [Install]
+          WantedBy=timers.target
+      loop: "{{ backup_jobs }}"
+
+    - name: Install recovery for interrupted container stops across reboot
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/homelab-backup-recover.service
+        mode: "0644"
+        content: |
+          [Unit]
+          Description=Restart containers left stopped by interrupted backup
+          Requires=docker.service
+          After=docker.service
+          Before=homelab-backup.service
+
+          [Service]
+          Type=oneshot
+          UMask=0077
+          ExecStart=/usr/local/sbin/homelab-backup recover
+          TimeoutStartSec=15min
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Enable boot recovery without starting it during configuration
+      ansible.builtin.systemd_service:
+        name: homelab-backup-recover.service
+        daemon_reload: true
+        enabled: true
+
+    - name: Require successful manual backup and retired legacy jobs before scheduling
+      ansible.builtin.command:
+        argv: [/usr/local/sbin/homelab-backup, ready]
+      changed_when: false
+      when: backup_enable_timers | bool
+
+    - name: Set timer activation explicitly
+      ansible.builtin.systemd_service:
+        name: "homelab-{{ item.name }}.timer"
+        enabled: "{{ backup_enable_timers | bool }}"
+        state: "{{ 'started' if backup_enable_timers | bool else 'stopped' }}"
+      loop: "{{ backup_jobs }}"

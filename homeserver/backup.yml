@@ -1,0 +1,80 @@
+---
+backup_enable_timers: false
+backup_jobs:
+  - {name: backup, calendar: "*-*-* 03:30:00"}
+  - {name: check, calendar: "Sun *-*-* 10:00:00"}
+  - {name: maintain, calendar: "*-*-01 12:00:00"}
+
+backup_config:
+  project: homeserver
+  host: homeserver
+  tag: homelab-staged-v1
+  staging: /var/lib/homelab-backup/staging
+  required_mounts: [/mnt/homelab_iscsi]
+  minimum_free_bytes: 10737418240
+  stop_timeout: 120
+  retention: [--keep-daily, '14', --keep-weekly, '8', --keep-monthly, '12', --keep-yearly, '3']
+  groups:
+    - name: gitea
+      services: [gitea]
+      paths: [/mnt/homelab_iscsi/gitea]
+    - name: fileflows
+      services: [fileflows]
+      paths: [/mnt/homelab_iscsi/fileflows/configs]
+    - name: jellyfin
+      services: [jellyfin]
+      paths: [/mnt/homelab_iscsi/jellyfin]
+    - name: bookmarks
+      services: [karakeep]
+      paths: [/mnt/homelab_iscsi/karakeep]
+    - name: meilisearch
+      services: [meilisearch]
+      paths: [/mnt/homelab_iscsi/meili_data]
+    - name: seerr
+      services: [seerr]
+      paths: [/mnt/homelab_iscsi/seerr]
+    - name: maintainerr
+      services: [maintainerr]
+      paths: [/mnt/homelab_iscsi/maintainerr]
+    - name: downloads
+      services: [sabnzbd]
+      paths: [/mnt/homelab_iscsi/sabnzbd]
+    - name: jackett
+      services: [jackett]
+      paths: [/mnt/homelab_iscsi/jackett]
+    - name: prowlarr
+      services: [prowlarr]
+      paths: [/mnt/homelab_iscsi/prowlarr]
+    - name: seekarr
+      services: [seekarr]
+      paths: [/mnt/homelab_iscsi/seekarr]
+    - name: lidarr
+      services: [lidarr]
+      paths: [/mnt/homelab_iscsi/lidarr]
+    - name: tidarr
+      services: [tidarr]
+      paths: [/mnt/homelab_iscsi/tidarr]
+    - name: sonarr
+      services: [sonarr]
+      paths: [/mnt/homelab_iscsi/sonarr]
+    - name: radarr
+      services: [radarr]
+      paths: [/mnt/homelab_iscsi/radarr]
+    - name: fetcharr
+      services: [fetcharr]
+      paths: [/mnt/homelab_iscsi/fetcharr]
+    - name: chaptarr
+      services: [chaptarr]
+      paths: [/mnt/homelab_iscsi/chaptarr]
+    - name: audiobookshelf
+      services: [audiobookshelf]
+      paths: [/mnt/homelab_iscsi/audiobookshelf]
+    - name: immich
+      services: [immich_server, immich_postgres]
+      paths: [/mnt/homelab_iscsi/immich]
+    - name: syncthing
+      services: [syncthing]
+      paths: [/mnt/homelab_iscsi/syncthing]
+    - name: grafana
+      services: [grafana]
+      paths: [/mnt/homelab_iscsi/grafana_data]

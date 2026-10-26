@@ -1,0 +1,245 @@
+#!/usr/bin/python3
+import datetime
+import fcntl
+import json
+import os
+from pathlib import Path
+import re
+import shutil
+import signal
+import subprocess
+import sys
+
+
+STATE = Path('/var/lib/homelab-backup')
+CONFIG = Path('/etc/homelab-backup')
+
+
+def run(*args, capture=False, allowed=(0,)):
+    result = subprocess.run(args, text=True, stdout=subprocess.PIPE if capture else None)
+    if result.returncode not in allowed:
+        raise RuntimeError(f'{args[0]} {args[1]} failed with exit {result.returncode}')
+    return result.stdout or ''
+
+
+def atomic_json(path, value):
+    temporary = path.with_suffix('.tmp')
+    with temporary.open('w') as stream:
+        json.dump(value, stream)
+        stream.flush()
+        os.fsync(stream.fileno())
+    temporary.replace(path)
+    directory = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        os.fsync(directory)
+    finally:
+        os.close(directory)
+
+
+def inspect(container):
+    return json.loads(run('docker', 'inspect', container, capture=True))[0]
+
+
+def recover():
+    pending = STATE / 'stopped.json'
+    if not pending.exists():
+        return
+    containers = json.loads(pending.read_text())
+    failures = []
+    for container in reversed(containers):
+        try:
+            run('docker', 'start', container)
+            if not inspect(container)['State']['Running']:
+                raise RuntimeError('Container did not stay running')
+        except Exception as error:
+            print(f'Recovery failed for {container}: {error}', file=sys.stderr, flush=True)
+            failures.append(container)
+    if failures:
+        atomic_json(pending, list(reversed(failures)))
+        raise RuntimeError('Recovery incomplete; stopped.json retained for retry')
+    pending.unlink()
+
+
+def require_mounts(config):
+    for mount in config['required_mounts']:
+        if not os.path.ismount(mount):
+            raise RuntimeError(f'Required filesystem is not mounted: {mount}')
+
+
+def no_legacy_jobs():
+    names = run('docker', 'ps', '-a', '--format', '{{.Names}}', capture=True).splitlines()
+    if set(names) & {'restic-backup', 'restic-prune', 'restic-check'}:
+        raise RuntimeError('Retire legacy backup/prune/check containers before running native jobs')
+
+
+def plan(config):
+    require_mounts(config)
+    staging = Path(config['staging']).resolve()
+    groups = []
+    names = set()
+    owned_services = set()
+    for group in config['groups']:
+        name = group['name']
+        if not re.fullmatch(r'[a-zA-Z0-9][a-zA-Z0-9_-]*', name) or name in names:
+            raise RuntimeError(f'Invalid or duplicate group: {name}')
+        names.add(name)
+        containers = []
+        for service in group['services']:
+            if service in owned_services:
+                raise RuntimeError(f'Service in multiple groups: {service}')
+            owned_services.add(service)
+            matches = run(
+                'docker', 'ps', '-aq', '--filter', f'label=com.docker.compose.project={config["project"]}',
+                '--filter', f'label=com.docker.compose.service={service}', capture=True,
+            ).splitlines()
+            if len(matches) != 1:
+                raise RuntimeError(f'Expected exactly one container for {service}; got {len(matches)}')
+            container = inspect(matches[0])
+            state = container['State']
+            if state['Paused'] or state['Restarting']:
+                raise RuntimeError(f'Container not stable: {service}')
+            containers.append(container['Id'])
+        paths = [(Path(source), Path(source).relative_to('/')) for source in group['paths']]
+        for volume in group.get('volumes', []):
+            if not re.fullmatch(r'[a-zA-Z0-9][a-zA-Z0-9_.-]*', volume):
+                raise RuntimeError(f'Invalid volume: {volume}')
+            data = json.loads(run('docker', 'volume', 'inspect', volume, capture=True))[0]
+            paths.append((Path(data['Mountpoint']), Path('volumes') / volume))
+        if not paths:
+            raise RuntimeError(f'No sources in {name}')
+        for source, relative in paths:
+            resolved = source.resolve()
+            if not source.is_dir() or staging.is_relative_to(resolved) or resolved.is_relative_to(staging):
+                raise RuntimeError(f'Missing or recursive source: {source}')
+            if (staging / name / relative).resolve() != staging / name / relative:
+                raise RuntimeError(f'Unsafe staging destination: {relative}')
+        groups.append((name, containers, paths))
+    if not groups:
+        raise RuntimeError('No backup groups configured')
+    return groups
+
+
+def sync_group(config, name, paths, final):
+    require_mounts(config)
+    for source, relative in paths:
+        if not source.is_dir():
+            raise RuntimeError(f'Source disappeared: {source}')
+        destination = Path(config['staging']) / name / relative
+        destination.mkdir(parents=True, exist_ok=True)
+        if shutil.disk_usage(config['staging']).free < config['minimum_free_bytes']:
+            raise RuntimeError('Insufficient staging disk space; containers will be recovered')
+        run(
+            'rsync', '-aHAX', '--numeric-ids', '--delete-delay',
+            *(['--checksum'] if final else []), '--', f'{source}/', f'{destination}/',
+            allowed=(0,) if final else (0, 24),
+        )
+
+
+# ponytail: cold staged copies; use filesystem snapshots or DB dumps if checksum downtime is too long.
+def stage_group(config, name, containers, paths):
+    print(f'Staging {name}', flush=True)
+    sync_group(config, name, paths, final=False)
+    running = [container for container in containers if inspect(container)['State']['Running']]
+    atomic_json(STATE / 'stopped.json', running)
+    try:
+        for container in running:
+            run('docker', 'stop', '--time', str(config['stop_timeout']), container)
+            state = inspect(container)['State']
+            if state['Running'] or state['ExitCode'] == 137 or state['OOMKilled']:
+                raise RuntimeError(f'Container did not stop cleanly: {container}')
+        sync_group(config, name, paths, final=True)
+    finally:
+        recover()
+
+
+def restic(*args, capture=False):
+    return run('restic', '--retry-lock', '10m', *args, capture=capture)
+
+
+def require_recent_backup(config):
+    marker = json.loads((STATE / 'last-success.json').read_text())
+    if marker['config'] != config or marker['repository'] != os.environ['RESTIC_REPOSITORY']:
+        raise RuntimeError('Backup configuration changed; run a successful backup first')
+    snapshots = json.loads(restic(
+        'snapshots', '--json', '--host', config['host'], '--tag', config['tag'], capture=True,
+    ))
+    recent = [
+        datetime.datetime.fromisoformat(snapshot['time']) for snapshot in snapshots
+        if snapshot['id'].startswith(marker['snapshot_id'])
+    ]
+    now = datetime.datetime.now(datetime.timezone.utc)
+    if not recent or not datetime.timedelta(0) <= now - max(recent) < datetime.timedelta(hours=48):
+        raise RuntimeError('No staged snapshot within 48 hours; refusing activation/retention')
+
+
+def execute(action, config):
+    no_legacy_jobs()
+    if action == 'backup':
+        groups = plan(config)
+        restic('cat', 'config')
+        for name, containers, paths in groups:
+            stage_group(config, name, containers, paths)
+        require_mounts(config)
+        output = restic(
+            'backup', '--json', '--host', config['host'], '--tag', config['tag'], '--compression', 'auto',
+            '--', *[str(Path(config['staging']) / group[0]) for group in groups],
+            capture=True,
+        )
+        print(output, end='', flush=True)
+        summary = next(json.loads(line) for line in output.splitlines() if json.loads(line).get('message_type') == 'summary')
+        atomic_json(STATE / 'last-success.json', {
+            'time': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            'groups': [group[0] for group in groups],
+            'snapshot_id': summary['snapshot_id'],
+            'config': config,
+            'repository': os.environ['RESTIC_REPOSITORY'],
+        })
+    elif action == 'check':
+        week = datetime.date.today().toordinal() // 7
+        restic('check', f'--read-data-subset={(week % 12) + 1}/12')
+    elif action == 'maintain':
+        require_recent_backup(config)
+        restic('check')
+        restic('forget', '--host', config['host'], '--tag', config['tag'], '--group-by', 'host', *config['retention'])
+        restic('prune', '--max-unused', '20%', '--max-repack-size', '1G')
+        restic('check')
+    elif action == 'ready':
+        require_recent_backup(config)
+        plan(config)
+    elif action == 'restic':
+        restic(*sys.argv[2:])
+    else:
+        raise RuntimeError(f'Unknown action: {action}')
+
+
+def interrupted(signum, frame):
+    raise SystemExit(128 + signum)
+
+
+def main():
+    os.umask(0o077)
+    signal.signal(signal.SIGTERM, interrupted)
+    signal.signal(signal.SIGINT, interrupted)
+    STATE.mkdir(parents=True, exist_ok=True)
+    with (STATE / 'run.lock').open('w') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        recover()
+        action = sys.argv[1] if len(sys.argv) > 1 else 'backup'
+        if action == 'recover':
+            return
+        config = json.loads((CONFIG / 'config.json').read_text())
+        environment = json.loads((CONFIG / 'environment.json').read_text())
+        permitted = {'RESTIC_REPOSITORY', 'RESTIC_PASSWORD', 'B2_ACCOUNT_ID', 'B2_ACCOUNT_KEY'}
+        if set(environment) != permitted or not all(isinstance(value, str) and value for value in environment.values()):
+            raise RuntimeError('Invalid credential configuration')
+        os.environ.update(environment)
+        os.environ['RESTIC_CACHE_DIR'] = str(STATE / 'cache')
+        execute(action, config)
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except Exception as error:
+        print(str(error), file=sys.stderr, flush=True)
+        sys.exit(1)
