@@ -107,7 +107,7 @@ class BackupTests(unittest.TestCase):
             if args[0] == 'backup':
                 raise RuntimeError('upload failed')
         config = {'staging': str(self.root), 'required_mounts': [], 'host': 'test', 'tag': 'test'}
-        with patch.object(backup, 'no_legacy_jobs'), patch.object(backup, 'plan', return_value=[('app', [], [])]), patch.object(backup, 'stage_group') as stage, patch.object(backup, 'restic', restic):
+        with patch.object(backup, 'no_legacy_jobs'), patch.object(backup, 'plan', return_value=[('app', [], [], [])]), patch.object(backup, 'stage_group') as stage, patch.object(backup, 'restic', restic):
             with self.assertRaisesRegex(RuntimeError, 'upload failed'):
                 backup.execute('backup', config)
             stage.assert_called_once()
@@ -160,8 +160,9 @@ class BackupTests(unittest.TestCase):
 
     def test_successful_upload_records_snapshot_for_activation(self):
         config = {'staging': str(self.root), 'required_mounts': [], 'host': 'test', 'tag': 'test'}
-        summary = json.dumps({'message_type': 'summary', 'snapshot_id': 'abcdef12'})
-        with patch.dict(os.environ, {'RESTIC_REPOSITORY': 'test-repo'}), patch.object(backup, 'no_legacy_jobs'), patch.object(backup, 'plan', return_value=[('app', [], [])]), patch.object(backup, 'stage_group'), patch.object(backup, 'restic', return_value=summary):
+        summary = json.dumps({'message_type': 'summary', 'snapshot_id': 'abcdef12', 'files_new': 3,
+                              'files_changed': 1, 'data_added': 2.5e9, 'total_duration': 90})
+        with patch.dict(os.environ, {'RESTIC_REPOSITORY': 'test-repo'}), patch.object(backup, 'no_legacy_jobs'), patch.object(backup, 'plan', return_value=[('app', [], [], [])]), patch.object(backup, 'stage_group'), patch.object(backup, 'restic', return_value=summary):
             backup.execute('backup', config)
         marker = json.loads((self.root / 'last-success.json').read_text())
         self.assertEqual(marker['snapshot_id'], 'abcdef12')
@@ -184,7 +185,7 @@ class BackupTests(unittest.TestCase):
         self.assertIn('{{ backup_env_file.path }}', command['argv'])
         environment = yaml.safe_load(command['stdin'])['services']['backup']['environment']
         required = {'RESTIC_REPOSITORY', 'RESTIC_PASSWORD', 'B2_ACCOUNT_ID', 'B2_ACCOUNT_KEY'}
-        self.assertEqual(set(environment), required)
+        self.assertEqual(set(environment), required | {'PANGOLIN_BACKUP_API_KEY', 'DISCORD_BACKUP_WEBHOOK'})
         for name in required:
             self.assertEqual(environment[name], '${' + name + ':?required in secrets.env}')
             self.assertEqual(command['argv'][command['argv'].index(name) - 1], '-u')
@@ -216,6 +217,374 @@ class BackupTests(unittest.TestCase):
                     owners = [group for group in config['groups'] if f'homeserver_{source}' in group.get('volumes', [])]
                 self.assertEqual(len(owners), 1, (name, source))
                 self.assertIn(name, owners[0]['services'], (name, source))
+
+
+    def test_alert_muting_saves_prior_state_and_skips_already_disabled(self):
+        calls = []
+
+        def pangolin(settings, path, body=None):
+            calls.append((path, body))
+            return {'enabled': path.endswith('11')}
+
+        settings = {'base_url': 'https://api.test/v1', 'org_id': 'org', 'alert_rules': [11, 12]}
+        with patch.object(backup, 'pangolin', pangolin):
+            backup.mute_alerts({'pangolin': settings})
+        saved = json.loads((self.root / 'alerts.json').read_text())
+        self.assertEqual(saved['prior'], {'11': True, '12': False})
+        self.assertEqual(calls, [
+            ('org/org/alert-rule/11', None),
+            ('org/org/alert-rule/12', None),
+            ('org/org/alert-rule/11', {'enabled': False}),
+        ])
+
+    def test_no_pangolin_configuration_leaves_alerts_untouched(self):
+        with patch.object(backup, 'pangolin', side_effect=AssertionError('must not call')):
+            backup.mute_alerts({})
+            backup.mute_alerts({'pangolin': {'base_url': 'x', 'org_id': 'y', 'alert_rules': []}})
+        self.assertFalse((self.root / 'alerts.json').exists())
+
+    def test_alerts_restore_to_prior_state_and_retry_only_failures(self):
+        settings = {'base_url': 'https://api.test/v1', 'org_id': 'org', 'alert_rules': [11, 12]}
+        backup.atomic_json(self.root / 'alerts.json', {'settings': settings, 'prior': {'11': True, '12': False}})
+        restored = []
+
+        def pangolin(settings, path, body=None):
+            if path.endswith('12'):
+                raise RuntimeError('gateway unreachable')
+            restored.append((path, body))
+            return {}
+
+        with patch.object(backup, 'pangolin', pangolin):
+            with self.assertRaisesRegex(RuntimeError, 'gateway unreachable'):
+                backup.restore_alerts()
+        self.assertEqual(restored, [('org/org/alert-rule/11', {'enabled': True})])
+        self.assertEqual(json.loads((self.root / 'alerts.json').read_text())['prior'], {'12': False})
+
+        with patch.object(backup, 'pangolin', lambda settings, path, body=None: restored.append((path, body)) or {}):
+            backup.restore_alerts()
+        self.assertEqual(restored[-1], ('org/org/alert-rule/12', {'enabled': False}))
+        self.assertFalse((self.root / 'alerts.json').exists())
+
+    def test_staging_failure_restores_alerts_and_containers(self):
+        settings = {'base_url': 'https://api.test/v1', 'org_id': 'org', 'alert_rules': [11]}
+        config = {'staging': str(self.root), 'required_mounts': [], 'host': 'test', 'tag': 'test', 'pangolin': settings}
+        events = []
+
+        def pangolin(settings, path, body=None):
+            events.append(body['enabled'] if body else 'read')
+            return {'enabled': True}
+
+        with patch.object(backup, 'pangolin', pangolin), patch.object(backup, 'no_legacy_jobs'),                 patch.object(backup, 'plan', return_value=[('app', [], [], [])]),                 patch.object(backup, 'restic'),                 patch.object(backup, 'stage_group', side_effect=RuntimeError('stop failed')):
+            with self.assertRaisesRegex(RuntimeError, 'stop failed'):
+                backup.execute('backup', config)
+        self.assertEqual(events, ['read', False, True])
+        self.assertFalse((self.root / 'alerts.json').exists())
+
+    def test_unmuting_waits_for_services_before_reenabling(self):
+        settings = {'base_url': 'https://api.test/v1', 'org_id': 'org', 'alert_rules': [11], 'grace_seconds': 45}
+        backup.atomic_json(self.root / 'alerts.json', {'settings': settings, 'prior': {'11': True}})
+        with patch.object(backup, 'pangolin', return_value={}), patch.object(backup.time, 'sleep') as sleep:
+            backup.restore_alerts()
+        sleep.assert_called_once_with(45)
+
+    def test_pangolin_rejects_unsuccessful_response_and_sends_bearer_token(self):
+        settings = {'base_url': 'https://api.test/v1/', 'org_id': 'org'}
+        captured = {}
+
+        class Reply:
+            def __init__(self, payload):
+                self.payload = payload
+            def read(self):
+                return json.dumps(self.payload).encode()
+            def __enter__(self):
+                return self
+            def __exit__(self, *arguments):
+                return False
+
+        def urlopen(request, timeout=None):
+            captured['url'] = request.full_url
+            captured['method'] = request.method
+            captured['authorization'] = request.get_header('Authorization')
+            return Reply(captured['payload'])
+
+        with patch.dict(os.environ, {'PANGOLIN_BACKUP_API_KEY': 'key.secret'}),                 patch.object(backup.urllib.request, 'urlopen', urlopen):
+            captured['payload'] = {'success': True, 'data': {'enabled': False}}
+            self.assertEqual(backup.pangolin(settings, 'org/org/alert-rule/11'), {'enabled': False})
+            self.assertEqual(captured['url'], 'https://api.test/v1/org/org/alert-rule/11')
+            self.assertEqual(captured['method'], 'GET')
+            self.assertEqual(captured['authorization'], 'Bearer key.secret')
+            captured['payload'] = {'success': False, 'message': 'forbidden'}
+            with self.assertRaisesRegex(RuntimeError, 'forbidden'):
+                backup.pangolin(settings, 'org/org/alert-rule/11', {'enabled': False})
+            self.assertEqual(captured['method'], 'POST')
+
+    def test_api_key_is_optional_and_vault_blank_values_are_dropped(self):
+        tasks = yaml.safe_load((ROOT / 'homeserver-backup.yml').read_text())[0]['tasks']
+        command = tasks[0]['block'][2]['ansible.builtin.command']
+        environment = yaml.safe_load(command['stdin'])['services']['backup']['environment']
+        self.assertEqual(environment['PANGOLIN_BACKUP_API_KEY'], '${PANGOLIN_BACKUP_API_KEY:-}')
+        self.assertEqual(command['argv'][command['argv'].index('PANGOLIN_BACKUP_API_KEY') - 1], '-u')
+        self.assertIn("rejectattr('value', 'eq', '')", tasks[0]['block'][3]['ansible.builtin.set_fact']['backup_environment'])
+        assertion = next(task for task in tasks if 'ansible.builtin.assert' in task)['ansible.builtin.assert']['that']
+        self.assertTrue(any('PANGOLIN_BACKUP_API_KEY' in clause for clause in assertion))
+
+
+    def test_maintenance_page_forced_per_group_and_prior_settings_saved(self):
+        settings = {
+            'base_url': 'https://api.test/v1', 'org_id': 'org',
+            'maintenance': {'title': 'Backup', 'message': 'Back soon', 'estimated_time': '10 minutes'},
+        }
+        calls = []
+
+        def pangolin(settings, path, body=None):
+            calls.append((path, body))
+            return {
+                'maintenanceModeEnabled': False,
+                'maintenanceModeType': 'automatic',
+                'maintenanceTitle': 'Old title',
+                'maintenanceMessage': None,
+                'maintenanceEstimatedTime': None,
+            }
+
+        with patch.object(backup, 'pangolin', pangolin):
+            backup.enter_maintenance({'pangolin': settings}, 'gitea', [7])
+        saved = json.loads((self.root / 'maintenance.json').read_text())
+        self.assertEqual(saved['prior']['7'], {
+            'maintenanceModeEnabled': False,
+            'maintenanceModeType': 'automatic',
+            'maintenanceTitle': 'Old title',
+            'maintenanceMessage': None,
+            'maintenanceEstimatedTime': None,
+        })
+        self.assertEqual(calls[0], ('resource/7', None))
+        self.assertEqual(calls[1], ('resource/7', {
+            'maintenanceModeEnabled': True,
+            'maintenanceModeType': 'forced',
+            'maintenanceTitle': 'Backup',
+            'maintenanceMessage': 'Back soon',
+            'maintenanceEstimatedTime': '10 minutes',
+        }))
+
+    def test_maintenance_restores_prior_values_not_blanket_disable(self):
+        settings = {'base_url': 'https://api.test/v1', 'org_id': 'org'}
+        prior = {
+            '7': {
+                'maintenanceModeEnabled': True,
+                'maintenanceModeType': 'automatic',
+                'maintenanceTitle': 'Keep me',
+                'maintenanceMessage': None,
+                'maintenanceEstimatedTime': None,
+            },
+        }
+        backup.atomic_json(self.root / 'maintenance.json', {'settings': settings, 'prior': prior})
+        calls = []
+        with patch.object(backup, 'pangolin', lambda s, path, body=None: calls.append((path, body)) or {}), \
+                patch.object(backup.time, 'sleep'):
+            backup.restore_maintenance()
+        self.assertEqual(calls, [('resource/7', prior['7'])])
+        self.assertFalse((self.root / 'maintenance.json').exists())
+
+    def test_maintenance_restore_omits_null_mode_type_rejected_by_api(self):
+        settings = {'base_url': 'https://api.test/v1', 'org_id': 'org'}
+        backup.atomic_json(self.root / 'maintenance.json', {'settings': settings, 'prior': {
+            '7': {
+                'maintenanceModeEnabled': False,
+                'maintenanceModeType': None,
+                'maintenanceTitle': None,
+                'maintenanceMessage': None,
+                'maintenanceEstimatedTime': None,
+            },
+        }})
+        calls = []
+        with patch.object(backup, 'pangolin', lambda s, path, body=None: calls.append(body) or {}), \
+                patch.object(backup.time, 'sleep'):
+            backup.restore_maintenance()
+        self.assertNotIn('maintenanceModeType', calls[0])
+        self.assertIs(calls[0]['maintenanceModeEnabled'], False)
+
+    def test_maintenance_page_covers_full_group_downtime_and_clears_after_restart(self):
+        settings = {'base_url': 'https://api.test/v1', 'org_id': 'org', 'maintenance': {}}
+        events = []
+
+        def pangolin(settings, path, body=None):
+            if body is None:
+                return {field: None for field in backup.MAINTENANCE_FIELDS} | {'maintenanceModeEnabled': False}
+            events.append(('page', body['maintenanceModeEnabled']))
+            return {}
+
+        states = {'app': True}
+
+        def run(*args, **kwargs):
+            events.append((args[1], args[-1]))
+            states[args[-1]] = args[1] == 'start'
+
+        def inspect(container):
+            return {'State': {'Running': states[container], 'ExitCode': 0, 'OOMKilled': False}}
+
+        with patch.object(backup, 'pangolin', pangolin), patch.object(backup, 'sync_group'), \
+                patch.object(backup, 'inspect', inspect), \
+                patch.object(backup, 'run', run), patch.object(backup.time, 'sleep'):
+            backup.stage_group({'stop_timeout': 120, 'pangolin': settings}, 'gitea', ['app'], [], [7])
+        self.assertEqual(events, [('page', True), ('stop', 'app'), ('start', 'app'), ('page', False)])
+        self.assertFalse((self.root / 'maintenance.json').exists())
+
+    def test_group_resources_must_be_niceid_strings(self):
+        config = {
+            'staging': str(self.root / 'staging'), 'required_mounts': [], 'project': 'homeserver',
+            'groups': [{'name': 'gitea', 'services': [], 'paths': [], 'resources': [7]}],
+        }
+        with self.assertRaisesRegex(RuntimeError, 'Invalid Pangolin niceId'):
+            backup.plan(config)
+        config['groups'][0]['resources'] = ['Parallel_Afro']
+        with self.assertRaisesRegex(RuntimeError, 'Invalid Pangolin niceId'):
+            backup.plan(config)
+
+    def test_niceids_resolve_to_numeric_ids_before_any_container_stops(self):
+        config = {
+            'staging': str(self.root / 'staging'), 'required_mounts': [], 'minimum_free_bytes': 0,
+            'project': 'homeserver',
+            'pangolin': {'base_url': 'https://api.test/v1', 'org_id': 'org'},
+            'groups': [{'name': 'gitea', 'services': [], 'paths': [], 'resources': ['parallel-afrotyphlops-schlegelii']}],
+        }
+        source = self.root / 'staging-source'
+        source.mkdir()
+        config['groups'][0]['paths'] = [str(source)]
+        pages = [
+            {'resources': [{'niceId': 'other-animal', 'resourceId': 3}], 'pagination': {'total': 2, 'pageSize': 1, 'page': 1}},
+            {'resources': [{'niceId': 'parallel-afrotyphlops-schlegelii', 'resourceId': 9}], 'pagination': {'total': 2, 'pageSize': 1, 'page': 2}},
+        ]
+        requested = []
+
+        def pangolin(settings, path, body=None):
+            requested.append(path)
+            return pages[len(requested) - 1]
+
+        with patch.object(backup, 'pangolin', pangolin), patch.object(backup, 'require_mounts'):
+            groups = backup.plan(config)
+        self.assertEqual(groups[0][3], [9])
+        self.assertEqual(requested, [
+            'org/org/resources?page=1&pageSize=100',
+            'org/org/resources?page=2&pageSize=100',
+        ])
+
+    def test_unknown_niceid_fails_before_downtime(self):
+        config = {
+            'staging': str(self.root / 'staging'), 'required_mounts': [], 'project': 'homeserver',
+            'pangolin': {'base_url': 'https://api.test/v1', 'org_id': 'org'},
+            'groups': [{'name': 'gitea', 'services': [], 'paths': [], 'resources': ['renamed-in-dashboard']}],
+        }
+        page = {'resources': [{'niceId': 'other-animal', 'resourceId': 3}], 'pagination': {'total': 1, 'pageSize': 100, 'page': 1}}
+        with patch.object(backup, 'pangolin', return_value=page), patch.object(backup, 'require_mounts'):
+            with self.assertRaisesRegex(RuntimeError, 'Unknown Pangolin resources: renamed-in-dashboard'):
+                backup.plan(config)
+
+    def test_configured_pangolin_scope_matches_declared_groups(self):
+        config = yaml.safe_load((ROOT / 'homeserver/backup.yml').read_text())['backup_config']
+        settings = config['pangolin']
+        self.assertEqual(set(settings['maintenance']), {'title', 'message', 'estimated_time'})
+        self.assertIsInstance(settings['maintenance_grace_seconds'], int)
+        for group in config['groups']:
+            for resource in group.get('resources', []):
+                self.assertRegex(resource, r'^[a-z0-9][a-z0-9-]*$', group['name'])
+
+
+    def setUpProgress(self):
+        reset = {'stage': 'startup', 'staged': []}
+        patcher = patch.dict(backup.PROGRESS, reset, clear=True)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def test_no_webhook_configured_sends_nothing(self):
+        with patch.dict(os.environ, {}, clear=True), \
+                patch.object(backup.urllib.request, 'urlopen', side_effect=AssertionError('must not post')):
+            backup.notify('title', ['line'], failed=False)
+
+    def test_non_discord_webhook_is_refused(self):
+        with patch.dict(os.environ, {'DISCORD_BACKUP_WEBHOOK': 'https://evil.example/hook'}), \
+                patch.object(backup.urllib.request, 'urlopen', side_effect=AssertionError('must not post')):
+            backup.notify('title', ['line'], failed=False)
+
+    def test_webhook_failure_never_breaks_the_backup(self):
+        with patch.dict(os.environ, {'DISCORD_BACKUP_WEBHOOK': 'https://discord.com/api/webhooks/1/abc'}), \
+                patch.object(backup.urllib.request, 'urlopen', side_effect=OSError('discord down')):
+            backup.notify('title', ['line'], failed=True)
+
+    def test_success_notice_reports_snapshot_and_group_totals(self):
+        self.setUpProgress()
+        config = {'staging': str(self.root), 'required_mounts': [], 'host': 'homeserver', 'tag': 'test'}
+        summary = json.dumps({
+            'message_type': 'summary', 'snapshot_id': 'abcdef12', 'files_new': 5,
+            'files_changed': 2, 'data_added': 3.2e9, 'total_duration': 5430,
+        })
+        posted = []
+        with patch.dict(os.environ, {'RESTIC_REPOSITORY': 'test-repo'}), \
+                patch.object(backup, 'no_legacy_jobs'), \
+                patch.object(backup, 'plan', return_value=[('gitea', [], [], []), ('immich', [], [], [])]), \
+                patch.object(backup, 'stage_group'), patch.object(backup, 'restic', return_value=summary), \
+                patch.object(backup, 'notify', lambda title, lines, failed: posted.append((title, lines, failed))):
+            backup.execute('backup', config)
+        title, lines, failed = posted[0]
+        self.assertFalse(failed)
+        self.assertIn('homeserver', title)
+        joined = '\n'.join(lines)
+        self.assertIn('abcdef12', joined)
+        self.assertIn('gitea, immich', joined)
+        self.assertIn('3.20 GB', joined)
+        self.assertIn('1:30:30', joined)
+
+    def test_failure_notice_names_stage_group_and_leftover_state(self):
+        self.setUpProgress()
+        backup.PROGRESS['action'] = 'backup'
+        backup.PROGRESS['stage'] = 'staging immich'
+        backup.PROGRESS['staged'] = ['gitea', 'jellyfin']
+        backup.atomic_json(self.root / 'stopped.json', ['immich_server'])
+        backup.atomic_json(self.root / 'maintenance.json', {'settings': {}, 'prior': {}})
+        lines = backup.failure_report(RuntimeError('Container did not stop cleanly: immich_server'))
+        joined = '\n'.join(lines)
+        self.assertIn('staging immich', joined)
+        self.assertIn('did not stop cleanly: immich_server', joined)
+        self.assertIn('gitea, jellyfin', joined)
+        self.assertIn('containers left stopped', joined)
+        self.assertIn('resources left in maintenance', joined)
+        self.assertNotIn('alert rules left muted', joined)
+        self.assertIn('journalctl -u homelab-backup.service', joined)
+
+    def test_failure_notice_survives_empty_error_message(self):
+        self.setUpProgress()
+        self.assertIn('KeyError', '\n'.join(backup.failure_report(KeyError())))
+        self.assertIn('143', '\n'.join(backup.failure_report(SystemExit(143))))
+
+    def test_discord_payload_is_a_single_embed_within_length_limits(self):
+        captured = {}
+
+        class Reply:
+            def __enter__(self):
+                return self
+            def __exit__(self, *arguments):
+                return False
+
+        def urlopen(request, timeout=None):
+            captured['body'] = json.loads(request.data)
+            captured['url'] = request.full_url
+            return Reply()
+
+        with patch.dict(os.environ, {'DISCORD_BACKUP_WEBHOOK': 'https://discord.com/api/webhooks/1/abc'}), \
+                patch.object(backup.urllib.request, 'urlopen', urlopen):
+            backup.notify('Backup FAILED', ['x' * 5000], failed=True)
+        embed = captured['body']['embeds'][0]
+        self.assertEqual(captured['url'], 'https://discord.com/api/webhooks/1/abc')
+        self.assertEqual(embed['title'], 'Backup FAILED')
+        self.assertEqual(embed['color'], 0xCC0000)
+        self.assertLessEqual(len(embed['description']), 4000)
+
+    def test_webhook_is_optional_in_vaulted_credentials(self):
+        tasks = yaml.safe_load((ROOT / 'homeserver-backup.yml').read_text())[0]['tasks']
+        command = tasks[0]['block'][2]['ansible.builtin.command']
+        environment = yaml.safe_load(command['stdin'])['services']['backup']['environment']
+        self.assertEqual(environment['DISCORD_BACKUP_WEBHOOK'], '${DISCORD_BACKUP_WEBHOOK:-}')
+        self.assertEqual(command['argv'][command['argv'].index('DISCORD_BACKUP_WEBHOOK') - 1], '-u')
+        assertion = next(task for task in tasks if 'ansible.builtin.assert' in task)['ansible.builtin.assert']['that']
+        self.assertTrue(any('DISCORD_BACKUP_WEBHOOK' in clause for clause in assertion))
 
 
 if __name__ == '__main__':

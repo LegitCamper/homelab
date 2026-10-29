@@ -38,6 +38,10 @@
               - B2_ACCOUNT_ID
               - -u
               - B2_ACCOUNT_KEY
+              - -u
+              - PANGOLIN_BACKUP_API_KEY
+              - -u
+              - DISCORD_BACKUP_WEBHOOK
               - docker
               - compose
               - --project-name
@@ -58,12 +62,16 @@
                     RESTIC_PASSWORD: ${RESTIC_PASSWORD:?required in secrets.env}
                     B2_ACCOUNT_ID: ${B2_ACCOUNT_ID:?required in secrets.env}
                     B2_ACCOUNT_KEY: ${B2_ACCOUNT_KEY:?required in secrets.env}
+                    PANGOLIN_BACKUP_API_KEY: ${PANGOLIN_BACKUP_API_KEY:-}
+                    DISCORD_BACKUP_WEBHOOK: ${DISCORD_BACKUP_WEBHOOK:-}
           register: backup_env_result
           changed_when: false
 
         - name: Keep only the four restic credentials
           ansible.builtin.set_fact:
-            backup_environment: "{{ (backup_env_result.stdout | from_json).services.backup.environment }}"
+            backup_environment: >-
+              {{ (backup_env_result.stdout | from_json).services.backup.environment
+                 | dict2items | rejectattr('value', 'eq', '') | items2dict }}
       always:
         - name: Remove the temporary decrypted environment file
           ansible.builtin.file:
@@ -79,6 +87,8 @@
           - backup_environment.B2_ACCOUNT_ID | length > 0
           - backup_environment.B2_ACCOUNT_KEY | length > 0
           - backup_environment.RESTIC_REPOSITORY.startswith('b2:')
+          - backup_config.pangolin.alert_rules | length == 0 or backup_environment.PANGOLIN_BACKUP_API_KEY | default('') | length > 0
+          - backup_environment.DISCORD_BACKUP_WEBHOOK | default('https://discord.com/api/webhooks/') is match('https://(discord|discordapp)\.com/api/webhooks/')
       no_log: true
       when: not ansible_check_mode
 

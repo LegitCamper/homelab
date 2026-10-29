@@ -14,64 +14,94 @@ backup_config:
   minimum_free_bytes: 10737418240
   stop_timeout: 120
   retention: [--keep-daily, '14', --keep-weekly, '8', --keep-monthly, '12', --keep-yearly, '3']
+  # Mute Pangolin alert rules during staging downtime. Empty list disables the
+  # integration entirely. IDs come from GET /v1/org/<org>/alert-rules.
+  pangolin:
+    base_url: "https://api.example.com/v1"
+    org_id: "changeme"
+    grace_seconds: 60
+    alert_rules: []
+    # Forced maintenance page per group, restored to prior settings afterwards.
+    # Add `resources: [niceid]` to a group; niceIds are the readable names in
+    # dashboard URLs, resolved to numeric IDs at plan time.
+    # Wait after restart before clearing the page; alert unmute uses grace_seconds.
+    maintenance_grace_seconds: 30
+    maintenance:
+      title: "Scheduled maintenance"
+      message: "This service is briefly offline for its nightly backup and will return shortly."
+      estimated_time: "about 10 minutes"
   groups:
     - name: gitea
       services: [gitea]
       paths: [/mnt/homelab_iscsi/gitea]
+      resources: [well-lit-lerista-labialis]
     - name: fileflows
       services: [fileflows]
       paths: [/mnt/homelab_iscsi/fileflows/configs]
+      resources: [velvety-zebra-tailed-lizard]
     - name: jellyfin
       services: [jellyfin]
       paths: [/mnt/homelab_iscsi/jellyfin]
+      resources: [portly-common-midwife-toad]
     - name: bookmarks
       services: [karakeep]
       paths: [/mnt/homelab_iscsi/karakeep]
+      resources: [overdue-long-toed-salamander]
     - name: meilisearch
       services: [meilisearch]
       paths: [/mnt/homelab_iscsi/meili_data]
     - name: seerr
       services: [seerr]
       paths: [/mnt/homelab_iscsi/seerr]
+      resources: [cavernous-ommatoiulus-moreleti]
     - name: maintainerr
       services: [maintainerr]
       paths: [/mnt/homelab_iscsi/maintainerr]
+      resources: [concerned-lowland-paca]
     - name: downloads
       services: [sabnzbd]
       paths: [/mnt/homelab_iscsi/sabnzbd]
+      resources: [dual-thirteen-lined-ground-squirrel]
     - name: jackett
       services: [jackett]
       paths: [/mnt/homelab_iscsi/jackett]
+      resources: [exhausted-bandy-bandy]
     - name: prowlarr
       services: [prowlarr]
       paths: [/mnt/homelab_iscsi/prowlarr]
-    - name: seekarr
-      services: [seekarr]
-      paths: [/mnt/homelab_iscsi/seekarr]
+      resources: [fresh-washington-ground-squirrel]
     - name: lidarr
       services: [lidarr]
       paths: [/mnt/homelab_iscsi/lidarr]
+      resources: [joyful-southern-three-banded-armadillo]
     - name: sonarr
       services: [sonarr]
       paths: [/mnt/homelab_iscsi/sonarr]
+      resources: [homely-chinese-ferret-badger]
     - name: radarr
       services: [radarr]
       paths: [/mnt/homelab_iscsi/radarr]
+      resources: [criminal-boodie]
     - name: fetcharr
       services: [fetcharr]
       paths: [/mnt/homelab_iscsi/fetcharr]
     - name: chaptarr
       services: [chaptarr]
       paths: [/mnt/homelab_iscsi/chaptarr]
+      resources: [warm-lowland-streaked-tenrec]
     - name: audiobookshelf
       services: [audiobookshelf]
       paths: [/mnt/homelab_iscsi/audiobookshelf]
+      resources: [superficial-red-tree-vole]
     - name: immich
       services: [immich_server, immich_postgres]
       paths: [/mnt/homelab_iscsi/immich]
+      resources: [valuable-texas-coral-snake]
     - name: syncthing
       services: [syncthing]
       paths: [/mnt/homelab_iscsi/syncthing]
+      resources: [required-lesser-egyptian-jerboa]
     - name: grafana
       services: [grafana]
       paths: [/mnt/homelab_iscsi/grafana_data]
+      resources: [plain-calabar-python]
