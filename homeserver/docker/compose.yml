@@ -27,7 +27,7 @@ volumes:
 services:
   # traffic ingress from pangolin
   newt:
-    image: fosrl/newt:1.18.1
+    image: fosrl/newt:1.19.1
     container_name: newt
     restart: always
     networks:
