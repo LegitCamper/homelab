@@ -17,8 +17,8 @@ backup_config:
   # Mute Pangolin alert rules during staging downtime. Empty list disables the
   # integration entirely. IDs come from GET /v1/org/<org>/alert-rules.
   pangolin:
-    base_url: "https://api.example.com/v1"
-    org_id: "changeme"
+    base_url: "https://api.sawyer.services/v1"
+    org_id: "legitcampers-org"
     grace_seconds: 60
     alert_rules: []
     # Forced maintenance page per group, restored to prior settings afterwards.

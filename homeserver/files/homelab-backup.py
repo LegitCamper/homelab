@@ -53,8 +53,11 @@ def pangolin(settings, path, body=None):
             'Content-Type': 'application/json',
         },
     )
-    with urllib.request.urlopen(request, timeout=30) as reply:
-        payload = json.load(reply)
+    try:
+        with urllib.request.urlopen(request, timeout=30) as reply:
+            payload = json.load(reply)
+    except Exception as error:
+        raise RuntimeError(f'Pangolin request failed: {request.method} {request.full_url}: {error}') from error
     if not payload.get('success'):
         raise RuntimeError(f'Pangolin rejected {path}: {payload.get("message")}')
     return payload['data'] or {}
@@ -324,7 +327,7 @@ def notify(title, lines, failed):
     }]}
     request = urllib.request.Request(
         url, data=json.dumps(body).encode(), method='POST',
-        headers={'Content-Type': 'application/json'},
+        headers={'Content-Type': 'application/json', 'User-Agent': 'homelab-backup/1.0'},
     )
     try:
         with urllib.request.urlopen(request, timeout=30):
