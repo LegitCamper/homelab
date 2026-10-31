@@ -595,7 +595,7 @@ services:
 
   immich_server:
     container_name: immich_server
-    image: ghcr.io/immich-app/immich-server:v3.2.2
+    image: ghcr.io/immich-app/immich-server:v3.3.5
     volumes:
       - /mnt/homelab_iscsi/immich/server:/data:rw
       - /etc/localtime:/etc/localtime:ro
