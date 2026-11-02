@@ -13,6 +13,8 @@ networks:
     external: false
   chrome-internal:
     external: false
+  lubelogger-internal:
+    external: false
 
 volumes:
   logs:
@@ -1016,3 +1018,46 @@ services:
     volumes:
       - karasearch:/data
     read_only: true
+
+  lubelogger:
+    image: ghcr.io/hargata/lubelogger:v1.7.4
+    container_name: lubelogger
+    restart: always
+    networks:
+      - web
+      - lubelogger-internal
+    expose:
+      - 8080
+    depends_on:
+      - lubelogger_postgres
+    environment:
+      - TZ=${TZ}
+      - LC_ALL=en_US.UTF-8
+      - LANG=en_US.UTF-8
+      - POSTGRES_CONNECTION=Host=lubelogger_postgres:5432;Username=${LUBELOGGER_DB_USERNAME};Password=${LUBELOGGER_DB_PASSWORD};Database=${LUBELOGGER_DB_DATABASE_NAME};
+    volumes:
+      # Images, documents and server config stay on disk; records live in postgres.
+      - /mnt/homelab_iscsi/lubelogger/data:/App/data:rw
+      - /mnt/homelab_iscsi/lubelogger/keys:/root/.aspnet/DataProtection-Keys:rw
+
+  lubelogger_postgres:
+    container_name: lubelogger_postgres
+    image: docker.io/library/postgres:18.6-alpine3.23
+    restart: always
+    environment:
+      - TZ=${TZ}
+      - POSTGRES_USER=${LUBELOGGER_DB_USERNAME}
+      - POSTGRES_PASSWORD=${LUBELOGGER_DB_PASSWORD}
+      - POSTGRES_DB=${LUBELOGGER_DB_DATABASE_NAME}
+      - POSTGRES_INITDB_ARGS=--data-checksums
+    volumes:
+      - /mnt/homelab_iscsi/lubelogger/postgres:/var/lib/postgresql/data:rw
+    expose:
+      - 5432
+    networks:
+      - lubelogger-internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${LUBELOGGER_DB_USERNAME} -d ${LUBELOGGER_DB_DATABASE_NAME}"]
+      interval: 30s
+      timeout: 5s
+      retries: 5

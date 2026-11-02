@@ -5,14 +5,17 @@
   ],
   "packageRules": [
     {
-      "description": "Disable automatic updates for Meilisearch and Immich Valkey",
-      "matchUpdateTypes": ["major"],
+      "description": "Disable automatic updates for Meilisearch, Immich Valkey and LubeLogger Postgres",
+      "matchUpdateTypes": [
+        "major"
+      ],
       "matchDatasources": [
         "docker"
       ],
       "matchPackageNames": [
         "getmeili/meilisearch",
-        "docker.io/valkey/valkey"
+        "docker.io/valkey/valkey",
+        "docker.io/library/postgres"
       ],
       "enabled": false
     }
