@@ -109,3 +109,7 @@ backup_config:
       services: [lubelogger, lubelogger_postgres]
       paths: [/mnt/homelab_iscsi/lubelogger]
       resources: [winged-eastern-long-beaked-echidna]
+    - name: [hister]
+      services: [hister]
+      paths: [/mnt/homelab_iscsi/hister]
+      resources: [nonstop-platypus]

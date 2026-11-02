@@ -1066,3 +1066,19 @@ services:
       interval: 30s
       timeout: 5s
       retries: 5
+
+  hister:
+    container_name: hister
+    image: ghcr.io/asciimoo/hister:v0.21.0
+    user: 1000:1000
+    init: true
+    restart: always
+    networks:
+      - web
+    expose:
+      - 4433
+    volumes:
+      - /mnt/homelab_iscsi/hister:/hister/data
+    environment:
+      HISTER__SERVER__ADDRESS: 0.0.0.0:4433
+      HISTER__SERVER__BASE_URL: https://hister.${DOMAIN}
