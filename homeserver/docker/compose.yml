@@ -1014,6 +1014,7 @@ services:
     expose:
       - 8787
     environment:
+      ALLOW_REGISTRATION: true
       KARAKEEP_URL: http://karakeep:3000
       HISTER_URL: http://hister:4433
       SEARCH_URL: https://search.${DOMAIN}/search?q={query}&t=general
