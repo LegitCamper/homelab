@@ -1015,8 +1015,11 @@ services:
       - 8787
     environment:
       KARAKEEP_URL: http://karakeep:3000
+      HISTER_URL: http://hister:4433
       SEARCH_URL: https://search.${DOMAIN}/search?q={query}&t=general
       COOKIE_SECURE: true
+      SESSION_STORE: /data/sessions.enc
+      SESSION_SECRET: ${KARASEARCH_SESSION_SECRET}
     volumes:
       - karasearch:/data
     read_only: true
