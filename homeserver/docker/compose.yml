@@ -17,7 +17,7 @@ networks:
     external: false
 
 volumes:
-  logs:
+  loki-data:
   jellyfin-cache:
   fetcharr-cache:
   fetcharr-logs:
@@ -734,6 +734,7 @@ services:
       TZ: ${TZ}
     volumes:
       - /home/core/compose-files/docker/loki/:/mnt/config:ro
+      - loki-data:/loki:rw
     command: -config.file=/mnt/config/config.yml
     networks:
       - logs-internal
@@ -748,7 +749,8 @@ services:
       TZ: ${TZ}
     volumes:
       - /home/core/compose-files/docker/promtail:/mnt/config:ro
-      - logs:/var/log:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
     command: -config.file=/mnt/config/config.yml
     expose:
       - 9080

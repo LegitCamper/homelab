@@ -8,10 +8,17 @@ clients:
     batchsize: 512000
     batchwait: 2s
 scrape_configs:
-- job_name: system
-  static_configs:
-  - targets:
-      - localhost
-    labels:
-      job: varlogs
-      __path__: /var/log/*log
+# ponytail: all container logs via docker SD, no per-service config.
+# ceiling: no multiline/parsing. add pipeline_stages per job when a log format needs it.
+- job_name: docker
+  docker_sd_configs:
+    - host: unix:///var/run/docker.sock
+      refresh_interval: 30s
+  relabel_configs:
+    - source_labels: ['__meta_docker_container_label_com_docker_compose_service']
+      target_label: 'service'
+    - source_labels: ['__meta_docker_container_name']
+      regex: '/?(.*)'
+      target_label: 'container'
+    - source_labels: ['__meta_docker_container_log_stream']
+      target_label: 'stream'
