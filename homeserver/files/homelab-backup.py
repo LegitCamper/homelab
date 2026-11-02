@@ -336,10 +336,15 @@ def notify(title, lines, failed):
         print(f'Discord notification failed: {error}', file=sys.stderr, flush=True)
 
 
+# Retention keys only: `forget --host --tag` and `prune` depend on these, not on
+# which groups exist. Adding or editing a group must not force an immediate backup.
+RETENTION_KEYS = ('host', 'tag', 'retention')
+
 def require_recent_backup(config):
     marker = json.loads((STATE / 'last-success.json').read_text())
-    if marker['config'] != config or marker['repository'] != os.environ['RESTIC_REPOSITORY']:
-        raise RuntimeError('Backup configuration changed; run a successful backup first')
+    retention = lambda source: {key: source.get(key) for key in RETENTION_KEYS}
+    if retention(marker['config']) != retention(config) or marker['repository'] != os.environ['RESTIC_REPOSITORY']:
+        raise RuntimeError('Retention scope changed; run a successful backup first')
     snapshots = json.loads(restic(
         'snapshots', '--json', '--host', config['host'], '--tag', config['tag'], capture=True,
     ))

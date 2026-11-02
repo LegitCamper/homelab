@@ -43,7 +43,7 @@ backup_config:
       services: [jellyfin]
       paths: [/mnt/homelab_iscsi/jellyfin]
       resources: [portly-common-midwife-toad]
-    - name: bookmarks
+    - name: karakeep
       services: [karakeep]
       paths: [/mnt/homelab_iscsi/karakeep]
       resources: [overdue-long-toed-salamander]
@@ -58,7 +58,7 @@ backup_config:
       services: [maintainerr]
       paths: [/mnt/homelab_iscsi/maintainerr]
       resources: [concerned-lowland-paca]
-    - name: downloads
+    - name: sabnzbd
       services: [sabnzbd]
       paths: [/mnt/homelab_iscsi/sabnzbd]
       resources: [dual-thirteen-lined-ground-squirrel]

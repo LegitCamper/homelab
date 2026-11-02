@@ -92,7 +92,14 @@ catch-up. They remain **disabled by default**:
   subset membership. This does not replace restore testing or a full check.
 - First of month 12:00: check, retain 14 daily / 8 weekly / 12 monthly / 3 yearly,
   prune, then check again. Retention requires a verified successful staged snapshot
-  less than 48 hours old matching the current config/repository. No daily prune.
+  less than 48 hours old matching the current repository and retention scope
+  (`host`, `tag`, `retention`). No daily prune.
+
+Adding or editing a group in `homeserver/backup.yml` does not invalidate that
+marker, so rerunning `homeserver-backup.yml` to add a service never forces an
+immediate backup. Changing `host`, `tag` or `retention` does, since those decide
+what `forget`/`prune` delete. The new group is simply first captured by the next
+scheduled run.
 
 Prune limits repacking to 1 GiB per run and permits 20% unused space to reduce
 rewrites. This trades higher stored bytes for less repacking; the repack cap can

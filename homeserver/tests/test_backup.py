@@ -146,6 +146,26 @@ class BackupTests(unittest.TestCase):
                         with self.assertRaisesRegex(RuntimeError, 'No staged snapshot'):
                             backup.require_recent_backup(config)
 
+    def test_group_changes_do_not_require_a_fresh_backup_but_retention_changes_do(self):
+        marker = {'host': 'test', 'tag': 'test', 'retention': ['--keep-daily', '14'],
+                  'groups': [{'name': 'gitea'}]}
+        now = datetime.datetime.now(datetime.timezone.utc)
+        backup.atomic_json(self.root / 'last-success.json', {
+            'config': marker, 'repository': 'test-repo', 'snapshot_id': 'abcdef12',
+        })
+        added_group = dict(marker, groups=marker['groups'] + [{'name': 'lubelogger'}])
+        changed_retention = dict(marker, retention=['--keep-daily', '7'])
+        changed_tag = dict(marker, tag='other')
+        snapshots = json.dumps([{'id': 'abcdef123456', 'time': now.isoformat()}])
+        for config, accepted in [(added_group, True), (changed_retention, False), (changed_tag, False)]:
+            with self.subTest(config=config):
+                with patch.dict(os.environ, {'RESTIC_REPOSITORY': 'test-repo'}), patch.object(backup, 'restic', return_value=snapshots):
+                    if accepted:
+                        backup.require_recent_backup(config)
+                    else:
+                        with self.assertRaisesRegex(RuntimeError, 'Retention scope changed'):
+                            backup.require_recent_backup(config)
+
     def test_force_kill_aborts_before_final_copy_and_recovers(self):
         states = [
             {'Running': True},
