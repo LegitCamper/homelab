@@ -1080,5 +1080,6 @@ services:
     volumes:
       - /mnt/homelab_iscsi/hister:/hister/data
     environment:
+      HISTER__APP__USER_HANDLING: true
       HISTER__SERVER__ADDRESS: 0.0.0.0:4433
       HISTER__SERVER__BASE_URL: https://hister.${DOMAIN}
