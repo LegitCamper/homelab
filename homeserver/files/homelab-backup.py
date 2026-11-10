@@ -226,8 +226,8 @@ def plan(config):
     identifiers = resolve_resources(settings, wanted) if settings and wanted else {}
     for group in config['groups']:
         name = group['name']
-        if not re.fullmatch(r'[a-zA-Z0-9][a-zA-Z0-9_-]*', name) or name in names:
-            raise RuntimeError(f'Invalid or duplicate group: {name}')
+        if not isinstance(name, str) or not re.fullmatch(r'[a-zA-Z0-9][a-zA-Z0-9_-]*', name) or name in names:
+            raise RuntimeError(f'Invalid or duplicate group: {name!r}')
         names.add(name)
         containers = []
         for service in group['services']:

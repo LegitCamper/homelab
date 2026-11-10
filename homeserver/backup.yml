@@ -105,11 +105,11 @@ backup_config:
       services: [grafana]
       paths: [/mnt/homelab_iscsi/grafana_data]
       resources: [plain-calabar-python]
-    - name: [lubelogger]
+    - name: lubelogger
       services: [lubelogger, lubelogger_postgres]
       paths: [/mnt/homelab_iscsi/lubelogger]
       resources: [winged-eastern-long-beaked-echidna]
-    - name: [hister]
+    - name: hister
       services: [hister]
       paths: [/mnt/homelab_iscsi/hister]
       resources: [nonstop-platypus]

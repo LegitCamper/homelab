@@ -221,9 +221,9 @@ class BackupTests(unittest.TestCase):
     def test_compose_persistent_mounts_have_explicit_coverage_or_exclusion(self):
         compose = yaml.safe_load((ROOT / 'homeserver/docker/compose.yml').read_text())
         config = yaml.safe_load((ROOT / 'homeserver/backup.yml').read_text())['backup_config']
-        excluded = {'logs', 'jellyfin-cache', 'fetcharr-cache', 'fetcharr-logs', 'fileflows-temp', 'immich-model-cache'}
+        excluded = {'logs', 'jellyfin-cache', 'fetcharr-cache', 'fetcharr-logs', 'fileflows-temp', 'immich-model-cache', 'loki-data'}
         excluded_services = {'backup', 'prune', 'check', 'node_exporter', 'cadvisor'}
-        excluded_paths = ('/mnt/media', '/mnt/homelab_iscsi/languagetool', '/mnt/homelab_iscsi/prometheus')
+        excluded_paths = ('/mnt/media', '/mnt/homelab_iscsi/languagetool', '/mnt/homelab_iscsi/prometheus', '/mnt/homelab_iscsi/gluetun', '/home/core/compose-files/docker')
         for name, service in compose['services'].items():
             if name in excluded_services:
                 continue
