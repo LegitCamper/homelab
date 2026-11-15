@@ -26,6 +26,7 @@ volumes:
   9router-data:
   karasearch:
   gatekeeper_data:
+  pancakeslicer-data:
     
 services:
   # traffic ingress from pangolin
@@ -1093,3 +1094,23 @@ services:
       HISTER__APP__USER_HANDLING: true
       HISTER__SERVER__ADDRESS: 0.0.0.0:4433
       HISTER__SERVER__BASE_URL: https://hister.${DOMAIN}
+
+  pancakeslicer:
+    image: zimengxiong/pancakeslicer:0.4.9
+    container_name: pancakeslicer
+    restart: always
+    expose:
+      - 6868
+    networks:
+      - web
+    environment:
+      ORCA_WEB_MAX_JOBS: "2"                 # slices running at once; more queue
+      ORCA_WEB_PRINTER_NETWORK: lan           # lan | off | comma-separated CIDRs/host names
+      PANCAKE_STAGE_CACHE_MAX_MB: "1024"      # engine stage cache cap (disposable)
+    volumes:
+      - pancakeslicer-data:/data              # projects, profiles, printers, preferences, jobs
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    mem_limit: 8g
