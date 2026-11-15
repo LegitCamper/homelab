@@ -959,6 +959,7 @@ services:
       RUST_LOG: info
       GATEKEEPER_REDACT: ${GATEKEEPER_REDACT}
       GATEKEEPER_DB_PATH: /var/lib/gatekeeper/mappings.sqlite3
+      GATEKEEPER_REDACT_IDENTITY: ${GATEKEEPER_REDACT_IDENTITY}
     restart: always
     volumes:
       - gatekeeper_data:/var/lib/gatekeeper
