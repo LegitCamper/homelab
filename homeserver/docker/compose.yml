@@ -25,6 +25,7 @@ volumes:
   immich-model-cache:
   9router-data:
   karasearch:
+  gatekeeper_data:
     
 services:
   # traffic ingress from pangolin
@@ -957,7 +958,10 @@ services:
       GATEKEEPER_MAX_BODY_BYTES: 10485760
       RUST_LOG: info
       GATEKEEPER_REDACT: ${GATEKEEPER_REDACT}
+      GATEKEEPER_DB_PATH: /var/lib/gatekeeper/mappings.sqlite3
     restart: always
+    volumes:
+      - gatekeeper_data:/var/lib/gatekeeper
 
   karakeep:
     image: ghcr.io/karakeep-app/karakeep:0.35.0
