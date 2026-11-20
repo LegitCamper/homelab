@@ -1054,7 +1054,7 @@ services:
 
   lubelogger_postgres:
     container_name: lubelogger_postgres
-    image: docker.io/library/postgres:18.6-alpine3.23
+    image: docker.io/library/postgres:18.7-alpine3.23
     restart: always
     environment:
       - TZ=${TZ}
