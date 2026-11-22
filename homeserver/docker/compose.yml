@@ -1031,7 +1031,7 @@ services:
     read_only: true
 
   lubelogger:
-    image: ghcr.io/hargata/lubelogger:v1.7.4
+    image: ghcr.io/hargata/lubelogger:v1.7.5
     container_name: lubelogger
     restart: always
     networks:
