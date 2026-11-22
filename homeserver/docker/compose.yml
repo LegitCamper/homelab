@@ -1078,7 +1078,7 @@ services:
 
   hister:
     container_name: hister
-    image: ghcr.io/asciimoo/hister:v0.21.0
+    image: ghcr.io/asciimoo/hister:v0.22.0
     user: 1000:1000
     init: true
     restart: always
